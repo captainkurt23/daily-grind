@@ -283,7 +283,7 @@ export default function WorkoutApp() {
   const timerColor = timerLeft > 30 ? "#76FF03" : timerLeft > 10 ? "#FFB300" : "#FF3D00";
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#080808", minHeight: "100vh", maxWidth: 430, margin: "0 auto", color: "#fff", position: "relative", overflowX: "hidden" }}>
+    <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#080808", minHeight: "100vh", minWidth: "100vw", maxWidth: 430, margin: "0 auto", color: "#fff", position: "relative", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
