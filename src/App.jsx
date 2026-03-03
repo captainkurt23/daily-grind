@@ -56,37 +56,34 @@ const BRO_EXERCISE_BANK = {
     { name: "EZ Bar Curl",        sets: "4", reps: "6-8",   note: "", intensity: 7 },
     { name: "Seated EZ Bar Curl", sets: "4", reps: "6-8",   note: "", intensity: 7 },
   ],
-  "Legs (Compound)": [
-    { name: "Calf Raises",           sets: "4", reps: "10",    note: "", intensity: 3 },
-    { name: "Step Ups",              sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Hack Squat",            sets: "4", reps: "6-8",   note: "", intensity: 8 },
-    { name: "Pendulum Squat",        sets: "4", reps: "6-8",   note: "", intensity: 9 },
-    { name: "RDL",                   sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Box Squat",             sets: "4", reps: "6-8",   note: "", intensity: 8 },
-    { name: "Barbell Squat",         sets: "4", reps: "6-8",   note: "", intensity: 9 },
-    { name: "Bulgarian Split Squat", sets: "4", reps: "8-10",  note: "", intensity: 7 },
-    { name: "Elevated Lunges",       sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Walking Lunges",        sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Static Lunges",         sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Leg Press",             sets: "4", reps: "6-8",   note: "", intensity: 7 },
-  ],
-  "Legs (Isolated)": [
-    { name: "Leg Extension",   sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Seated Leg Curl", sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Lying Leg Curl",  sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Single Leg Curl", sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Calf Raises",     sets: "4", reps: "10",    note: "", intensity: 3 },
-    { name: "Adductor",        sets: "4", reps: "10",    note: "", intensity: 3 },
-    { name: "Abductor",        sets: "4", reps: "10",    note: "", intensity: 3 },
+  Legs: [
+    { name: "Barbell Squat",         sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true  },
+    { name: "Pendulum Squat",        sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true  },
+    { name: "Hack Squat",            sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true  },
+    { name: "Box Squat",             sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true  },
+    { name: "Leg Press",             sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true  },
+    { name: "RDL",                   sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true  },
+    { name: "Bulgarian Split Squat", sets: "4", reps: "8-10", note: "", intensity: 7, compound: true  },
+    { name: "Elevated Lunges",       sets: "4", reps: "8-10", note: "", intensity: 6, compound: true  },
+    { name: "Walking Lunges",        sets: "4", reps: "8-10", note: "", intensity: 6, compound: true  },
+    { name: "Step Ups",              sets: "4", reps: "8-10", note: "", intensity: 5, compound: true  },
+    { name: "Static Lunges",         sets: "4", reps: "8-10", note: "", intensity: 5, compound: true  },
+    { name: "Seated Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 5, compound: false },
+    { name: "Lying Leg Curl",        sets: "4", reps: "8-10", note: "", intensity: 5, compound: false },
+    { name: "Leg Extension",         sets: "4", reps: "8-10", note: "", intensity: 4, compound: false },
+    { name: "Single Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 4, compound: false },
+    { name: "Adductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false },
+    { name: "Abductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false },
+    { name: "Calf Raises",           sets: "4", reps: "10",   note: "", intensity: 3, compound: false },
   ],
 };
 
 const BRO_SPLITS = [
-  { id: "chest-tri",      label: "Chest / Triceps",  img: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=120&h=120&fit=crop", groups: ["Chest","Triceps"],                                    color: "#FF3D00", fullBody: false },
-  { id: "legs",           label: "Legs",             img: "https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=120&h=120&fit=crop", groups: ["Legs (Compound)"],                                    color: "#FFB300", fullBody: false },
-  { id: "back-bi",        label: "Back / Biceps",    img: "https://images.unsplash.com/photo-1597347343908-2937e7dcc560?w=120&h=120&fit=crop", groups: ["Back","Biceps"],                                      color: "#00E5FF", fullBody: false },
-  { id: "shoulders-legs", label: "Shoulders / Legs", img: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=120&h=120&fit=crop", groups: ["Shoulders","Legs (Isolated)"],                        color: "#D500F9", fullBody: false },
-  { id: "full-body",      label: "Full Body",        img: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=120&h=120&fit=crop", groups: ["Chest","Back","Legs (Compound)","Shoulders"],          color: "#76FF03", fullBody: true  },
+  { id: "chest-tri",      label: "Chest / Triceps",  sub: "PUSH DAY . CLASSIC",            groups: ["Chest","Triceps"],                color: "#FF3D00", fullBody: false, legsMode: null       },
+  { id: "legs",           label: "Legs",             sub: "LEG DAY . NO MERCY",            groups: ["Legs"],                           color: "#FFB300", fullBody: false, legsMode: "compound" },
+  { id: "back-bi",        label: "Back / Biceps",    sub: "PULL DAY . POWER",              groups: ["Back","Biceps"],                  color: "#00E5FF", fullBody: false, legsMode: null       },
+  { id: "shoulders-legs", label: "Shoulders / Legs", sub: "PRESS . ACCESSORY WORK",        groups: ["Shoulders","Legs"],               color: "#D500F9", fullBody: false, legsMode: "isolated" },
+  { id: "full-body",      label: "Full Body",        sub: "COMPOUND-FOCUSED . ALL MUSCLE", groups: ["Chest","Back","Legs","Shoulders"], color: "#76FF03", fullBody: true,  legsMode: "compound" },
 ];
 
 const WIFEY_COLOR = "#FF6B9D";
@@ -145,11 +142,9 @@ const WIFEY_CABLE_BANK = {
     { name: "Cable Straight Arm Pulldown",   sets: "3", reps: "12-15", note: "", intensity: 4 },
     { name: "Cable Fly Low to High",         sets: "3", reps: "12-15", note: "", intensity: 5 },
     { name: "Cable Fly High to Low",         sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Chest Press",             sets: "3", reps: "12-15", note: "", intensity: 6 },
     { name: "Cable Lateral Raise",           sets: "3", reps: "12-15", note: "", intensity: 4 },
     { name: "Cable Front Raise",             sets: "3", reps: "12-15", note: "", intensity: 4 },
     { name: "Cable Rear Delt Fly",           sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Overhead Press",          sets: "3", reps: "12-15", note: "", intensity: 6 },
     { name: "Cable Upright Row",             sets: "3", reps: "12-15", note: "", intensity: 5 },
     { name: "Cable Shrug",                   sets: "3", reps: "12-15", note: "", intensity: 3 },
   ],
@@ -169,21 +164,13 @@ const WIFEY_CABLE_BANK = {
     { name: "Cable Glute Kickback",   sets: "3", reps: "12-15", note: "", intensity: 5 },
     { name: "Cable Hip Abduction",    sets: "3", reps: "15",    note: "", intensity: 3 },
     { name: "Cable Hip Adduction",    sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Cable Pull Through",     sets: "3", reps: "12-15", note: "", intensity: 5 },
     { name: "Cable Leg Curl",         sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Calf Raise",       sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Cable Lateral Lunge",    sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Step Through Lunge",sets:"3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Sumo Squat",       sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Good Morning",     sets: "3", reps: "12-15", note: "", intensity: 5 },
   ],
   Core: [
-    { name: "Cable Crunch",             sets: "3", reps: "12-15", note: "", intensity: 4 },
     { name: "Cable Woodchop High-Low",  sets: "3", reps: "12-15", note: "", intensity: 5 },
     { name: "Cable Woodchop Low-High",  sets: "3", reps: "12-15", note: "", intensity: 5 },
     { name: "Cable Pallof Press",       sets: "3", reps: "12-15", note: "", intensity: 4 },
     { name: "Cable Oblique Twist",      sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Seated Crunch",      sets: "3", reps: "12-15", note: "", intensity: 4 },
     { name: "Cable Kneeling Crunch",    sets: "3", reps: "12-15", note: "", intensity: 4 },
   ],
 };
@@ -246,21 +233,54 @@ function generateBroWorkout(split, total) {
   const minPer = split.fullBody ? 1 : MIN_PER_GROUP;
   const counts = distributeExercises(BRO_EXERCISE_BANK, split.groups, total, minPer);
   const sections = split.groups.map(group => {
-    let pool = split.fullBody
-      ? [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name))), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name)))]
-      : shuffle(BRO_EXERCISE_BANK[group]);
+    let pool;
+    if (group === "Legs" && split.legsMode === "compound") {
+      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound));
+      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound));
+      const cCount = Math.ceil(counts[group] * 0.7);
+      const iCount = counts[group] - cCount;
+      pool = [...compound.slice(0, cCount), ...isolated.slice(0, iCount)];
+    } else if (group === "Legs" && split.legsMode === "isolated") {
+      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound));
+      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound));
+      const iCount = Math.ceil(counts[group] * 0.65);
+      const cCount = counts[group] - iCount;
+      pool = [...isolated.slice(0, iCount), ...compound.slice(0, cCount)];
+    } else if (split.fullBody && group === "Legs") {
+      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound))];
+    } else if (split.fullBody) {
+      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name))), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name)))];
+    } else {
+      pool = shuffle(BRO_EXERCISE_BANK[group]);
+    }
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
-    const displayGroup = group.startsWith("Legs") ? "Leg" : group;
-    return { group, displayGroup, exercises: ordered };
+    return { group, displayGroup: group, exercises: ordered };
   });
   return { sections, startTime: Date.now() };
 }
 
-function generateWifeyWorkout(bank, total) {
+function getUsedExercisesLast2Weeks(history, workoutType) {
+  const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const used = new Set();
+  history.forEach(h => {
+    if (h.type === "workout" && h.date >= cutoff) {
+      const isMatch = workoutType === "cables"
+        ? h.split === "All Cables"
+        : h.split === "Full Body";
+      if (isMatch && h.exercises) h.exercises.forEach(name => used.add(name));
+    }
+  });
+  return used;
+}
+
+function generateWifeyWorkout(bank, total, history, workoutType) {
+  const usedRecently = getUsedExercisesLast2Weeks(history || [], workoutType);
   const groups = Object.keys(bank);
   const counts = distributeExercises(bank, groups, total, 1);
   const sections = groups.map(group => {
-    const pool = shuffle(bank[group]);
+    const fresh = shuffle(bank[group].filter(e => !usedRecently.has(e.name)));
+    const stale = shuffle(bank[group].filter(e => usedRecently.has(e.name)));
+    const pool = [...fresh, ...stale];
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
   });
@@ -607,6 +627,210 @@ function HistoryScreen({ history, profileColor, onBack, onClear }) {
   );
 }
 
+
+// ── STATS SCREEN ─────────────────────────────────────────────────────────────
+function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileName, onBack }) {
+  const [weightInput, setWeightInput] = useState("");
+  const [showInput, setShowInput] = useState(false);
+
+  // ── Streak calculation ────────────────────────────────────────────────────
+  function calcStreak(hist) {
+    if (!hist.length) return { current: 0, best: 0 };
+    // Build set of unique day strings that have activity
+    const activeDays = new Set(
+      hist.map(h => new Date(h.date).toISOString().slice(0, 10))
+    );
+    const sorted = Array.from(activeDays).sort();
+
+    // Current streak: count consecutive days going backwards from today
+    let current = 0;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    let check = new Date(today);
+    // Allow today OR yesterday to keep streak alive
+    const todayStr = today.toISOString().slice(0,10);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+    const yesterdayStr = yesterday.toISOString().slice(0,10);
+    if (!activeDays.has(todayStr) && !activeDays.has(yesterdayStr)) {
+      current = 0;
+    } else {
+      if (activeDays.has(todayStr)) check = new Date(today);
+      else check = new Date(yesterday);
+      while (true) {
+        const key = check.toISOString().slice(0,10);
+        if (activeDays.has(key)) { current++; check.setDate(check.getDate()-1); }
+        else break;
+      }
+    }
+
+    // Best streak: scan all sorted days
+    let best = 0; let run = 1;
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = new Date(sorted[i-1]); prev.setDate(prev.getDate()+1);
+      if (prev.toISOString().slice(0,10) === sorted[i]) { run++; }
+      else { run = 1; }
+      if (run > best) best = run;
+    }
+    if (sorted.length === 1) best = 1;
+    if (current > best) best = current;
+    return { current, best };
+  }
+
+  function calcWeeklyCount(hist) {
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const days = new Set(hist.filter(h => h.date >= cutoff).map(h => new Date(h.date).toISOString().slice(0,10)));
+    return days.size;
+  }
+
+  function saveWeight() {
+    if (!weightInput) return;
+    const entry = { weight: parseFloat(weightInput), date: Date.now() };
+    const updated = [entry, ...(weightLog || [])].slice(0, 60);
+    onSaveWeight(updated);
+    setWeightInput("");
+    setShowInput(false);
+  }
+
+  const { current: streak, best: bestStreak } = calcStreak(history);
+  const thisWeek = calcWeeklyCount(history);
+  const latestWeight = weightLog && weightLog.length ? weightLog[0] : null;
+  const oldestWeight = weightLog && weightLog.length > 1 ? weightLog[weightLog.length-1] : null;
+  const weightChange = latestWeight && oldestWeight ? (latestWeight.weight - oldestWeight.weight).toFixed(1) : null;
+
+  // Chart: last 10 weight entries reversed so oldest left
+  const chartData = weightLog ? [...weightLog].reverse().slice(-10) : [];
+  const chartMin = chartData.length ? Math.min(...chartData.map(e => e.weight)) - 3 : 0;
+  const chartMax = chartData.length ? Math.max(...chartData.map(e => e.weight)) + 3 : 100;
+  const chartH = 120; const chartW = 280;
+
+  function toX(i) { return chartData.length < 2 ? chartW/2 : (i / (chartData.length-1)) * chartW; }
+  function toY(w) { return chartH - ((w - chartMin) / (chartMax - chartMin)) * chartH; }
+
+  const polyline = chartData.map((e,i) => `${toX(i)},${toY(e.weight)}`).join(" ");
+
+  return (
+    <div className="sc" style={{ padding:"56px 20px 40px" }}>
+      <button className="bk" onClick={onBack}>BACK</button>
+      <div style={{ marginTop:28, marginBottom:32 }}>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>
+          STATS<br/><span style={{ color:profileColor }}>{profileName.toUpperCase()}</span>
+        </div>
+      </div>
+
+      {/* Streak block */}
+      <div style={{ marginBottom:12 }}>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>TRAINING STREAK</div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
+          {[
+            { label:"CURRENT", value: streak, unit: streak === 1 ? "DAY" : "DAYS", highlight: true },
+            { label:"BEST",    value: bestStreak, unit: bestStreak === 1 ? "DAY" : "DAYS", highlight: false },
+            { label:"THIS WEEK", value: thisWeek, unit: thisWeek === 1 ? "SESSION" : "SESSIONS", highlight: false },
+          ].map(({ label, value, unit, highlight }) => (
+            <div key={label} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${highlight && streak > 0 ? profileColor : "#1a1a1a"}`, padding:"16px 14px" }}>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700, marginBottom:6 }}>{label}</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:36, fontWeight:900, lineHeight:1, color: highlight && streak > 0 ? profileColor : "#fff" }}>{value}</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700, marginTop:3 }}>{unit}</div>
+            </div>
+          ))}
+        </div>
+        {streak > 0 && (
+          <div style={{ marginTop:8, background: profileColor+"12", border:`1px solid ${profileColor}30`, borderRadius:4, padding:"10px 14px", fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:700, color:profileColor, letterSpacing:1 }}>
+            {streak >= 7 ? "BEAST MODE. KEEP IT GOING." : streak >= 3 ? "LOCKED IN. DON'T BREAK IT." : "GOOD START. BUILD THE HABIT."}
+          </div>
+        )}
+      </div>
+
+      {/* Body weight block */}
+      <div style={{ marginTop:28 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700 }}>BODY WEIGHT</div>
+          <button onClick={() => setShowInput(s => !s)} style={{ background:"none", border:`1px solid ${profileColor}40`, borderRadius:4, color:profileColor, fontSize:11, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"6px 12px", cursor:"pointer" }}>
+            {showInput ? "CANCEL" : "+ LOG WEIGHT"}
+          </button>
+        </div>
+
+        {showInput && (
+          <div style={{ display:"flex", gap:10, marginBottom:14 }}>
+            <input className="minput" type="number" placeholder="e.g. 185" value={weightInput}
+              onChange={e => setWeightInput(e.target.value)}
+              style={{ flex:1, borderColor: weightInput ? profileColor : "#2a2a2a" }} />
+            <button className="mbtn" onClick={saveWeight}
+              style={{ background: weightInput ? profileColor : "#161616", color: weightInput ? "#000" : "#333", width:"auto", padding:"0 20px", fontSize:16 }}>
+              SAVE
+            </button>
+          </div>
+        )}
+
+        {latestWeight ? (
+          <>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+              <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${profileColor}`, padding:"16px 14px" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700, marginBottom:6 }}>CURRENT</div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:36, fontWeight:900, lineHeight:1, color:profileColor }}>{latestWeight.weight}<span style={{ fontSize:16, color:"#444", marginLeft:4 }}>LBS</span></div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1, color:"#333", fontWeight:700, marginTop:4 }}>{formatDate(latestWeight.date).toUpperCase()}</div>
+              </div>
+              {weightChange !== null && (
+                <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${parseFloat(weightChange) <= 0 ? "#76FF03" : "#FF3D00"}`, padding:"16px 14px" }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700, marginBottom:6 }}>CHANGE</div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:36, fontWeight:900, lineHeight:1, color: parseFloat(weightChange) <= 0 ? "#76FF03" : "#FF3D00" }}>
+                    {parseFloat(weightChange) > 0 ? "+" : ""}{weightChange}<span style={{ fontSize:16, color:"#444", marginLeft:4 }}>LBS</span>
+                  </div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1, color:"#333", fontWeight:700, marginTop:4 }}>SINCE START</div>
+                </div>
+              )}
+            </div>
+
+            {chartData.length >= 2 && (
+              <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", padding:"18px 16px", borderRadius:4, overflowX:"auto" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700, marginBottom:14 }}>TREND</div>
+                <svg width="100%" viewBox={`-10 -10 ${chartW+20} ${chartH+20}`} style={{ overflow:"visible" }}>
+                  {/* Grid lines */}
+                  {[0,0.25,0.5,0.75,1].map(t => (
+                    <line key={t} x1={0} y1={chartH*t} x2={chartW} y2={chartH*t} stroke="#1a1a1a" strokeWidth="1" />
+                  ))}
+                  {/* Area fill */}
+                  <polygon
+                    points={`0,${chartH} ${polyline} ${chartW},${chartH}`}
+                    fill={profileColor} fillOpacity="0.06" />
+                  {/* Line */}
+                  <polyline points={polyline} fill="none" stroke={profileColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Dots */}
+                  {chartData.map((e,i) => (
+                    <circle key={i} cx={toX(i)} cy={toY(e.weight)} r="3.5" fill={profileColor} />
+                  ))}
+                  {/* First and last labels */}
+                  {chartData.length > 0 && (
+                    <>
+                      <text x={toX(0)} y={toY(chartData[0].weight)-10} textAnchor="middle" fill="#555" fontSize="9" fontFamily="Barlow Condensed">{chartData[0].weight}</text>
+                      <text x={toX(chartData.length-1)} y={toY(chartData[chartData.length-1].weight)-10} textAnchor="middle" fill={profileColor} fontSize="9" fontFamily="Barlow Condensed">{chartData[chartData.length-1].weight}</text>
+                    </>
+                  )}
+                </svg>
+              </div>
+            )}
+
+            <div style={{ marginTop:10, background:"#0f0f0f", border:"1px solid #1a1a1a", borderRadius:4, maxHeight:180, overflowY:"auto" }}>
+              <div style={{ padding:"12px 14px", borderBottom:"1px solid #1a1a1a" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700 }}>LOG</div>
+              </div>
+              {weightLog.slice(0,10).map((e,i) => (
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderBottom: i<Math.min(weightLog.length,10)-1?"1px solid #141414":"none" }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800 }}>{e.weight} <span style={{ color:"#333", fontSize:12 }}>LBS</span></div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600 }}>{formatDate(e.date).toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign:"center", padding:"40px 0", color:"#222", fontFamily:"'Barlow Condensed'", fontSize:14, letterSpacing:2, fontWeight:700 }}>
+            NO WEIGHT LOGGED YET
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
@@ -620,6 +844,8 @@ export default function App() {
   const [wifeyWorkout, setWifeyWorkout] = useState({ sections:[], startTime:null });
   const [wifeyPrs, setWifeyPrs] = useState({});
   const [wifeyHistory, setWifeyHistory] = useState([]);
+  const [broWeightLog, setBroWeightLog] = useState([]);
+  const [wifeyWeightLog, setWifeyWeightLog] = useState([]);
   const [cardioType, setCardioType] = useState(null);
   const [cardioDuration, setCardioDuration] = useState("");
   const [cardioLogged, setCardioLogged] = useState(false);
@@ -629,6 +855,8 @@ export default function App() {
     const bh = loadStorage("dg-history"); if (bh) setBroHistory(bh);
     const wp = loadStorage("wy-prs"); if (wp) setWifeyPrs(wp);
     const wh = loadStorage("wy-history"); if (wh) setWifeyHistory(wh);
+    const bwl = loadStorage("dg-weightlog"); if (bwl) setBroWeightLog(bwl);
+    const wwl = loadStorage("wy-weightlog"); if (wwl) setWifeyWeightLog(wwl);
   }, []);
 
   const broMin = broSplit ? (broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
@@ -654,6 +882,9 @@ export default function App() {
     const n = [entry, ...wifeyHistory].slice(0, 60);
     setWifeyHistory(n); saveStorage("wy-history", n);
   }
+  function saveBroWeight(log) { setBroWeightLog(log); saveStorage("dg-weightlog", log); }
+  function saveWifeyWeight(log) { setWifeyWeightLog(log); saveStorage("wy-weightlog", log); }
+
   function logCardio() {
     if (!cardioType || !cardioDuration) return;
     const entry = { type:"cardio", cardioType:cardioType.label, durationMins:cardioDuration, date:Date.now(), color:"#888" };
@@ -693,28 +924,21 @@ export default function App() {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:40 }}>
           <div>
             <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE BRO<br/><span style={{ color:"#FF3D00" }}>SPLIT</span></div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE BRO<br/><span style={{ color:"#FF3D00" }}>SPLIT</span></div>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>SELECT YOUR SPLIT</div>
           </div>
-          <button onClick={() => setScreen("bro-history")} style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:4, padding:"8px 14px", color:"#444", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, marginTop:32 }}>HISTORY</button>
+          <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:32 }}>
+            <button onClick={() => setScreen("bro-history")} style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:4, padding:"8px 14px", color:"#444", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>HISTORY</button>
+            <button onClick={() => setScreen("bro-stats")} style={{ background:"#111", border:"1px solid #FF3D0040", borderRadius:4, padding:"8px 14px", color:"#FF3D00", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>STATS</button>
+          </div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {BRO_SPLITS.map((s, idx) => (
             <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setScreen("bro-configure"); }}
-              style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${s.color}`, padding:"20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
+              style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${s.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${s.color}08, transparent)` }} />
-              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-                <div style={{ width:56, height:56, borderRadius:4, overflow:"hidden", flexShrink:0, border:`1px solid ${s.color}30`, background:s.color+"15" }}>
-                  <img src={s.img} alt={s.label} onError={e => { e.target.style.display="none"; }} style={{ width:"100%", height:"100%", objectFit:"cover", filter:"brightness(0.8) contrast(1.1)" }} />
-                </div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, letterSpacing:1, lineHeight:1 }}>{s.label.toUpperCase()}</div>
-                  <div style={{ display:"flex", gap:6, marginTop:6, flexWrap:"wrap" }}>
-                    {s.groups.map(g => <span key={g} style={{ fontFamily:"'Barlow Condensed'", fontWeight:700, fontSize:10, letterSpacing:2, color:s.color, background:s.color+"12", padding:"2px 8px", borderRadius:2 }}>{g.replace(" (Compound)","").replace(" (Isolated)","")}</span>)}
-                  </div>
-                </div>
-                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, color:"#222", fontWeight:900 }}>></div>
-              </div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:s.color, marginTop:6, fontWeight:700 }}>{s.sub}</div>
             </div>
           ))}
         </div>
@@ -731,9 +955,7 @@ export default function App() {
           <button className="bk" onClick={() => setScreen("bro-home")}>BACK</button>
           <div style={{ marginTop:28, marginBottom:36 }}>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700, marginBottom:4 }}>TODAY'S SPLIT</div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>
-              {broSplit.label.split("/").map((p,i) => <div key={i} style={{ color:i===0?"#fff":color }}>{p.trim().toUpperCase()}</div>)}
-            </div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{broSplit.label.toUpperCase()}</div>
           </div>
           <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${color}`, padding:"28px 24px", marginBottom:28 }}>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>TOTAL EXERCISES</div>
@@ -769,6 +991,15 @@ export default function App() {
     </Wrap>
   );
 
+  // ── BRO STATS ─────────────────────────────────────────────────────────────
+  if (screen === "bro-stats") return (
+    <Wrap>
+      <StatsScreen history={broHistory} weightLog={broWeightLog} onSaveWeight={saveBroWeight}
+        profileColor="#FF3D00" profileName="The Bro" onBack={() => setScreen("bro-home")} />
+    </Wrap>
+  );
+
+
   // ── WIFEY HOME ────────────────────────────────────────────────────────────
   if (screen === "wifey-home") return (
     <Wrap>
@@ -779,7 +1010,10 @@ export default function App() {
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE WIFEY<br/><span style={{ color:WIFEY_COLOR }}>WORKOUT</span></div>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>WHAT'S THE PLAN TODAY?</div>
           </div>
-          <button onClick={() => setScreen("wifey-history")} style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:4, padding:"8px 14px", color:"#444", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, marginTop:32 }}>HISTORY</button>
+          <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:32 }}>
+            <button onClick={() => setScreen("wifey-history")} style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:4, padding:"8px 14px", color:"#444", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>HISTORY</button>
+            <button onClick={() => setScreen("wifey-stats")} style={{ background:"#111", border:"1px solid #FF6B9D40", borderRadius:4, padding:"8px 14px", color:"#FF6B9D", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>STATS</button>
+          </div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {[
@@ -823,7 +1057,7 @@ export default function App() {
             <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
           </div>
         </div>
-        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal)); setScreen("wifey-workout"); }}>GENERATE WORKOUT</button>
+        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode)); setScreen("wifey-workout"); }}>GENERATE WORKOUT</button>
       </div>
     </Wrap>
   );
@@ -834,7 +1068,7 @@ export default function App() {
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
         splitLabel={wifeyMode==="cables"?"All Cables":"Full Body"} color={wColor} bank={wifeyBank}
         onBack={() => setScreen("wifey-home")}
-        onRegenerate={() => setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal))}
+        onRegenerate={() => setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode))}
         prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} />
     </Wrap>
   );
@@ -845,6 +1079,15 @@ export default function App() {
       <HistoryScreen history={wifeyHistory} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }} />
     </Wrap>
   );
+
+  // ── WIFEY STATS ───────────────────────────────────────────────────────────
+  if (screen === "wifey-stats") return (
+    <Wrap>
+      <StatsScreen history={wifeyHistory} weightLog={wifeyWeightLog} onSaveWeight={saveWifeyWeight}
+        profileColor={WIFEY_COLOR} profileName="The Wifey" onBack={() => setScreen("wifey-home")} />
+    </Wrap>
+  );
+
 
   // ── CARDIO ────────────────────────────────────────────────────────────────
   if (screen === "cardio") return (
