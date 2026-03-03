@@ -361,7 +361,7 @@ function Wrap({ children, extraCss }) {
 }
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout })) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout }) {
   const [checked, setChecked] = useState({});
   const [expanded, setExpanded] = useState({});
   const [justChecked, setJustChecked] = useState(null);
