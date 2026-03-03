@@ -583,8 +583,12 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear }
       <button className="bk" onClick={onBack}>BACK</button>
       <div style={{ marginTop:28, marginBottom:32 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{showSaved ? <>SAVED<br/><span style={{ color:profileColor }}>WORKOUTS</span></> : <>WORKOUT<br/><span style={{ color:profileColor }}>HISTORY</span></>}</div>
-          <button onClick={() => setShowSaved(s => !s)} style={{ background:showSaved ? profileColor+"20" : "#111", border:"1px solid "+(showSaved ? profileColor+"60" : "#1e1e1e"), borderRadius:4, padding:"8px 12px", color:showSaved ? profileColor : "#444", fontSize:16, cursor:"pointer", marginBottom:8 }}>{showSaved ? "SAVED" : "SAVED"}</button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>
+            {showSaved ? <>SAVED<br/><span style={{ color:profileColor }}>WORKOUTS</span></> : <>WORKOUT<br/><span style={{ color:profileColor }}>HISTORY</span></>}
+          </div>
+          <button onClick={() => setShowSaved(s => !s)} style={{ background:showSaved ? profileColor+"20" : "#111", border:"1px solid "+(showSaved ? profileColor+"60" : "#1e1e1e"), borderRadius:4, padding:"8px 12px", color:showSaved ? profileColor : "#444", fontSize:13, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, cursor:"pointer", marginBottom:8 }}>
+            {showSaved ? "SAVED" : "SAVED"}
+          </button>
         </div>
       </div>
       {showSaved ? (
@@ -595,60 +599,58 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear }
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:900, letterSpacing:1 }}>{w.split?.toUpperCase()}</div>
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600, marginTop:2 }}>{formatDate(w.date).toUpperCase()} . {w.total} EXERCISES</div>
               </div>
-              <div style={{ color:"#FFB300", fontSize:18 }}>SAVED</div>
+              <div style={{ color:"#FFB300", fontSize:16, fontFamily:"'Barlow Condensed'", fontWeight:800, letterSpacing:1 }}>SAVED</div>
             </div>
-            {(w.exerciseDetails || (w.exercises||[]).map(name => ({name,sets:"",reps:""}))).map((ex, i) => (
+            {(w.exerciseDetails || (w.exercises||[]).map(name => ({name, sets:"", reps:""}))).map((ex, i) => (
               <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom: i<(w.exerciseDetails||w.exercises||[]).length-1 ? "1px solid #1a1a1a" : "none" }}>
-                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#888" }}>{(typeof ex==="string"?ex:ex.name).toUpperCase()}</div>
-                {typeof ex!=="string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#888" }}>{(typeof ex==="string" ? ex : ex.name).toUpperCase()}</div>
+                {typeof ex !== "string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
               </div>
             ))}
           </div>
         )) : <div style={{ textAlign:"center", color:"#222", padding:"60px 0", fontFamily:"'Barlow Condensed'", fontSize:14, letterSpacing:2, fontWeight:700 }}>NO SAVED WORKOUTS YET</div>
       ) : (
         weekKeys.length === 0
-        ? <div style={{ textAlign:"center", color:"#222", padding:"60px 0", fontFamily:"'Barlow Condensed'", fontSize:16, letterSpacing:2, fontWeight:700 }}>NO WORKOUTS YET</div>
-        : weekKeys.map(wk => {
-          const entries = weeks[wk];
-          const workouts = entries.filter(e => e.type !== "cardio");
-          const cardios = entries.filter(e => e.type === "cardio");
-          return (
-            <div key={wk} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderRadius:4, marginBottom:12, overflow:"hidden" }}>
-              <div style={{ padding:"14px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <div>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:800, letterSpacing:1 }}>{formatWeekLabel(wk)}</div>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, marginTop:3, fontWeight:700 }}>
-                    {workouts.length > 0 && `${workouts.length} WORKOUT${workouts.length>1?"S":""}`}
-                    {workouts.length > 0 && cardios.length > 0 && "  /  "}
-                    {cardios.length > 0 && `${cardios.length} CARDIO`}
-                  </div>
-                </div>
-                <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"flex-end", maxWidth:120 }}>
-                  {entries.map((e, i) => <div key={i} style={{ width:8, height:8, borderRadius:"50%", background:e.type==="cardio"?"#555":e.color }} />)}
-                </div>
-              </div>
-              <div style={{ borderTop:"1px solid #1a1a1a" }}>
-                {entries.map((h, i) => (
-                  <div key={i} className="wkrow" style={{ padding:"11px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, letterSpacing:0.5 }}>{h.type==="cardio" ? h.cardioType?.toUpperCase() : h.split?.toUpperCase()}</div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, marginTop:2, fontWeight:600 }}>
-                        {formatDate(h.date).toUpperCase()}
-                        {h.duration ? ` . ${formatDuration(h.duration)}` : ""}
-                        {h.durationMins ? ` . ${h.durationMins} MIN` : ""}
-                      </div>
+          ? <div style={{ textAlign:"center", color:"#222", padding:"60px 0", fontFamily:"'Barlow Condensed'", fontSize:16, letterSpacing:2, fontWeight:700 }}>NO WORKOUTS YET</div>
+          : weekKeys.map(wk => {
+            const entries = weeks[wk];
+            const workouts = entries.filter(e => e.type !== "cardio");
+            const cardios = entries.filter(e => e.type === "cardio");
+            return (
+              <div key={wk} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderRadius:4, marginBottom:12, overflow:"hidden" }}>
+                <div style={{ padding:"14px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <div>
+                    <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:800, letterSpacing:1 }}>{formatWeekLabel(wk)}</div>
+                    <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, marginTop:3, fontWeight:700 }}>
+                      {workouts.length > 0 && workouts.length+" WORKOUT"+(workouts.length>1?"S":"")}
+                      {workouts.length > 0 && cardios.length > 0 && "  /  "}
+                      {cardios.length > 0 && cardios.length+" CARDIO"}
                     </div>
-                    <div style={{ width:3, height:30, background:h.type==="cardio"?"#444":h.color, borderRadius:2, flexShrink:0 }} />
                   </div>
-                ))}
+                  <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"flex-end", maxWidth:120 }}>
+                    {entries.map((e, i) => <div key={i} style={{ width:8, height:8, borderRadius:"50%", background:e.type==="cardio"?"#555":e.color }} />)}
+                  </div>
+                </div>
+                <div style={{ borderTop:"1px solid #1a1a1a" }}>
+                  {entries.map((h, i) => (
+                    <div key={i} className="wkrow" style={{ padding:"11px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <div>
+                        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, letterSpacing:0.5 }}>{h.type==="cardio" ? h.cardioType?.toUpperCase() : h.split?.toUpperCase()}</div>
+                        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, marginTop:2, fontWeight:600 }}>
+                          {formatDate(h.date).toUpperCase()}
+                          {h.duration ? ` . ${formatDuration(h.duration)}` : ""}
+                          {h.durationMins ? ` . ${h.durationMins} MIN` : ""}
+                        </div>
+                      </div>
+                      <div style={{ width:3, height:30, background:h.type==="cardio"?"#444":h.color, borderRadius:2, flexShrink:0 }} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })
-        })
+            );
+          })
       )}
-      )}
-      {history.length > 0 && (
+      {!showSaved && history.length > 0 && (
         <button onClick={onClear} style={{ marginTop:16, background:"none", border:"1px solid #1e1e1e", borderRadius:4, color:"#2a2a2a", fontSize:12, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"12px 20px", cursor:"pointer", width:"100%" }}>
           CLEAR HISTORY
         </button>
@@ -656,7 +658,6 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear }
     </div>
   );
 }
-
 
 // ── STATS SCREEN ─────────────────────────────────────────────────────────────
 function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileName, onBack }) {
