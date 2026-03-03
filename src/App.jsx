@@ -361,7 +361,7 @@ function Wrap({ children, extraCss }) {
 }
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout })) {
   const [checked, setChecked] = useState({});
   const [expanded, setExpanded] = useState({});
   const [justChecked, setJustChecked] = useState(null);
@@ -372,6 +372,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const [prReps, setPrReps] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
   const timerRef = useRef(null);
   const completedRef = useRef(false);
 
@@ -491,6 +492,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
             </div>
             <button className="mbtn" style={{ background:summaryData.color, color:"#000", marginBottom:10 }} onClick={() => { setShowSummary(false); onBack(); }}>BACK TO HOME</button>
             <button className="mbtn" style={{ background:"transparent", color:"#333", border:"1px solid #1e1e1e" }} onClick={() => setShowSummary(false)}>KEEP VIEWING</button>
+            <button className="mbtn" onClick={() => { onSaveWorkout(summaryData); setIsSaved(true); }} style={{ background:"transparent", color: isSaved ? "#FFB300" : "#2a2a2a", border: isSaved ? "1px solid #FFB30040" : "1px solid #1e1e1e", marginTop:8 }}>{isSaved ? "SAVED" : "SAVE WORKOUT"}</button>
           </div>
         </div>
       )}
@@ -560,7 +562,10 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
         })()}
 
         <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:430, padding:"16px 20px 28px", background:"linear-gradient(transparent, #080808 45%)" }}>
-          <button className="mbtn" style={{ background:"#111", color:"#333", border:"1px solid #1a1a1a" }} onClick={onRegenerate}>REGENERATE</button>
+          <div style={{ display:"flex", gap:8 }}>
+            <button className="mbtn" style={{ background:"#111", color:"#333", border:"1px solid #1a1a1a", flex:3 }} onClick={onRegenerate}>REGENERATE</button>
+            <button className="mbtn" onClick={() => { const d = { split:splitLabel, color, date:Date.now(), exercises:workout.sections.flatMap(s=>s.exercises.map(e=>e.name)), exerciseDetails:workout.sections.flatMap(s=>s.exercises.map(e=>({name:e.name,sets:e.sets,reps:e.reps}))), total:workout.sections.flatMap(s=>s.exercises).length, type:"saved" }; onSaveWorkout(d); setIsSaved(true); }} style={{ background:isSaved ? "#FFB30015" : "#111", color:isSaved ? "#FFB300" : "#444", border:isSaved ? "1px solid #FFB30040" : "1px solid #1a1a1a", flex:1, fontSize:20, padding:0 }}>{isSaved ? "★" : "☆"}</button>
+          </div>
         </div>
       </div>
     </>
@@ -568,7 +573,8 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 }
 
 // ── HISTORY SCREEN ────────────────────────────────────────────────────────
-function HistoryScreen({ history, profileColor, onBack, onClear }) {
+function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear }) {
+  const [showSaved, setShowSaved] = useState(false);
   const weeks = {};
   history.forEach(h => { const wk = getWeekKey(h.date); if (!weeks[wk]) weeks[wk] = []; weeks[wk].push(h); });
   const weekKeys = Object.keys(weeks).sort((a, b) => b.localeCompare(a));
@@ -576,9 +582,31 @@ function HistoryScreen({ history, profileColor, onBack, onClear }) {
     <div className="sc" style={{ padding:"56px 20px 40px" }}>
       <button className="bk" onClick={onBack}>BACK</button>
       <div style={{ marginTop:28, marginBottom:32 }}>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>WORKOUT<br/><span style={{ color:profileColor }}>HISTORY</span></div>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{showSaved ? <>SAVED<br/><span style={{ color:profileColor }}>WORKOUTS</span></> : <>WORKOUT<br/><span style={{ color:profileColor }}>HISTORY</span></>}</div>
+          <button onClick={() => setShowSaved(s => !s)} style={{ background:showSaved ? profileColor+"20" : "#111", border:"1px solid "+(showSaved ? profileColor+"60" : "#1e1e1e"), borderRadius:4, padding:"8px 12px", color:showSaved ? profileColor : "#444", fontSize:16, cursor:"pointer", marginBottom:8 }}>{showSaved ? "SAVED" : "SAVED"}</button>
+        </div>
       </div>
-      {weekKeys.length === 0
+      {showSaved ? (
+        savedWorkouts && savedWorkouts.length > 0 ? savedWorkouts.map((w, idx) => (
+          <div key={idx} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:"3px solid "+w.color, borderRadius:4, marginBottom:10, padding:"16px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+              <div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:900, letterSpacing:1 }}>{w.split?.toUpperCase()}</div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600, marginTop:2 }}>{formatDate(w.date).toUpperCase()} . {w.total} EXERCISES</div>
+              </div>
+              <div style={{ color:"#FFB300", fontSize:18 }}>SAVED</div>
+            </div>
+            {(w.exerciseDetails || (w.exercises||[]).map(name => ({name,sets:"",reps:""}))).map((ex, i) => (
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom: i<(w.exerciseDetails||w.exercises||[]).length-1 ? "1px solid #1a1a1a" : "none" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#888" }}>{(typeof ex==="string"?ex:ex.name).toUpperCase()}</div>
+                {typeof ex!=="string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
+              </div>
+            ))}
+          </div>
+        )) : <div style={{ textAlign:"center", color:"#222", padding:"60px 0", fontFamily:"'Barlow Condensed'", fontSize:14, letterSpacing:2, fontWeight:700 }}>NO SAVED WORKOUTS YET</div>
+      ) : (
+        weekKeys.length === 0
         ? <div style={{ textAlign:"center", color:"#222", padding:"60px 0", fontFamily:"'Barlow Condensed'", fontSize:16, letterSpacing:2, fontWeight:700 }}>NO WORKOUTS YET</div>
         : weekKeys.map(wk => {
           const entries = weeks[wk];
@@ -617,7 +645,9 @@ function HistoryScreen({ history, profileColor, onBack, onClear }) {
             </div>
           );
         })
-      }
+        })
+      )}
+      )}
       {history.length > 0 && (
         <button onClick={onClear} style={{ marginTop:16, background:"none", border:"1px solid #1e1e1e", borderRadius:4, color:"#2a2a2a", fontSize:12, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"12px 20px", cursor:"pointer", width:"100%" }}>
           CLEAR HISTORY
@@ -845,6 +875,8 @@ export default function App() {
   const [wifeyPrs, setWifeyPrs] = useState({});
   const [wifeyHistory, setWifeyHistory] = useState([]);
   const [broWeightLog, setBroWeightLog] = useState([]);
+  const [broSaved, setBroSaved] = useState([]);
+  const [wifeySaved, setWifeySaved] = useState([]);
   const [wifeyWeightLog, setWifeyWeightLog] = useState([]);
   const [cardioType, setCardioType] = useState(null);
   const [cardioDuration, setCardioDuration] = useState("");
@@ -857,6 +889,8 @@ export default function App() {
     const wh = loadStorage("wy-history"); if (wh) setWifeyHistory(wh);
     const bwl = loadStorage("dg-weightlog"); if (bwl) setBroWeightLog(bwl);
     const wwl = loadStorage("wy-weightlog"); if (wwl) setWifeyWeightLog(wwl);
+    const bs = loadStorage("dg-saved"); if (bs) setBroSaved(bs);
+    const ws = loadStorage("wy-saved"); if (ws) setWifeySaved(ws);
   }, []);
 
   const broMin = broSplit ? (broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
@@ -884,6 +918,8 @@ export default function App() {
   }
   function saveBroWeight(log) { setBroWeightLog(log); saveStorage("dg-weightlog", log); }
   function saveWifeyWeight(log) { setWifeyWeightLog(log); saveStorage("wy-weightlog", log); }
+  function saveBroWorkout(w) { const n=[w,...broSaved].slice(0,20); setBroSaved(n); saveStorage("dg-saved",n); }
+  function saveWifeyWorkout(w) { const n=[w,...wifeySaved].slice(0,20); setWifeySaved(n); saveStorage("wy-saved",n); }
 
   function logCardio() {
     if (!cardioType || !cardioDuration) return;
@@ -980,14 +1016,14 @@ export default function App() {
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={BRO_EXERCISE_BANK}
         onBack={() => setScreen("bro-home")}
         onRegenerate={() => setBroWorkout(generateBroWorkout(broSplit, broTotal))}
-        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} />
+        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} />
     </Wrap>
   );
 
   // ── BRO HISTORY ───────────────────────────────────────────────────────────
   if (screen === "bro-history") return (
     <Wrap>
-      <HistoryScreen history={broHistory} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }} />
+      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }} />
     </Wrap>
   );
 
@@ -1069,14 +1105,14 @@ export default function App() {
         splitLabel={wifeyMode==="cables"?"All Cables":"Full Body"} color={wColor} bank={wifeyBank}
         onBack={() => setScreen("wifey-home")}
         onRegenerate={() => setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode))}
-        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} />
+        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} />
     </Wrap>
   );
 
   // ── WIFEY HISTORY ─────────────────────────────────────────────────────────
   if (screen === "wifey-history") return (
     <Wrap>
-      <HistoryScreen history={wifeyHistory} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }} />
+      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }} />
     </Wrap>
   );
 
