@@ -657,6 +657,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const [prReps, setPrReps] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
+  const [newPrNames, setNewPrNames] = useState(new Set());
   const [isSaved, setIsSaved] = useState(false);
   const timerRef = useRef(null);
   const completedRef = useRef(false);
@@ -688,7 +689,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       completedRef.current = true;
       const duration = workout.startTime ? Date.now() - workout.startTime : 0;
       const finishMsg = FINISH_MESSAGES[Math.floor(Math.random() * FINISH_MESSAGES.length)];
-      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: sections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: sections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: totalCount, finishMsg, type: "workout" };
+      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: sections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: sections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: totalCount, finishMsg, type: "workout", newPrs: [...newPrNames] };
       setSummaryData(data);
       onComplete(data);
       setTimeout(() => setShowSummary(true), 700);
@@ -736,6 +737,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   function savePr() {
     if (!prWeight || !prReps) return;
     onSavePr(prModal, { weight: prWeight, reps: prReps, date: Date.now() });
+    setNewPrNames(prev => new Set([...prev, prModal]));
     setPrModal(null);
   }
 
@@ -781,9 +783,14 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
             <div style={{ background:"#141414", padding:14, marginBottom:18 }}>
               <div style={{ color:"#333", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:10 }}>EXERCISES</div>
               {summaryData.exercises.map((name, i) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, paddingBottom:7, marginBottom:7, borderBottom: i < summaryData.exercises.length-1?"1px solid #1a1a1a":"none" }}>
-                  <span style={{ fontFamily:"'Barlow Condensed'", fontWeight:900, fontSize:15, color:summaryData.color, minWidth:20 }}>{i+1}</span>
-                  <span style={{ color:"#888", fontSize:13, fontFamily:"'Barlow Condensed'", fontWeight:600 }}>{name}</span>
+                <div key={i} style={{ paddingBottom:7, marginBottom:7, borderBottom: i < summaryData.exercises.length-1?"1px solid #1a1a1a":"none" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <span style={{ fontFamily:"'Barlow Condensed'", fontWeight:900, fontSize:15, color:summaryData.color, minWidth:20 }}>{i+1}</span>
+                    <span style={{ color:"#888", fontSize:13, fontFamily:"'Barlow Condensed'", fontWeight:600 }}>{name}</span>
+                  </div>
+                  {(summaryData.newPrs||[]).includes(name) && (
+                    <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700", marginTop:3, marginLeft:30 }}>NEW PR 🏆</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -917,9 +924,14 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
         <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>EXERCISES</div>
         <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderRadius:4, padding:"8px 14px" }}>
           {(h.exerciseDetails || (h.exercises||[]).map(name => ({name, sets:"", reps:""}))).map((ex, i) => (
-            <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom: i < (h.exerciseDetails||h.exercises||[]).length-1 ? "1px solid #1a1a1a" : "none" }}>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#888" }}>{(typeof ex==="string"?ex:ex.name).toUpperCase()}</div>
-              {typeof ex !== "string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
+            <div key={i} style={{ padding:"9px 0", borderBottom: i < (h.exerciseDetails||h.exercises||[]).length-1 ? "1px solid #1a1a1a" : "none" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#888" }}>{(typeof ex==="string"?ex:ex.name).toUpperCase()}</div>
+                {typeof ex !== "string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
+              </div>
+              {(h.newPrs||[]).includes(typeof ex==="string"?ex:ex.name) && (
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700", marginTop:3 }}>NEW PR 🏆</div>
+              )}
             </div>
           ))}
         </div>
@@ -1012,6 +1024,7 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
           CLEAR HISTORY
         </button>
       )}
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
     </div>
   );
 }
@@ -1239,6 +1252,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
             NO WEIGHT LOGGED YET
           </div>
         )}
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </div>
   );
@@ -1349,8 +1363,8 @@ export default function App() {
           </div>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:40 }}>
-          <div style={{ color:"#1a1a1a", fontSize:10, letterSpacing:3, fontFamily:"'Barlow Condensed'", fontWeight:700 }}>DAILY GRIND . FULL GYM</div>
-          <button onClick={() => setScreen("settings")} style={{ background:"transparent", border:"none", color:"#2a2a2a", fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:2, fontWeight:700, cursor:"pointer", padding:0 }}>⚙ SETTINGS</button>
+          <div style={{ color:"#fff", fontSize:10, letterSpacing:3, fontFamily:"'Barlow Condensed'", fontWeight:700 }}>DAILY GRIND&#8482;</div>
+          <button onClick={() => setScreen("settings")} style={{ background:"transparent", border:"none", color:"#fff", fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:2, fontWeight:700, cursor:"pointer", padding:0 }}>⚙ SETTINGS</button>
         </div>
       </div>
     </Wrap>
@@ -1381,6 +1395,7 @@ export default function App() {
             </div>
           ))}
         </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1418,6 +1433,7 @@ export default function App() {
             </div>
           </div>
         </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </Wrap>
     );
   }
@@ -1494,6 +1510,7 @@ export default function App() {
             </div>
           ))}
         </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1528,6 +1545,7 @@ export default function App() {
             <div style={{ position:"absolute", top:3, left: wifeyWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
           </div>
         </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1685,6 +1703,7 @@ export default function App() {
             </div>
           )}
         </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
