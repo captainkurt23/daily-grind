@@ -417,9 +417,16 @@ function formatWeekLabel(weekKey) {
   const end = new Date(d); end.setDate(d.getDate() + 6);
   return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === "suspended") _audioCtx.resume();
+  return _audioCtx;
+}
+
 function playRestAlert(volume = 0.5, style = "double-beep") {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx();
     const tone = (start, freq, dur, type = "sine", vol = volume) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -445,16 +452,15 @@ function playRestAlert(volume = 0.5, style = "double-beep") {
       osc.start(start); osc.stop(start + dur);
     };
     const t = ctx.currentTime;
-    if (style === "double-beep")    { tone(t, 880, 0.12); tone(t + 0.18, 880, 0.12); }
-    else if (style === "single-ding")    { tone(t, 880, 0.35); }
-    else if (style === "ascending")      { tone(t, 660, 0.12); tone(t + 0.18, 880, 0.12); }
-    else if (style === "descending")     { tone(t, 880, 0.12); tone(t + 0.18, 660, 0.12); }
-    else if (style === "triple-beep")    { tone(t, 880, 0.09); tone(t + 0.14, 880, 0.09); tone(t + 0.28, 880, 0.09); }
-    else if (style === "soft-chime")     { tone(t, 880, 0.5); }
-    else if (style === "power-up")       { sweep(t, 400, 1000, 0.25); }
+    if (style === "double-beep")       { tone(t, 880, 0.12); tone(t + 0.18, 880, 0.12); }
+    else if (style === "single-ding")  { tone(t, 880, 0.35); }
+    else if (style === "ascending")    { tone(t, 660, 0.12); tone(t + 0.18, 880, 0.12); }
+    else if (style === "descending")   { tone(t, 880, 0.12); tone(t + 0.18, 660, 0.12); }
+    else if (style === "triple-beep")  { tone(t, 880, 0.09); tone(t + 0.14, 880, 0.09); tone(t + 0.28, 880, 0.09); }
+    else if (style === "soft-chime")   { tone(t, 880, 0.5); }
+    else if (style === "power-up")     { sweep(t, 400, 1000, 0.25); }
   } catch(e) {}
 }
-
 function loadStorage(key) {
   try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch { return null; }
 }
@@ -1497,7 +1503,9 @@ export default function App() {
                       <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>{s.desc.toUpperCase()}</div>
                     </div>
                     <button onClick={e => { e.stopPropagation(); playRestAlert(settings.timerVolume ?? 0.5, s.id); }}
-                      style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:3, color:"#555", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"4px 10px", cursor:"pointer", flexShrink:0 }}>▶</button>
+                      style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:3, color:"#555", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", width:32, height:28 }}>
+                      <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><polygon points="0,0 10,6 0,12" fill="#555"/></svg>
+                    </button>
                   </div>
                 ))}
               </div>
