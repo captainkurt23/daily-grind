@@ -439,6 +439,154 @@ function playRestAlert(volume = 0.5) {
     beep(ctx.currentTime + 0.28);
   } catch(e) {}
 }
+// ── WARMUP BANK ───────────────────────────────────────────────────────────
+const WARMUP_BANK = {
+  Chest: [
+    { name: "Arm Circles",            cue: "Full range, slow and controlled" },
+    { name: "Band Pull-Aparts",       cue: "Squeeze shoulder blades together" },
+    { name: "Push Up Hold",           cue: "Hold bottom position, breathe deep" },
+    { name: "Shoulder Rolls",         cue: "Forward then backward, stay loose" },
+  ],
+  Back: [
+    { name: "Cat-Cow",                cue: "Arch and round, breathe with each rep" },
+    { name: "Arm Circles",            cue: "Full range, slow and controlled" },
+    { name: "Scapular Squeezes",      cue: "Pinch shoulder blades, hold 2 seconds" },
+    { name: "Hip Hinge",              cue: "Soft knees, push hips back, keep back flat" },
+  ],
+  Shoulders: [
+    { name: "Arm Circles",            cue: "Small to large, forward and back" },
+    { name: "Neck Rolls",             cue: "Slow and controlled, no fast movements" },
+    { name: "Cross-Body Shoulder",    cue: "Pull arm across, hold the stretch" },
+    { name: "Overhead Reach",         cue: "Reach tall, alternate sides" },
+  ],
+  Legs: [
+    { name: "Leg Swings",             cue: "Forward and back, hold wall for balance" },
+    { name: "Hip Circles",            cue: "Big slow circles each direction" },
+    { name: "Walking Lunges",         cue: "Controlled step, knee tracks over toe" },
+    { name: "Inchworm",               cue: "Walk hands out, pause, walk back" },
+    { name: "Glute Bridges",          cue: "Drive hips up, squeeze at the top" },
+    { name: "Ankle Rotations",        cue: "Full circles each direction, both ankles" },
+  ],
+  Arms: [
+    { name: "Wrist Circles",          cue: "Full circles each direction" },
+    { name: "Arm Circles",            cue: "Small to large, stay relaxed" },
+    { name: "Shoulder Rolls",         cue: "Forward then backward, loosen up" },
+  ],
+  "Full Body": [
+    { name: "Jumping Jacks",          cue: "Easy pace, get the heart rate up" },
+    { name: "Hip Circles",            cue: "Big slow circles each direction" },
+    { name: "Inchworm",               cue: "Walk hands out, pause, walk back" },
+    { name: "Leg Swings",             cue: "Forward and back, hold wall for balance" },
+    { name: "Arm Circles",            cue: "Full range, forward and back" },
+  ],
+  "All Cables": [
+    { name: "Arm Circles",            cue: "Full range, forward and back" },
+    { name: "Scapular Squeezes",      cue: "Pinch shoulder blades, hold 2 seconds" },
+    { name: "Hip Hinge",              cue: "Soft knees, push hips back, keep back flat" },
+    { name: "Shoulder Rolls",         cue: "Forward then backward, stay loose" },
+  ],
+  Cardio: [
+    { name: "Marching In Place",      cue: "Drive knees up, swing arms" },
+    { name: "Hip Circles",            cue: "Big slow circles each direction" },
+    { name: "Leg Swings",             cue: "Forward and back, hold wall for balance" },
+  ],
+};
+
+const WARMUP_DURATION = 45;
+
+function WarmupScreen({ exercises, color, onComplete, onSkip }) {
+  const [current, setCurrent] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(WARMUP_DURATION);
+  const [running, setRunning] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  function startTimer() {
+    setRunning(true);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(timerRef.current);
+          setRunning(false);
+          if (current + 1 < exercises.length) {
+            setCurrent(c => c + 1);
+            setTimeLeft(WARMUP_DURATION);
+          } else {
+            onComplete();
+          }
+          return WARMUP_DURATION;
+        }
+        return t - 1;
+      });
+    }, 1000);
+  }
+
+  function skipExercise() {
+    clearInterval(timerRef.current);
+    setRunning(false);
+    if (current + 1 < exercises.length) {
+      setCurrent(c => c + 1);
+      setTimeLeft(WARMUP_DURATION);
+    } else {
+      onComplete();
+    }
+  }
+
+  const ex = exercises[current];
+  const progress = (WARMUP_DURATION - timeLeft) / WARMUP_DURATION;
+  const circumference = 2 * Math.PI * 54;
+
+  return (
+    <div className="sc" style={{ padding:"56px 20px 40px", display:"flex", flexDirection:"column", minHeight:"100vh" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
+        <button className="bk" onClick={onSkip}>SKIP WARMUP</button>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#333", letterSpacing:3, fontWeight:700 }}>{current + 1} / {exercises.length}</div>
+      </div>
+
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700, marginBottom:8 }}>WARMUP</div>
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:48, fontWeight:900, lineHeight:0.9, letterSpacing:1, marginBottom:32 }}>{ex.name.toUpperCase()}</div>
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color:"#444", letterSpacing:1, fontWeight:600, marginBottom:48, fontStyle:"italic" }}>{ex.cue}</div>
+
+      {/* Circular timer */}
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flex:1, justifyContent:"center" }}>
+        <div style={{ position:"relative", width:128, height:128, marginBottom:40 }}>
+          <svg width="128" height="128" viewBox="0 0 128 128" style={{ transform:"rotate(-90deg)" }}>
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#1a1a1a" strokeWidth="8"/>
+            <circle cx="64" cy="64" r="54" fill="none" stroke={color} strokeWidth="8"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference * (1 - progress)}
+              strokeLinecap="round"
+              style={{ transition:"stroke-dashoffset 1s linear" }}/>
+          </svg>
+          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:48, fontWeight:900, color: timeLeft <= 10 ? color : "#fff", lineHeight:1 }}>{timeLeft}</div>
+          </div>
+        </div>
+
+        {!running
+          ? <button className="mbtn" style={{ background:color, color:"#000", width:200 }} onClick={startTimer}>START</button>
+          : <button className="mbtn" style={{ background:"#111", color:"#444", border:"1px solid #1a1a1a", width:200 }} onClick={skipExercise}>SKIP</button>
+        }
+      </div>
+
+      {/* Exercise queue */}
+      {exercises.length > 1 && (
+        <div style={{ marginTop:40 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#222", fontWeight:700, marginBottom:10 }}>UP NEXT</div>
+          {exercises.slice(current + 1, current + 3).map((e, i) => (
+            <div key={i} style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color:"#2a2a2a", fontWeight:700, letterSpacing:0.5, padding:"6px 0", borderTop:"1px solid #111" }}>
+              {e.name.toUpperCase()}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function loadStorage(key) {
   try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch { return null; }
 }
@@ -1108,11 +1256,13 @@ export default function App() {
   const [broSplit, setBroSplit] = useState(null);
   const [broTotal, setBroTotal] = useState(DEFAULT_TOTAL);
   const [broWorkout, setBroWorkout] = useState({ sections:[], startTime:null });
+  const [broWarmup, setBroWarmup] = useState(false);
   const [broPrs, setBroPrs] = useState({});
   const [broHistory, setBroHistory] = useState([]);
   const [wifeyMode, setWifeyMode] = useState(null);
   const [wifeyTotal, setWifeyTotal] = useState(6);
   const [wifeyWorkout, setWifeyWorkout] = useState({ sections:[], startTime:null });
+  const [wifeyWarmup, setWifeyWarmup] = useState(false);
   const [wifeyPrs, setWifeyPrs] = useState({});
   const [wifeyHistory, setWifeyHistory] = useState([]);
   const [broWeightLog, setBroWeightLog] = useState([]);
@@ -1257,8 +1407,30 @@ export default function App() {
               <button className="cntbtn" disabled={broTotal >= broMax} onClick={() => setBroTotal(t => t+1)}>+</button>
             </div>
           </div>
-          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); setScreen("bro-workout"); }}>GENERATE WORKOUT</button>
+          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); setScreen(broWarmup ? "bro-warmup" : "bro-workout"); }}>GENERATE WORKOUT</button>
+          <div onClick={() => setBroWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${broWarmup ? color+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${broWarmup ? color : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
+            <div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: broWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>DYNAMIC STRETCHES . 45 SEC EACH</div>
+            </div>
+            <div style={{ width:40, height:24, borderRadius:12, background: broWarmup ? color : "#1a1a1a", border:`1px solid ${broWarmup ? color : "#333"}`, position:"relative", flexShrink:0, transition:"background 0.2s" }}>
+              <div style={{ position:"absolute", top:3, left: broWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
+            </div>
+          </div>
         </div>
+      </Wrap>
+    );
+  }
+
+  // ── BRO WARMUP ────────────────────────────────────────────────────────────
+  if (screen === "bro-warmup" && broSplit) {
+    const warmupKey = broSplit.fullBody ? "Full Body" : (broSplit.groups?.[0] || "Full Body");
+    const exercises = WARMUP_BANK[warmupKey] || WARMUP_BANK["Full Body"];
+    return (
+      <Wrap>
+        <WarmupScreen exercises={exercises} color={broSplit.color}
+          onComplete={() => setScreen("bro-workout")}
+          onSkip={() => setScreen("bro-workout")} />
       </Wrap>
     );
   }
@@ -1346,10 +1518,33 @@ export default function App() {
             <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
           </div>
         </div>
-        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); setScreen("wifey-workout"); }}>GENERATE WORKOUT</button>
+        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout"); }}>GENERATE WORKOUT</button>
+        <div onClick={() => setWifeyWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${wifeyWarmup ? wColor+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${wifeyWarmup ? wColor : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
+          <div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: wifeyWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>DYNAMIC STRETCHES . 45 SEC EACH</div>
+          </div>
+          <div style={{ width:40, height:24, borderRadius:12, background: wifeyWarmup ? wColor : "#1a1a1a", border:`1px solid ${wifeyWarmup ? wColor : "#333"}`, position:"relative", flexShrink:0, transition:"background 0.2s" }}>
+            <div style={{ position:"absolute", top:3, left: wifeyWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
+          </div>
+        </div>
       </div>
     </Wrap>
   );
+
+  // ── WIFEY WARMUP ──────────────────────────────────────────────────────────
+  if (screen === "wifey-warmup") {
+    const warmupKey = wifeyMode === "cables" ? "All Cables" : wifeyMode === "cardio" ? "Cardio" : "Full Body";
+    const exercises = WARMUP_BANK[warmupKey] || WARMUP_BANK["Full Body"];
+    const wColor2 = wifeyMode === "cables" ? "#00E5FF" : WIFEY_COLOR;
+    return (
+      <Wrap>
+        <WarmupScreen exercises={exercises} color={wColor2}
+          onComplete={() => setScreen("wifey-workout")}
+          onSkip={() => setScreen("wifey-workout")} />
+      </Wrap>
+    );
+  }
 
   // ── WIFEY WORKOUT ─────────────────────────────────────────────────────────
   if (screen === "wifey-workout") return (
