@@ -11,7 +11,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Dumbbell Row",           sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
     { name: "Chest Supported Row",    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "machine" },
     { name: "Lat Pulldown",           sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Pull Up",                sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "bw"      },
+    { name: "Pull Up",                sets: "4", reps: "6-10",   note: "", intensity: 7, eq: "bw"      },
     { name: "Straight Arm Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
     { name: "Seated Cable Row",       sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
     { name: "Rack Pull",              sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
@@ -24,7 +24,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Incline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
     { name: "Decline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "barbell" },
     { name: "Dumbbell Fly",        sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Push Up",             sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "bw"      },
+    { name: "Push Up",             sets: "4", reps: "15-20",  note: "", intensity: 4, eq: "bw"      },
   ],
   Shoulders: [
     { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "barbell" },
@@ -47,7 +47,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Skullcrusher",           sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
     { name: "Overhead Rope Pull",     sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "cable"   },
     { name: "Close Grip Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
-    { name: "Dips",                   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "bw"      },
+    { name: "Dips",                   sets: "4", reps: "15-20",   note: "", intensity: 7, eq: "bw"      },
   ],
   Biceps: [
     { name: "Dumbbell Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
@@ -98,7 +98,7 @@ const WIFEY_FULL_BODY_BANK = {
   Chest: [
     { name: "Dumbbell Fly",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
     { name: "Incline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "barbell" },
-    { name: "Push Up",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "bw"      },
+    { name: "Push Up",             sets: "3", reps: "15-20", note: "", intensity: 4, eq: "bw"      },
     { name: "Flat Bench Press",    sets: "3", reps: "12-15", note: "", intensity: 7, eq: "barbell" },
     { name: "Decline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "barbell" },
   ],
@@ -417,6 +417,44 @@ function formatWeekLabel(weekKey) {
   const end = new Date(d); end.setDate(d.getDate() + 6);
   return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
+function playRestAlert(volume = 0.5, style = "double-beep") {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const tone = (start, freq, dur, type = "sine", vol = volume) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type; osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(vol, start + 0.01);
+      gain.gain.setValueAtTime(vol, start + dur - 0.03);
+      gain.gain.linearRampToValueAtTime(0, start + dur);
+      osc.start(start); osc.stop(start + dur);
+    };
+    const sweep = (start, freqFrom, freqTo, dur) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freqFrom, start);
+      osc.frequency.linearRampToValueAtTime(freqTo, start + dur);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(volume, start + 0.01);
+      gain.gain.setValueAtTime(volume, start + dur - 0.04);
+      gain.gain.linearRampToValueAtTime(0, start + dur);
+      osc.start(start); osc.stop(start + dur);
+    };
+    const t = ctx.currentTime;
+    if (style === "double-beep")    { tone(t, 880, 0.12); tone(t + 0.18, 880, 0.12); }
+    else if (style === "single-ding")    { tone(t, 880, 0.35); }
+    else if (style === "ascending")      { tone(t, 660, 0.12); tone(t + 0.18, 880, 0.12); }
+    else if (style === "descending")     { tone(t, 880, 0.12); tone(t + 0.18, 660, 0.12); }
+    else if (style === "triple-beep")    { tone(t, 880, 0.09); tone(t + 0.14, 880, 0.09); tone(t + 0.28, 880, 0.09); }
+    else if (style === "soft-chime")     { tone(t, 880, 0.5); }
+    else if (style === "power-up")       { sweep(t, 400, 1000, 0.25); }
+  } catch(e) {}
+}
+
 function loadStorage(key) {
   try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch { return null; }
 }
@@ -471,12 +509,15 @@ function Wrap({ children, extraCss }) {
 }
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume, timerStyle }) {
   const REST_DUR = restDurationProp || REST_DURATION;
   const [checked, setChecked] = useState({});
   const [setsDone, setSetsDone] = useState({});
   const [expanded, setExpanded] = useState({});
   const [justChecked, setJustChecked] = useState(null);
+  const [confirmSwap, setConfirmSwap] = useState(null);
+  const [confirmRegen, setConfirmRegen] = useState(false);
+  const [confirmExit, setConfirmExit] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [timerLeft, setTimerLeft] = useState(REST_DUR);
   const [prModal, setPrModal] = useState(null);
@@ -504,7 +545,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   useEffect(() => {
     if (timerActive) {
       timerRef.current = setInterval(() => {
-        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); return REST_DUR; } return t - 1; });
+        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); if (timerSound) playRestAlert(timerVolume ?? 0.5, timerStyle ?? "double-beep"); return REST_DUR; } return t - 1; });
       }, 1000);
     } else clearInterval(timerRef.current);
     return () => clearInterval(timerRef.current);
@@ -633,7 +674,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       )}
 
       <div className="sc" style={{ padding:`${timerActive?78:56}px 20px 120px` }}>
-        <button className="bk" onClick={onBack}>BACK</button>
+        <button className="bk" onClick={() => { if (confirmExit) { onBack(); } else { setConfirmExit(true); setTimeout(() => setConfirmExit(false), 3000); } }} style={{ color: confirmExit ? "#FF3D00" : undefined }}>{confirmExit ? "EXIT WORKOUT?" : "BACK"}</button>
         <div style={{ marginTop:20, marginBottom:6 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700 }}>{splitLabel.toUpperCase()} DAY</div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:52, fontWeight:900, lineHeight:0.9, letterSpacing:1, marginTop:2 }}>YOUR<br/>WORKOUT</div>
@@ -691,7 +732,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                           </div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
-                          {!done && <button className="swpbtn" onClick={() => swapExercise(si, ei)}>swap</button>}
+                          {!done && <button className="swpbtn" onClick={() => { if (confirmSwap === key) { swapExercise(si, ei); setConfirmSwap(null); } else { setConfirmSwap(key); setTimeout(() => setConfirmSwap(null), 3000); } }} style={{ borderColor: confirmSwap === key ? "#FF3D00" : undefined, color: confirmSwap === key ? "#FF3D00" : undefined }}>{confirmSwap === key ? "sure?" : "swap"}</button>}
                           <button className={`prbtn${hasPr?" got":""}`} onClick={() => openPr(ex.name)}>PR</button>
                         </div>
                       </div>
@@ -706,7 +747,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 
         <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:430, padding:"16px 20px 28px", background:"linear-gradient(transparent, #080808 45%)" }}>
           <div style={{ display:"flex", gap:8 }}>
-            <button className="mbtn" style={{ background:"#111", color:"#333", border:"1px solid #1a1a1a", flex:3 }} onClick={onRegenerate}>REGENERATE</button>
+            <button className="mbtn" style={{ background: confirmRegen ? "#FF3D00" : "#111", color: confirmRegen ? "#000" : "#333", border: confirmRegen ? "1px solid #FF3D00" : "1px solid #1a1a1a", flex:3 }} onClick={() => { if (confirmRegen) { onRegenerate(); setConfirmRegen(false); } else { setConfirmRegen(true); setTimeout(() => setConfirmRegen(false), 3000); } }}>{confirmRegen ? "ARE YOU SURE?" : "REGENERATE"}</button>
             <button className="mbtn" onClick={() => { const d = { split:splitLabel, color, date:Date.now(), exercises:workout.sections.flatMap(s=>s.exercises.map(e=>e.name)), exerciseDetails:workout.sections.flatMap(s=>s.exercises.map(e=>({name:e.name,sets:e.sets,reps:e.reps}))), total:workout.sections.flatMap(s=>s.exercises).length, type:"saved" }; onSaveWorkout(d); setIsSaved(true); }} style={{ background:isSaved ? "#FFB30015" : "#111", color:isSaved ? "#FFB300" : "#444", border:isSaved ? "1px solid #FFB30040" : "1px solid #1a1a1a", flex:1, fontSize:20, padding:0 }}>{isSaved ? "★" : "☆"}</button>
           </div>
         </div>
@@ -718,9 +759,41 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 // ── HISTORY SCREEN ────────────────────────────────────────────────────────
 function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, onDeleteSaved }) {
   const [showSaved, setShowSaved] = useState(false);
+  const [selectedHistory, setSelectedHistory] = useState(null);
+  const ONE_MONTH = 30 * 24 * 60 * 60 * 1000;
   const weeks = {};
   history.forEach(h => { const wk = getWeekKey(h.date); if (!weeks[wk]) weeks[wk] = []; weeks[wk].push(h); });
   const weekKeys = Object.keys(weeks).sort((a, b) => b.localeCompare(a));
+
+  if (selectedHistory) {
+    const h = selectedHistory;
+    return (
+      <div className="sc" style={{ padding:"56px 20px 40px" }}>
+        <button className="bk" onClick={() => setSelectedHistory(null)}>BACK</button>
+        <div style={{ marginTop:28, marginBottom:24 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:h.color, lineHeight:1, letterSpacing:2 }}>{h.finishMsg || "DONE."}</div>
+          <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(h.date)}</div>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
+          {[{label:"SPLIT",value:h.split},{label:"TIME",value:h.duration?formatDuration(h.duration):"—"},{label:"EXERCISES",value:h.total},{label:"SETS",value:(h.exerciseDetails||[]).reduce((a,e)=>a+(parseInt(e.sets)||0),0)}].map(({label,value}) => (
+            <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${h.color}`, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700 }}>{label}</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:900, color:"#fff" }}>{value}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>EXERCISES</div>
+        <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderRadius:4, padding:"8px 14px" }}>
+          {(h.exerciseDetails || (h.exercises||[]).map(name => ({name, sets:"", reps:""}))).map((ex, i) => (
+            <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom: i < (h.exerciseDetails||h.exercises||[]).length-1 ? "1px solid #1a1a1a" : "none" }}>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#888" }}>{(typeof ex==="string"?ex:ex.name).toUpperCase()}</div>
+              {typeof ex !== "string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="sc" style={{ padding:"56px 20px 40px" }}>
       <button className="bk" onClick={onBack}>BACK</button>
@@ -778,19 +851,25 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
                   </div>
                 </div>
                 <div style={{ borderTop:"1px solid #1a1a1a" }}>
-                  {entries.map((h, i) => (
-                    <div key={i} className="wkrow" style={{ padding:"11px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <div>
-                        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, letterSpacing:0.5 }}>{h.type==="cardio" ? h.cardioType?.toUpperCase() : h.split?.toUpperCase()}</div>
-                        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, marginTop:2, fontWeight:600 }}>
-                          {formatDate(h.date).toUpperCase()}
-                          {h.duration ? ` . ${formatDuration(h.duration)}` : ""}
-                          {h.durationMins ? ` . ${h.durationMins} MIN` : ""}
+                  {entries.map((h, i) => {
+                    const viewable = h.type !== "cardio" && h.exerciseDetails && (Date.now() - h.date) < ONE_MONTH;
+                    return (
+                      <div key={i} className="wkrow" onClick={() => viewable && setSelectedHistory(h)} style={{ padding:"11px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor: viewable ? "pointer" : "default" }}>
+                        <div>
+                          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, letterSpacing:0.5 }}>{h.type==="cardio" ? h.cardioType?.toUpperCase() : h.split?.toUpperCase()}</div>
+                          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, marginTop:2, fontWeight:600 }}>
+                            {formatDate(h.date).toUpperCase()}
+                            {h.duration ? ` . ${formatDuration(h.duration)}` : ""}
+                            {h.durationMins ? ` . ${h.durationMins} MIN` : ""}
+                          </div>
+                        </div>
+                        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                          {viewable && <span style={{ fontFamily:"'Barlow Condensed'", fontSize:18, color:"#2a2a2a", fontWeight:900 }}>›</span>}
+                          <div style={{ width:3, height:30, background:h.type==="cardio"?"#444":h.color, borderRadius:2 }} />
                         </div>
                       </div>
-                      <div style={{ width:3, height:30, background:h.type==="cardio"?"#444":h.color, borderRadius:2, flexShrink:0 }} />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -1036,7 +1115,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
 // ── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
-  const [settings, setSettings] = useState({ restDuration: 90, supersets: false });
+  const [settings, setSettings] = useState({ restDuration: 90, supersets: false, timerSound: true, timerVolume: 0.5, timerStyle: "double-beep" });
   function updateSetting(key, val) {
     const next = { ...settings, [key]: val };
     setSettings(next);
@@ -1206,7 +1285,7 @@ export default function App() {
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={BRO_EXERCISE_BANK}
         onBack={() => setScreen("bro-home")}
         onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); }}
-        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} />
+        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} timerStyle={settings.timerStyle} />
     </Wrap>
   );
 
@@ -1295,7 +1374,7 @@ export default function App() {
         splitLabel={wifeyMode==="cables"?"All Cables":"Full Body"} color={wColor} bank={wifeyBank}
         onBack={() => setScreen("wifey-home")}
         onRegenerate={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); }}
-        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} />
+        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} timerStyle={settings.timerStyle} />
     </Wrap>
   );
 
@@ -1376,6 +1455,54 @@ export default function App() {
             ))}
           </div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:2, marginTop:8, fontWeight:600 }}>SECONDS BETWEEN SETS</div>
+        </div>
+
+        {/* TIMER SOUND */}
+        <div style={{ marginBottom:32 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", fontWeight:700, marginBottom:12 }}>TIMER SOUND</div>
+          <div style={{ background:"#0f0f0f", border:`1px solid ${settings.timerSound ? "#FF3D0040" : "#1a1a1a"}`, borderLeft:`3px solid ${settings.timerSound ? "#FF3D00" : "#1a1a1a"}`, borderRadius:4, padding:"16px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+            <div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:18, fontWeight:800, letterSpacing:0.5, color: settings.timerSound ? "#fff" : "#444" }}>ALERT WHEN REST ENDS</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:1, marginTop:3, fontWeight:600 }}>DOUBLE BEEP AT END OF REST TIMER</div>
+            </div>
+            <div onClick={() => updateSetting("timerSound", !settings.timerSound)}
+              style={{ width:44, height:26, borderRadius:13, background: settings.timerSound ? "#FF3D00" : "#1a1a1a", border:`1px solid ${settings.timerSound ? "#FF3D00" : "#333"}`, position:"relative", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
+              <div style={{ position:"absolute", top:3, left: settings.timerSound ? 21 : 3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
+            </div>
+          </div>
+          {settings.timerSound && (
+            <>
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, fontWeight:700, flexShrink:0 }}>VOLUME</div>
+                <input type="range" min="0.1" max="1" step="0.05" value={settings.timerVolume ?? 0.5}
+                  onChange={e => updateSetting("timerVolume", parseFloat(e.target.value))}
+                  style={{ flex:1, accentColor:"#FF3D00", cursor:"pointer" }} />
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, color:"#FF3D00", fontWeight:900, minWidth:36, textAlign:"right" }}>{Math.round((settings.timerVolume ?? 0.5) * 100)}%</div>
+              </div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, fontWeight:700, marginBottom:8, marginTop:16 }}>SOUND STYLE</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:6, marginBottom:12 }}>
+                {[
+                  { id:"double-beep",  label:"Double Beep",   desc:"Two quick same-tone beeps" },
+                  { id:"single-ding",  label:"Single Ding",   desc:"One clean longer tone" },
+                  { id:"ascending",    label:"Ascending",     desc:"Low then high — go time" },
+                  { id:"descending",   label:"Descending",    desc:"High then low — mellow" },
+                  { id:"triple-beep",  label:"Triple Beep",   desc:"Three quick beeps — hard to miss" },
+                  { id:"soft-chime",   label:"Soft Chime",    desc:"Sine with long fade — zen" },
+                  { id:"power-up",     label:"Power Up",      desc:"Ascending sweep — energetic" },
+                ].map(s => (
+                  <div key={s.id} onClick={() => updateSetting("timerStyle", s.id)}
+                    style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${settings.timerStyle === s.id ? "#FF3D0060" : "#1a1a1a"}`, borderLeft:`3px solid ${settings.timerStyle === s.id ? "#FF3D00" : "#1a1a1a"}`, borderRadius:4, padding:"10px 14px", cursor:"pointer" }}>
+                    <div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:800, color: settings.timerStyle === s.id ? "#fff" : "#444", letterSpacing:0.5 }}>{s.label.toUpperCase()}</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>{s.desc.toUpperCase()}</div>
+                    </div>
+                    <button onClick={e => { e.stopPropagation(); playRestAlert(settings.timerVolume ?? 0.5, s.id); }}
+                      style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:3, color:"#555", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"4px 10px", cursor:"pointer", flexShrink:0 }}>▶</button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* SUPERSETS */}
