@@ -417,48 +417,26 @@ function formatWeekLabel(weekKey) {
   const end = new Date(d); end.setDate(d.getDate() + 6);
   return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
-let _audioCtx = null;
-function getAudioCtx() {
-  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (_audioCtx.state === "suspended") _audioCtx.resume();
-  return _audioCtx;
-}
-
-function playRestAlert(volume = 0.5, style = "double-beep") {
+function playRestAlert(volume = 0.5) {
   try {
-    const ctx = getAudioCtx();
-    const tone = (start, freq, dur, type = "sine", vol = volume) => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const beep = (startTime) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = type; osc.frequency.setValueAtTime(freq, start);
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(vol, start + 0.01);
-      gain.gain.setValueAtTime(vol, start + dur - 0.03);
-      gain.gain.linearRampToValueAtTime(0, start + dur);
-      osc.start(start); osc.stop(start + dur);
-    };
-    const sweep = (start, freqFrom, freqTo, dur) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
       osc.type = "sine";
-      osc.frequency.setValueAtTime(freqFrom, start);
-      osc.frequency.linearRampToValueAtTime(freqTo, start + dur);
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(volume, start + 0.01);
-      gain.gain.setValueAtTime(volume, start + dur - 0.04);
-      gain.gain.linearRampToValueAtTime(0, start + dur);
-      osc.start(start); osc.stop(start + dur);
+      osc.frequency.setValueAtTime(880, startTime);
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+      gain.gain.setValueAtTime(volume, startTime + 0.06);
+      gain.gain.linearRampToValueAtTime(0, startTime + 0.09);
+      osc.start(startTime);
+      osc.stop(startTime + 0.09);
     };
-    const t = ctx.currentTime;
-    if (style === "double-beep")       { tone(t, 880, 0.12); tone(t + 0.18, 880, 0.12); }
-    else if (style === "single-ding")  { tone(t, 880, 0.35); }
-    else if (style === "ascending")    { tone(t, 660, 0.12); tone(t + 0.18, 880, 0.12); }
-    else if (style === "descending")   { tone(t, 880, 0.12); tone(t + 0.18, 660, 0.12); }
-    else if (style === "triple-beep")  { tone(t, 880, 0.09); tone(t + 0.14, 880, 0.09); tone(t + 0.28, 880, 0.09); }
-    else if (style === "soft-chime")   { tone(t, 880, 0.5); }
-    else if (style === "power-up")     { sweep(t, 400, 1000, 0.25); }
+    beep(ctx.currentTime);
+    beep(ctx.currentTime + 0.14);
+    beep(ctx.currentTime + 0.28);
   } catch(e) {}
 }
 function loadStorage(key) {
@@ -551,7 +529,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   useEffect(() => {
     if (timerActive) {
       timerRef.current = setInterval(() => {
-        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); if (timerSound) playRestAlert(timerVolume ?? 0.5, "triple-beep"); return REST_DUR; } return t - 1; });
+        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); if (timerSound) playRestAlert(timerVolume ?? 0.5); return REST_DUR; } return t - 1; });
       }, 1000);
     } else clearInterval(timerRef.current);
     return () => clearInterval(timerRef.current);
@@ -1485,6 +1463,10 @@ export default function App() {
                   style={{ flex:1, accentColor:"#FF3D00", cursor:"pointer" }} />
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, color:"#FF3D00", fontWeight:900, minWidth:36, textAlign:"right" }}>{Math.round((settings.timerVolume ?? 0.5) * 100)}%</div>
               </div>
+              <button onClick={() => playRestAlert(settings.timerVolume ?? 0.5)}
+                style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:4, color:"#555", fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:700, letterSpacing:2, padding:"10px 20px", cursor:"pointer", width:"100%", marginTop:8 }}>
+                PREVIEW SOUND
+              </button>
             </>
           )}
         </div>
