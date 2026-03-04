@@ -806,9 +806,11 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
 }
 
 // ── STATS SCREEN ─────────────────────────────────────────────────────────────
-function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileName, onBack }) {
+function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileName, onBack, goalWeight, onSaveGoalWeight }) {
   const [weightInput, setWeightInput] = useState("");
   const [showInput, setShowInput] = useState(false);
+  const [goalInput, setGoalInput] = useState("");
+  const [showGoalInput, setShowGoalInput] = useState(false);
 
   // ── Streak calculation ────────────────────────────────────────────────────
   function calcStreak(hist) {
@@ -942,6 +944,18 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
           </div>
         )}
 
+        {showGoalInput && (
+          <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+            <input className="minput" type="number" placeholder="e.g. 175" value={goalInput}
+              onChange={e => setGoalInput(e.target.value)}
+              style={{ flex:1, borderColor: goalInput ? profileColor : "#2a2a2a" }} />
+            <button className="mbtn" onClick={() => { if (!goalInput) return; onSaveGoalWeight(parseFloat(goalInput)); setGoalInput(""); setShowGoalInput(false); }}
+              style={{ background: goalInput ? profileColor : "#161616", color: goalInput ? "#000" : "#333", width:"auto", padding:"0 20px", fontSize:16 }}>
+              SAVE
+            </button>
+          </div>
+        )}
+
         {latestWeight ? (
           <>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
@@ -950,15 +964,22 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:36, fontWeight:900, lineHeight:1, color:profileColor }}>{latestWeight.weight}<span style={{ fontSize:16, color:"#444", marginLeft:4 }}>LBS</span></div>
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1, color:"#333", fontWeight:700, marginTop:4 }}>{formatDate(latestWeight.date).toUpperCase()}</div>
               </div>
-              {weightChange !== null && (
-                <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${parseFloat(weightChange) <= 0 ? "#76FF03" : "#FF3D00"}`, padding:"16px 14px" }}>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700, marginBottom:6 }}>CHANGE</div>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:36, fontWeight:900, lineHeight:1, color: parseFloat(weightChange) <= 0 ? "#76FF03" : "#FF3D00" }}>
-                    {parseFloat(weightChange) > 0 ? "+" : ""}{weightChange}<span style={{ fontSize:16, color:"#444", marginLeft:4 }}>LBS</span>
-                  </div>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1, color:"#333", fontWeight:700, marginTop:4 }}>SINCE START</div>
-                </div>
-              )}
+              <div onClick={() => setShowGoalInput(s => !s)} style={{ background:"#0f0f0f", border:`1px solid ${goalWeight ? profileColor+"33" : "#1a1a1a"}`, borderLeft:`3px solid ${goalWeight ? profileColor : "#1a1a1a"}`, padding:"16px 14px", cursor:"pointer" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700, marginBottom:6 }}>GOAL</div>
+                {goalWeight
+                  ? <>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:36, fontWeight:900, lineHeight:1, color:"#fff" }}>{goalWeight}<span style={{ fontSize:16, color:"#444", marginLeft:4 }}>LBS</span></div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1, color:"#333", fontWeight:700, marginTop:4 }}>
+                        {latestWeight.weight > goalWeight
+                          ? `${(latestWeight.weight - goalWeight).toFixed(1)} LBS TO GO`
+                          : latestWeight.weight < goalWeight
+                            ? `${(goalWeight - latestWeight.weight).toFixed(1)} LBS TO GAIN`
+                            : "GOAL REACHED 🎯"}
+                      </div>
+                    </>
+                  : <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, color:"#2a2a2a", fontWeight:700, letterSpacing:1, marginTop:4 }}>TAP TO SET</div>
+                }
+              </div>
             </div>
 
             {chartData.length >= 2 && (
@@ -1035,6 +1056,8 @@ export default function App() {
   const [broSaved, setBroSaved] = useState([]);
   const [wifeySaved, setWifeySaved] = useState([]);
   const [wifeyWeightLog, setWifeyWeightLog] = useState([]);
+  const [broGoalWeight, setBroGoalWeight] = useState(null);
+  const [wifeyGoalWeight, setWifeyGoalWeight] = useState(null);
   const [cardioType, setCardioType] = useState(null);
   const [cardioDuration, setCardioDuration] = useState("");
   const [cardioLogged, setCardioLogged] = useState(false);
@@ -1049,6 +1072,8 @@ export default function App() {
     const bs = loadStorage("dg-saved"); if (bs) setBroSaved(bs);
     const ws = loadStorage("wy-saved"); if (ws) setWifeySaved(ws);
     const st = loadStorage("dg-settings"); if (st) setSettings(st);
+    const bgw = loadStorage("dg-goalweight"); if (bgw) setBroGoalWeight(bgw);
+    const wgw = loadStorage("wy-goalweight"); if (wgw) setWifeyGoalWeight(wgw);
   }, []);
 
   const broMin = broSplit ? (broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
@@ -1076,6 +1101,8 @@ export default function App() {
   }
   function saveBroWeight(log) { setBroWeightLog(log); saveStorage("dg-weightlog", log); }
   function saveWifeyWeight(log) { setWifeyWeightLog(log); saveStorage("wy-weightlog", log); }
+  function saveBroGoalWeight(w) { setBroGoalWeight(w); saveStorage("dg-goalweight", w); }
+  function saveWifeyGoalWeight(w) { setWifeyGoalWeight(w); saveStorage("wy-goalweight", w); }
   function saveBroWorkout(w) { const n=[w,...broSaved].slice(0,20); setBroSaved(n); saveStorage("dg-saved",n); }
   function saveWifeyWorkout(w) { const n=[w,...wifeySaved].slice(0,20); setWifeySaved(n); saveStorage("wy-saved",n); }
   function deleteBroSaved(idx) { const n=broSaved.filter((_,i)=>i!==idx); setBroSaved(n); saveStorage("dg-saved",n); }
@@ -1194,7 +1221,7 @@ export default function App() {
   if (screen === "bro-stats") return (
     <Wrap>
       <StatsScreen history={broHistory} weightLog={broWeightLog} onSaveWeight={saveBroWeight}
-        profileColor="#FF3D00" profileName="The Bro" onBack={() => setScreen("bro-home")} />
+        profileColor="#FF3D00" profileName="The Bro" onBack={() => setScreen("bro-home")} goalWeight={broGoalWeight} onSaveGoalWeight={saveBroGoalWeight} />
     </Wrap>
   );
 
@@ -1283,7 +1310,7 @@ export default function App() {
   if (screen === "wifey-stats") return (
     <Wrap>
       <StatsScreen history={wifeyHistory} weightLog={wifeyWeightLog} onSaveWeight={saveWifeyWeight}
-        profileColor={WIFEY_COLOR} profileName="The Wifey" onBack={() => setScreen("wifey-home")} />
+        profileColor={WIFEY_COLOR} profileName="The Wifey" onBack={() => setScreen("wifey-home")} goalWeight={wifeyGoalWeight} onSaveGoalWeight={saveWifeyGoalWeight} />
     </Wrap>
   );
 
