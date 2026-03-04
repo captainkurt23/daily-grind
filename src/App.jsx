@@ -4,77 +4,83 @@ import { useState, useEffect, useRef } from "react";
 //  CREATOR CONFIGURATION
 // ============================================================
 
+// eq: "machine" = fixed station, "cable" = cable machine, "barbell" = barbell needed,
+//     "db" = dumbbells (portable), "ez" = EZ bar (portable), "bw" = bodyweight (portable)
 const BRO_EXERCISE_BANK = {
   Back: [
-    { name: "Dumbbell Row",           sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Chest Supported Row",    sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Lat Pulldown",           sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Pull Up",                sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Straight Arm Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Seated Cable Row",       sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Rack Pull",              sets: "4", reps: "6-8",   note: "", intensity: 9 },
-    { name: "Seated Row Machine",     sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Barbell Row",            sets: "4", reps: "6-8",   note: "", intensity: 8 },
-    { name: "Face Pull",              sets: "4", reps: "10",    note: "", intensity: 3 },
+    { name: "Dumbbell Row",           sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
+    { name: "Chest Supported Row",    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "machine" },
+    { name: "Lat Pulldown",           sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Pull Up",                sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "bw"      },
+    { name: "Straight Arm Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
+    { name: "Seated Cable Row",       sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Rack Pull",              sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
+    { name: "Seated Row Machine",     sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "machine" },
+    { name: "Barbell Row",            sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
+    { name: "Face Pull",              sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
   ],
   Chest: [
-    { name: "Flat Bench Press",    sets: "4", reps: "6-8",   note: "", intensity: 9 },
-    { name: "Incline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8 },
-    { name: "Decline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Dumbbell Fly",        sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Push Up",             sets: "4", reps: "8-10",  note: "", intensity: 4 },
+    { name: "Flat Bench Press",    sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
+    { name: "Incline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
+    { name: "Decline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "barbell" },
+    { name: "Dumbbell Fly",        sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
+    { name: "Push Up",             sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "bw"      },
   ],
   Shoulders: [
-    { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Shrug",                          sets: "4", reps: "8-10",  note: "", intensity: 3 },
-    { name: "Lateral Raise",                  sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Rear Delt Fly",                  sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Standing Barbell Press",         sets: "4", reps: "6-8",   note: "", intensity: 9 },
-    { name: "Dumbbell Press",                 sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Arnold Press",                   sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Front Raise",                    sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Side to Front Raise",            sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Cable Single Arm Lateral Raise", sets: "4", reps: "8-10",  note: "", intensity: 3 },
+    { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "barbell" },
+    { name: "Shrug",                          sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "db"      },
+    { name: "Lateral Raise",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
+    { name: "Rear Delt Fly",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
+    { name: "Standing Barbell Press",         sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
+    { name: "Dumbbell Press",                 sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
+    { name: "Arnold Press",                   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
+    { name: "Front Raise",                    sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
+    { name: "Side to Front Raise",            sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
+    { name: "Cable Single Arm Lateral Raise", sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "cable"   },
+    { name: "Smith Machine Shoulder Press",   sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "machine" },
   ],
   Triceps: [
-    { name: "V-Handle Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Rope Pulldown",          sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Reverse Grip Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "Skullcrusher",           sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Overhead Rope Pull",     sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Close Grip Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8 },
-    { name: "Dips",                   sets: "4", reps: "6-8",   note: "", intensity: 7 },
+    { name: "V-Handle Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Rope Pulldown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Reverse Grip Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
+    { name: "Skullcrusher",           sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
+    { name: "Overhead Rope Pull",     sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "cable"   },
+    { name: "Close Grip Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
+    { name: "Dips",                   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "bw"      },
   ],
   Biceps: [
-    { name: "Dumbbell Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Preacher Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6 },
-    { name: "Hammer Curl",        sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Concentration Curl", sets: "4", reps: "8-10",  note: "", intensity: 5 },
-    { name: "Reverse Grip Curl",  sets: "4", reps: "8-10",  note: "", intensity: 4 },
-    { name: "21s",                sets: "4", reps: "21",    note: "", intensity: 6 },
-    { name: "EZ Bar Curl",        sets: "4", reps: "6-8",   note: "", intensity: 7 },
-    { name: "Seated EZ Bar Curl", sets: "4", reps: "6-8",   note: "", intensity: 7 },
+    { name: "Dumbbell Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
+    { name: "Preacher Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "machine" },
+    { name: "Hammer Curl",        sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
+    { name: "Concentration Curl", sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
+    { name: "Reverse Grip Curl",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
+    { name: "21s",                sets: "4", reps: "21",    note: "", intensity: 6, eq: "db"      },
+    { name: "EZ Bar Curl",        sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
+    { name: "Seated EZ Bar Curl", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
+    { name: "Cable Bicep Curl",   sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Incline Dumbbell Curl", sets: "4", reps: "8-10", note: "", intensity: 6, eq: "db"    },
   ],
   Legs: [
-    { name: "Barbell Squat",         sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true  },
-    { name: "Pendulum Squat",        sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true  },
-    { name: "Hack Squat",            sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true  },
-    { name: "Box Squat",             sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true  },
-    { name: "Leg Press",             sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true  },
-    { name: "RDL",                   sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true  },
-    { name: "Bulgarian Split Squat", sets: "4", reps: "8-10", note: "", intensity: 7, compound: true  },
-    { name: "Elevated Lunges",       sets: "4", reps: "8-10", note: "", intensity: 6, compound: true  },
-    { name: "Walking Lunges",        sets: "4", reps: "8-10", note: "", intensity: 6, compound: true  },
-    { name: "Step Ups",              sets: "4", reps: "8-10", note: "", intensity: 5, compound: true  },
-    { name: "Static Lunges",         sets: "4", reps: "8-10", note: "", intensity: 5, compound: true  },
-    { name: "Seated Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 5, compound: false },
-    { name: "Lying Leg Curl",        sets: "4", reps: "8-10", note: "", intensity: 5, compound: false },
-    { name: "Leg Extension",         sets: "4", reps: "8-10", note: "", intensity: 4, compound: false },
-    { name: "Single Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 4, compound: false },
-    { name: "Adductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false },
-    { name: "Abductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false },
-    { name: "Calf Raises",           sets: "4", reps: "10",   note: "", intensity: 3, compound: false },
+    { name: "Barbell Squat",         sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true,  eq: "barbell" },
+    { name: "Pendulum Squat",        sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true,  eq: "machine" },
+    { name: "Hack Squat",            sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true,  eq: "machine" },
+    { name: "Box Squat",             sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true,  eq: "barbell" },
+    { name: "Leg Press",             sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "machine" },
+    { name: "RDL",                   sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "barbell" },
+    { name: "Bulgarian Split Squat", sets: "4", reps: "8-10", note: "", intensity: 7, compound: true,  eq: "db"      },
+    { name: "Elevated Lunges",       sets: "4", reps: "8-10", note: "", intensity: 6, compound: true,  eq: "db"      },
+    { name: "Walking Lunges",        sets: "4", reps: "8-10", note: "", intensity: 6, compound: true,  eq: "db"      },
+    { name: "Step Ups",              sets: "4", reps: "8-10", note: "", intensity: 5, compound: true,  eq: "db"      },
+    { name: "Static Lunges",         sets: "4", reps: "8-10", note: "", intensity: 5, compound: true,  eq: "bw"      },
+    { name: "Seated Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 5, compound: false, eq: "machine" },
+    { name: "Lying Leg Curl",        sets: "4", reps: "8-10", note: "", intensity: 5, compound: false, eq: "machine" },
+    { name: "Leg Extension",         sets: "4", reps: "8-10", note: "", intensity: 4, compound: false, eq: "machine" },
+    { name: "Single Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 4, compound: false, eq: "machine" },
+    { name: "Adductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
+    { name: "Abductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
+    { name: "Calf Raises",           sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "db"      },
+    { name: "Deficit Lunges",        sets: "4", reps: "8-10", note: "", intensity: 7, compound: true,  eq: "db"      },
   ],
 };
 
@@ -90,88 +96,88 @@ const WIFEY_COLOR = "#FF6B9D";
 
 const WIFEY_FULL_BODY_BANK = {
   Chest: [
-    { name: "Dumbbell Fly",        sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Incline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Push Up",             sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Flat Bench Press",    sets: "3", reps: "12-15", note: "", intensity: 7 },
-    { name: "Decline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 5 },
+    { name: "Dumbbell Fly",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
+    { name: "Incline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "barbell" },
+    { name: "Push Up",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "bw"      },
+    { name: "Flat Bench Press",    sets: "3", reps: "12-15", note: "", intensity: 7, eq: "barbell" },
+    { name: "Decline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "barbell" },
   ],
   Back: [
-    { name: "Lat Pulldown",          sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Seated Cable Row",      sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Dumbbell Row",          sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Chest Supported Row",   sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Straight Arm Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Face Pull",             sets: "3", reps: "15",    note: "", intensity: 3 },
+    { name: "Lat Pulldown",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable"   },
+    { name: "Seated Cable Row",      sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable"   },
+    { name: "Dumbbell Row",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
+    { name: "Chest Supported Row",   sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine" },
+    { name: "Straight Arm Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
+    { name: "Face Pull",             sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable"   },
   ],
   Shoulders: [
-    { name: "Lateral Raise",  sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Front Raise",    sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Rear Delt Fly",  sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Dumbbell Press", sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Arnold Press",   sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Upright Row",    sets: "3", reps: "12-15", note: "", intensity: 5 },
+    { name: "Lateral Raise",  sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
+    { name: "Front Raise",    sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
+    { name: "Rear Delt Fly",  sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
+    { name: "Dumbbell Press", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
+    { name: "Arnold Press",   sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
+    { name: "Upright Row",    sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
   ],
   Legs: [
-    { name: "Leg Press",             sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "RDL",                   sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Walking Lunges",        sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Bulgarian Split Squat", sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Leg Extension",         sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Seated Leg Curl",       sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Calf Raises",           sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Abductor",              sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Adductor",              sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Step Ups",              sets: "3", reps: "12-15", note: "", intensity: 4 },
+    { name: "Leg Press",             sets: "3", reps: "12-15", note: "", intensity: 6, eq: "machine" },
+    { name: "RDL",                   sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
+    { name: "Walking Lunges",        sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
+    { name: "Bulgarian Split Squat", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
+    { name: "Leg Extension",         sets: "3", reps: "12-15", note: "", intensity: 4, eq: "machine" },
+    { name: "Seated Leg Curl",       sets: "3", reps: "12-15", note: "", intensity: 4, eq: "machine" },
+    { name: "Calf Raises",           sets: "3", reps: "15",    note: "", intensity: 3, eq: "db"      },
+    { name: "Abductor",              sets: "3", reps: "15",    note: "", intensity: 3, eq: "machine" },
+    { name: "Adductor",              sets: "3", reps: "15",    note: "", intensity: 3, eq: "machine" },
+    { name: "Step Ups",              sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
   ],
   Core: [
-    { name: "Plank",            sets: "3", reps: "30-45 sec", note: "", intensity: 4 },
-    { name: "Bicycle Crunches", sets: "3", reps: "15-20",     note: "", intensity: 4 },
-    { name: "Leg Raises",       sets: "3", reps: "12-15",     note: "", intensity: 5 },
-    { name: "Russian Twists",   sets: "3", reps: "15-20",     note: "", intensity: 4 },
-    { name: "Dead Bug",         sets: "3", reps: "10-12",     note: "", intensity: 3 },
+    { name: "Plank",            sets: "3", reps: "30-45 sec", note: "", intensity: 4, eq: "bw" },
+    { name: "Bicycle Crunches", sets: "3", reps: "15-20",     note: "", intensity: 4, eq: "bw" },
+    { name: "Leg Raises",       sets: "3", reps: "12-15",     note: "", intensity: 5, eq: "bw" },
+    { name: "Russian Twists",   sets: "3", reps: "15-20",     note: "", intensity: 4, eq: "bw" },
+    { name: "Dead Bug",         sets: "3", reps: "10-12",     note: "", intensity: 3, eq: "bw" },
   ],
 };
 
 const WIFEY_CABLE_BANK = {
   "Upper Body": [
-    { name: "Cable Lat Pulldown",            sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Seated Row",              sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Face Pull",               sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Cable Single Arm Row",          sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Straight Arm Pulldown",   sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Fly Low to High",         sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Fly High to Low",         sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Lateral Raise",           sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Front Raise",             sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Rear Delt Fly",           sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Upright Row",             sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Shrug",                   sets: "3", reps: "12-15", note: "", intensity: 3 },
+    { name: "Cable Lat Pulldown",            sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Seated Row",              sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Face Pull",               sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable" },
+    { name: "Cable Single Arm Row",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Straight Arm Pulldown",   sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Fly Low to High",         sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Fly High to Low",         sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Lateral Raise",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Front Raise",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Rear Delt Fly",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Upright Row",             sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Shrug",                   sets: "3", reps: "12-15", note: "", intensity: 3, eq: "cable" },
   ],
   Arms: [
-    { name: "Cable Bicep Curl",                sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Hammer Curl",               sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Reverse Curl",              sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Overhead Tricep Extension", sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Tricep Rope Pushdown",      sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Tricep Kickback",           sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Single Arm Curl",           sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Bar Curl",                  sets: "3", reps: "12-15", note: "", intensity: 5 },
+    { name: "Cable Bicep Curl",                sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Hammer Curl",               sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Reverse Curl",              sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Overhead Tricep Extension", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Tricep Rope Pushdown",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Tricep Kickback",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Single Arm Curl",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Bar Curl",                  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
   ],
   "Lower Body": [
-    { name: "Cable Squat",            sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Cable Romanian Deadlift",sets: "3", reps: "12-15", note: "", intensity: 6 },
-    { name: "Cable Glute Kickback",   sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Hip Abduction",    sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Cable Hip Adduction",    sets: "3", reps: "15",    note: "", intensity: 3 },
-    { name: "Cable Leg Curl",         sets: "3", reps: "12-15", note: "", intensity: 4 },
+    { name: "Cable Squat",             sets: "3", reps: "12-15", note: "", intensity: 6, eq: "cable" },
+    { name: "Cable Romanian Deadlift", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "cable" },
+    { name: "Cable Glute Kickback",    sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Hip Abduction",     sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable" },
+    { name: "Cable Hip Adduction",     sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable" },
+    { name: "Cable Leg Curl",          sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
   ],
   Core: [
-    { name: "Cable Woodchop High-Low",  sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Woodchop Low-High",  sets: "3", reps: "12-15", note: "", intensity: 5 },
-    { name: "Cable Pallof Press",       sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Oblique Twist",      sets: "3", reps: "12-15", note: "", intensity: 4 },
-    { name: "Cable Kneeling Crunch",    sets: "3", reps: "12-15", note: "", intensity: 4 },
+    { name: "Cable Woodchop High-Low",  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Woodchop Low-High",  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
+    { name: "Cable Pallof Press",       sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Oblique Twist",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Kneeling Crunch",    sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
   ],
 };
 
@@ -184,9 +190,84 @@ const CARDIO_OPTIONS = [
   { id: "pilates",         label: "Pilates",          emoji: "🧘" },
 ];
 
+const FINISH_MESSAGES = [
+  "BEAST MODE.",
+  "NO DAYS OFF. EVER.",
+  "BUILT DIFFERENT.",
+  "DONE.",
+  "SEE YOU TOMORROW.",
+  "ONE STEP CLOSER.",
+  "YOU JUST DID THAT.",
+  "LIGHT WORK.",
+  "YOU BROKE A SWEAT.",
+  "FUTURE YOU SAYS THANKS.",
+  "LOCKED IN.",
+  "ANOTHER ONE.",
+  "NO EXCUSES. JUST RESULTS.",
+  "THE WORK DOESN'T LIE.",
+  "EARNED, NOT GIVEN.",
+  "RELENTLESS.",
+];
 const MIN_PER_GROUP = 3;
 const DEFAULT_TOTAL = 7;
 const REST_DURATION = 90;
+
+// Portable = can do right next to a fixed station. Fixed = machine/cable/barbell needs its own spot.
+const PORTABLE_EQ = new Set(["db", "ez", "bw"]);
+function isPortable(eq) { return PORTABLE_EQ.has(eq); }
+function isFixed(eq) { return !isPortable(eq); }
+
+// Can these two exercises be supersetted? One must be portable, one must be fixed.
+// Also avoid pairing two exercises from the same muscle group (too much overlap).
+function canSuperset(a, b, groupA, groupB) {
+  const oneFixed = (isFixed(a.eq) && isPortable(b.eq)) || (isPortable(a.eq) && isFixed(b.eq));
+  const diffGroup = groupA !== groupB;
+  return oneFixed && diffGroup;
+}
+
+// Given a flat list of {exercise, group} pairs, find valid superset pairs.
+// Returns array of index pairs [i, j] that are good candidates.
+function findSupersetPairs(exWithGroups) {
+  const pairs = [];
+  for (let i = 0; i < exWithGroups.length; i++) {
+    for (let j = i + 1; j < exWithGroups.length; j++) {
+      const { ex: a, group: gA } = exWithGroups[i];
+      const { ex: b, group: gB } = exWithGroups[j];
+      if (canSuperset(a, b, gA, gB)) pairs.push([i, j]);
+    }
+  }
+  return pairs;
+}
+
+// Inject supersets into sections. supersetCount = how many to create (1-2 typically).
+function injectSupersets(sections, supersetCount) {
+  // Flatten all exercises with their section/exercise indices
+  const flat = [];
+  sections.forEach((s, si) => s.exercises.forEach((ex, ei) => flat.push({ ex, group: s.group, si, ei })));
+  const validPairs = findSupersetPairs(flat);
+  if (validPairs.length === 0) return sections; // no valid pairs, skip
+  // Shuffle valid pairs and pick up to supersetCount non-overlapping ones
+  const shuffledPairs = shuffle(validPairs);
+  const usedIndices = new Set();
+  const chosen = [];
+  for (const [i, j] of shuffledPairs) {
+    if (chosen.length >= supersetCount) break;
+    if (!usedIndices.has(i) && !usedIndices.has(j)) {
+      chosen.push([i, j]);
+      usedIndices.add(i);
+      usedIndices.add(j);
+    }
+  }
+  // Tag chosen exercises with supersetId
+  chosen.forEach(([i, j], idx) => {
+    flat[i].ex = { ...flat[i].ex, supersetId: `ss${idx}`, supersetRole: "A" };
+    flat[j].ex = { ...flat[j].ex, supersetId: `ss${idx}`, supersetRole: "B" };
+  });
+  // Rebuild sections with tagged exercises
+  const newSections = sections.map(s => ({ ...s, exercises: [] }));
+  flat.forEach(({ ex, si, ei }) => { newSections[si].exercises[ei] = ex; });
+  return newSections;
+}
 // ============================================================
 //  END OF CONFIGURATION
 // ============================================================
@@ -229,6 +310,26 @@ function orderByIntensity(exercises, total) {
   return result;
 }
 
+// Option D: Compounds always 4. Isolations get 4 in first half, 3 in second half.
+// Plus 20% random chance any isolation flips to 3 regardless of position.
+const COMPOUND_MOVEMENTS = new Set([
+  "Flat Bench Press","Incline Bench Press","Decline Bench Press","Close Grip Bench Press",
+  "Standing Barbell Press","Barbell Row","Rack Pull","Pull Up","Dips",
+  "Barbell Squat","Pendulum Squat","Hack Squat","Box Squat","Leg Press","RDL",
+  "Bulgarian Split Squat","Elevated Lunges","Walking Lunges","Step Ups","Static Lunges",
+  "Arnold Press","Dumbbell Press","Upright Row","Smith Machine Shoulder Press",
+]);
+function assignSets(exercises, defaultSets) {
+  const total = exercises.length;
+  return exercises.map((ex, i) => {
+    const isCompound = COMPOUND_MOVEMENTS.has(ex.name) || (ex.compound === true);
+    const inSecondHalf = i >= Math.ceil(total * 0.6);
+    const randomFlip = Math.random() < 0.2;
+    const useFewer = !isCompound && (inSecondHalf || randomFlip);
+    return { ...ex, sets: useFewer ? String(Math.max(3, parseInt(defaultSets) - 1)) : defaultSets };
+  });
+}
+
 function generateBroWorkout(split, total) {
   const minPer = split.fullBody ? 1 : MIN_PER_GROUP;
   const counts = distributeExercises(BRO_EXERCISE_BANK, split.groups, total, minPer);
@@ -256,7 +357,12 @@ function generateBroWorkout(split, total) {
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
   });
-  return { sections, startTime: Date.now() };
+  // Flatten all exercises, assign sets, then put back
+  const allEx = sections.flatMap(s => s.exercises);
+  const withSets = assignSets(allEx, "4");
+  let idx = 0;
+  const finalSections = sections.map(s => ({ ...s, exercises: s.exercises.map(() => withSets[idx++]) }));
+  return { sections: finalSections, startTime: Date.now() };
 }
 
 function getUsedExercisesLast2Weeks(history, workoutType) {
@@ -284,7 +390,11 @@ function generateWifeyWorkout(bank, total, history, workoutType) {
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
   });
-  return { sections, startTime: Date.now() };
+  const allEx = sections.flatMap(s => s.exercises);
+  const withSets = assignSets(allEx, "3");
+  let idx = 0;
+  const finalSections = sections.map(s => ({ ...s, exercises: s.exercises.map(() => withSets[idx++]) }));
+  return { sections: finalSections, startTime: Date.now() };
 }
 
 function getWeekKey(ts) {
@@ -361,12 +471,14 @@ function Wrap({ children, extraCss }) {
 }
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp }) {
+  const REST_DUR = restDurationProp || REST_DURATION;
   const [checked, setChecked] = useState({});
+  const [setsDone, setSetsDone] = useState({});
   const [expanded, setExpanded] = useState({});
   const [justChecked, setJustChecked] = useState(null);
   const [timerActive, setTimerActive] = useState(false);
-  const [timerLeft, setTimerLeft] = useState(REST_DURATION);
+  const [timerLeft, setTimerLeft] = useState(REST_DUR);
   const [prModal, setPrModal] = useState(null);
   const [prWeight, setPrWeight] = useState("");
   const [prReps, setPrReps] = useState("");
@@ -381,18 +493,18 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const completedCount = allKeys.filter(k => checked[k]).length;
   const totalCount = allKeys.length;
   const allDone = totalCount > 0 && completedCount === totalCount;
-  const timerPct = (timerLeft / REST_DURATION) * 100;
+  const timerPct = (timerLeft / REST_DUR) * 100;
   const timerColor = timerLeft > 30 ? "#76FF03" : timerLeft > 10 ? "#FFB300" : "#FF3D00";
 
   useEffect(() => {
     completedRef.current = false;
-    setChecked({}); setExpanded({}); setShowSummary(false); setSummaryData(null);
+    setChecked({}); setSetsDone({}); setExpanded({}); setShowSummary(false); setSummaryData(null);
   }, [workout]);
 
   useEffect(() => {
     if (timerActive) {
       timerRef.current = setInterval(() => {
-        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); return REST_DURATION; } return t - 1; });
+        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); return REST_DUR; } return t - 1; });
       }, 1000);
     } else clearInterval(timerRef.current);
     return () => clearInterval(timerRef.current);
@@ -402,17 +514,29 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
     if (allDone && !completedRef.current) {
       completedRef.current = true;
       const duration = workout.startTime ? Date.now() - workout.startTime : 0;
-      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: sections.flatMap(s => s.exercises.map(e => e.name)), total: totalCount, type: "workout" };
+      const finishMsg = FINISH_MESSAGES[Math.floor(Math.random() * FINISH_MESSAGES.length)];
+      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: sections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: sections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: totalCount, finishMsg, type: "workout" };
       setSummaryData(data);
       onComplete(data);
       setTimeout(() => setShowSummary(true), 700);
     }
   }, [allDone]);
 
-  function handleCheck(key) {
-    const nowDone = !checked[key];
-    setChecked(c => ({ ...c, [key]: nowDone }));
-    if (nowDone) { setJustChecked(key); setTimeout(() => setJustChecked(null), 600); setTimerLeft(REST_DURATION); setTimerActive(true); }
+  function handleCheck(key, totalSets) {
+    const current = setsDone[key] || 0;
+    const maxSets = parseInt(totalSets) || 1;
+    if (current >= maxSets) return;
+    const next = current + 1;
+    const nowDone = next >= maxSets;
+    setSetsDone(s => ({ ...s, [key]: next }));
+    if (nowDone) {
+      setChecked(c => ({ ...c, [key]: true }));
+      setTimerActive(false);
+      setTimerLeft(REST_DUR);
+    } else {
+      setJustChecked(key); setTimeout(() => setJustChecked(null), 600);
+      setTimerLeft(REST_DUR); setTimerActive(true);
+    }
   }
 
   function swapExercise(si, ei) {
@@ -470,11 +594,11 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
         <div className="sov">
           <div style={{ background:"#0e0e0e", border:`1px solid ${summaryData.color}30`, borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ textAlign:"center", marginBottom:24 }}>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:summaryData.color, lineHeight:1, letterSpacing:2 }}>DONE.</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:summaryData.color, lineHeight:1, letterSpacing:2 }}>{summaryData.finishMsg}</div>
               <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(summaryData.date)}</div>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
-              {[{label:"SPLIT",value:summaryData.split},{label:"TIME",value:formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:summaryData.total*3}].map(({label,value}) => (
+              {[{label:"SPLIT",value:summaryData.split},{label:"TIME",value:formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
                 <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${summaryData.color}`, padding:"12px 14px" }}>
                   <div style={{ color:"#444", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:3 }}>{label}</div>
                   <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color:"#fff", lineHeight:1 }}>{value}</div>
@@ -504,7 +628,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
             <div style={{ background:timerColor, height:"100%", width:`${timerPct}%`, borderRadius:2, transition:"width 1s linear, background 0.5s" }} />
           </div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:22, fontWeight:900, color:timerColor, minWidth:44, textAlign:"right" }}>{timerLeft}s</div>
-          <button onClick={() => { setTimerActive(false); setTimerLeft(REST_DURATION); }} style={{ background:"none", border:"none", color:"#2a2a2a", cursor:"pointer", fontSize:16, padding:0 }}>x</button>
+          <button onClick={() => { setTimerActive(false); setTimerLeft(REST_DUR); }} style={{ background:"none", border:"none", color:"#2a2a2a", cursor:"pointer", fontSize:16, padding:0 }}>x</button>
         </div>
       )}
 
@@ -535,11 +659,29 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                   num++;
                   const n = num; const key = `${si}-${ei}`;
                   const done = checked[key]; const isExp = expanded[key]; const isPop = justChecked === key; const hasPr = !!prs[ex.name];
+                  const setsCompleted = setsDone[key] || 0;
+                  const totalSets = parseInt(ex.sets) || 1;
+                  const inProgress = setsCompleted > 0 && !done;
+                  const isSSA = ex.supersetId && ex.supersetRole === "A";
+                  const isSSB = ex.supersetId && ex.supersetRole === "B";
                   return (
-                    <div key={key} className={`exc${isPop?" pop":""}`} style={{ background:done?"#090909":"#0f0f0f", border:"1px solid #161616", borderLeft:`3px solid ${done?"#1e1e1e":color}`, opacity:done?0.4:1 }}>
+                    <div key={key}>
+                      {isSSA && (
+                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                          <div style={{ width:3, height:3, borderRadius:"50%", background:color, opacity:0.6 }} />
+                          <span style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:color, fontWeight:800, opacity:0.7 }}>SUPERSET</span>
+                          <div style={{ flex:1, height:1, background:color, opacity:0.15 }} />
+                        </div>
+                      )}
+                      <div className={`exc${isPop?" pop":""}`} style={{ background:done?"#090909":"#0f0f0f", border:`1px solid ${ex.supersetId ? color+"33" : "#161616"}`, borderLeft:`3px solid ${done?"#1e1e1e":color}`, opacity:done?0.4:1 }}>
                       <div style={{ padding:"14px 14px", display:"flex", alignItems:"center", gap:12 }}>
-                        <div className="chk" onClick={() => handleCheck(key)} style={{ background:done?color:"transparent", borderColor:done?color:"#252525" }}>
-                          {done ? <span style={{ fontSize:14, color:"#000", fontWeight:900 }}>v</span> : <span style={{ fontSize:13, color:"#2e2e2e", fontWeight:900 }}>{n}</span>}
+                        <div className="chk" onClick={() => handleCheck(key, ex.sets)} style={{ background:done?color:inProgress?color+"22":"transparent", borderColor:done?color:inProgress?color:"#252525", position:"relative" }}>
+                          {done
+                            ? <span style={{ fontSize:16, color:"#000", fontWeight:900, lineHeight:1 }}>✓</span>
+                            : inProgress
+                              ? <span style={{ fontSize:11, color:color, fontWeight:900, lineHeight:1, textAlign:"center" }}>{setsCompleted}<span style={{ color:color+"66" }}>/{totalSets}</span></span>
+                              : <span style={{ fontSize:13, color:"#2e2e2e", fontWeight:900 }}>{n}</span>
+                          }
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ fontFamily:"'Barlow Condensed'", fontWeight:800, fontSize:18, letterSpacing:0.5, textDecoration:done?"line-through":"none", color:done?"#2a2a2a":"#fff", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{ex.name.toUpperCase()}</div>
@@ -553,6 +695,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                           <button className={`prbtn${hasPr?" got":""}`} onClick={() => openPr(ex.name)}>PR</button>
                         </div>
                       </div>
+                    </div>
                     </div>
                   );
                 })}
@@ -573,7 +716,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 }
 
 // ── HISTORY SCREEN ────────────────────────────────────────────────────────
-function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear }) {
+function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, onDeleteSaved }) {
   const [showSaved, setShowSaved] = useState(false);
   const weeks = {};
   history.forEach(h => { const wk = getWeekKey(h.date); if (!weeks[wk]) weeks[wk] = []; weeks[wk].push(h); });
@@ -599,7 +742,10 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear }
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:900, letterSpacing:1 }}>{w.split?.toUpperCase()}</div>
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600, marginTop:2 }}>{formatDate(w.date).toUpperCase()} . {w.total} EXERCISES</div>
               </div>
-              <div style={{ color:"#FFB300", fontSize:16, fontFamily:"'Barlow Condensed'", fontWeight:800, letterSpacing:1 }}>SAVED</div>
+              <div style={{ color:"#FFB300", fontSize:16, fontFamily:"'Barlow Condensed'", fontWeight:800, letterSpacing:1, display:"flex", alignItems:"center", gap:8 }}>
+                <span>SAVED</span>
+                <button onClick={() => onDeleteSaved(idx)} style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:3, color:"#444", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"3px 8px", cursor:"pointer" }}>✕</button>
+              </div>
             </div>
             {(w.exerciseDetails || (w.exercises||[]).map(name => ({name, sets:"", reps:""}))).map((ex, i) => (
               <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom: i<(w.exerciseDetails||w.exercises||[]).length-1 ? "1px solid #1a1a1a" : "none" }}>
@@ -667,42 +813,46 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
   // ── Streak calculation ────────────────────────────────────────────────────
   function calcStreak(hist) {
     if (!hist.length) return { current: 0, best: 0 };
-    // Build set of unique day strings that have activity
-    const activeDays = new Set(
-      hist.map(h => new Date(h.date).toISOString().slice(0, 10))
-    );
-    const sorted = Array.from(activeDays).sort();
+    // Count sessions per week
+    const weekSessions = {};
+    hist.forEach(h => {
+      const k = getWeekKey(h.date);
+      weekSessions[k] = (weekSessions[k] || 0) + 1;
+    });
+    // Weeks with 4+ sessions qualify
+    const activeWeeks = new Set(Object.entries(weekSessions).filter(([,v]) => v >= 4).map(([k]) => k));
+    const sortedWeeks = Array.from(activeWeeks).sort();
 
-    // Current streak: count consecutive days going backwards from today
+    const currentWeekKey = getWeekKey(Date.now());
+    const prevWeekDate = new Date(); prevWeekDate.setDate(prevWeekDate.getDate() - 7);
+    const prevWeekKey = getWeekKey(prevWeekDate.getTime());
+
+    // Current streak: walk backwards week by week
     let current = 0;
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    let check = new Date(today);
-    // Allow today OR yesterday to keep streak alive
-    const todayStr = today.toISOString().slice(0,10);
-    const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
-    const yesterdayStr = yesterday.toISOString().slice(0,10);
-    if (!activeDays.has(todayStr) && !activeDays.has(yesterdayStr)) {
-      current = 0;
-    } else {
-      if (activeDays.has(todayStr)) check = new Date(today);
-      else check = new Date(yesterday);
+    const startKey = activeWeeks.has(currentWeekKey) ? currentWeekKey : activeWeeks.has(prevWeekKey) ? prevWeekKey : null;
+    if (startKey) {
+      let checkDate = new Date();
+      if (startKey === prevWeekKey) checkDate.setDate(checkDate.getDate() - 7);
+      checkDate.setHours(0,0,0,0);
       while (true) {
-        const key = check.toISOString().slice(0,10);
-        if (activeDays.has(key)) { current++; check.setDate(check.getDate()-1); }
+        const k = getWeekKey(checkDate.getTime());
+        if (activeWeeks.has(k)) { current++; checkDate.setDate(checkDate.getDate() - 7); }
         else break;
       }
     }
 
-    // Best streak: scan all sorted days
-    let best = 0; let run = 1;
-    for (let i = 1; i < sorted.length; i++) {
-      const prev = new Date(sorted[i-1]); prev.setDate(prev.getDate()+1);
-      if (prev.toISOString().slice(0,10) === sorted[i]) { run++; }
-      else { run = 1; }
+    // Best streak: longest consecutive run of qualifying weeks
+    let best = 0; let run = 0;
+    for (let i = 0; i < sortedWeeks.length; i++) {
+      if (i === 0) { run = 1; }
+      else {
+        const [py, pw] = sortedWeeks[i-1].split('-').map(Number);
+        const [cy, cw] = sortedWeeks[i].split('-').map(Number);
+        const consecutive = (cy === py && cw === pw + 1) || (cy === py + 1 && pw >= 52 && cw === 1);
+        run = consecutive ? run + 1 : 1;
+      }
       if (run > best) best = run;
     }
-    if (sorted.length === 1) best = 1;
     if (current > best) best = current;
     return { current, best };
   }
@@ -753,8 +903,8 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
         <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>TRAINING STREAK</div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
           {[
-            { label:"CURRENT", value: streak, unit: streak === 1 ? "DAY" : "DAYS", highlight: true },
-            { label:"BEST",    value: bestStreak, unit: bestStreak === 1 ? "DAY" : "DAYS", highlight: false },
+            { label:"CURRENT", value: streak, unit: streak === 1 ? "WEEK" : "WEEKS", highlight: true },
+            { label:"BEST",    value: bestStreak, unit: bestStreak === 1 ? "WEEK" : "WEEKS", highlight: false },
             { label:"THIS WEEK", value: thisWeek, unit: thisWeek === 1 ? "SESSION" : "SESSIONS", highlight: false },
           ].map(({ label, value, unit, highlight }) => (
             <div key={label} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${highlight && streak > 0 ? profileColor : "#1a1a1a"}`, padding:"16px 14px" }}>
@@ -865,6 +1015,12 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
 // ── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
+  const [settings, setSettings] = useState({ restDuration: 90, supersets: false });
+  function updateSetting(key, val) {
+    const next = { ...settings, [key]: val };
+    setSettings(next);
+    saveStorage("dg-settings", next);
+  }
   const [broSplit, setBroSplit] = useState(null);
   const [broTotal, setBroTotal] = useState(DEFAULT_TOTAL);
   const [broWorkout, setBroWorkout] = useState({ sections:[], startTime:null });
@@ -892,6 +1048,7 @@ export default function App() {
     const wwl = loadStorage("wy-weightlog"); if (wwl) setWifeyWeightLog(wwl);
     const bs = loadStorage("dg-saved"); if (bs) setBroSaved(bs);
     const ws = loadStorage("wy-saved"); if (ws) setWifeySaved(ws);
+    const st = loadStorage("dg-settings"); if (st) setSettings(st);
   }, []);
 
   const broMin = broSplit ? (broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
@@ -921,6 +1078,8 @@ export default function App() {
   function saveWifeyWeight(log) { setWifeyWeightLog(log); saveStorage("wy-weightlog", log); }
   function saveBroWorkout(w) { const n=[w,...broSaved].slice(0,20); setBroSaved(n); saveStorage("dg-saved",n); }
   function saveWifeyWorkout(w) { const n=[w,...wifeySaved].slice(0,20); setWifeySaved(n); saveStorage("wy-saved",n); }
+  function deleteBroSaved(idx) { const n=broSaved.filter((_,i)=>i!==idx); setBroSaved(n); saveStorage("dg-saved",n); }
+  function deleteWifeySaved(idx) { const n=wifeySaved.filter((_,i)=>i!==idx); setWifeySaved(n); saveStorage("wy-saved",n); }
 
   function logCardio() {
     if (!cardioType || !cardioDuration) return;
@@ -935,7 +1094,7 @@ export default function App() {
       <div className="sc" style={{ padding:"60px 20px 40px", display:"flex", flexDirection:"column", minHeight:"100vh" }}>
         <div style={{ marginBottom:52 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:72, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>DAILY<br/><span style={{ color:"#FF3D00" }}>GRIND</span></div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>WHO'S TRAINING TODAY?</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>CHOOSE YOUR PROGRAM</div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:12, flex:1 }}>
           <div className="tc" onClick={() => setScreen("bro-home")} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:"4px solid #FF3D00", padding:"28px 24px", position:"relative", overflow:"hidden" }}>
@@ -949,7 +1108,10 @@ export default function App() {
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, letterSpacing:3, color:WIFEY_COLOR, marginTop:6, fontWeight:700 }}>TONE . CABLES . CARDIO</div>
           </div>
         </div>
-        <div style={{ textAlign:"center", color:"#1a1a1a", fontSize:10, letterSpacing:3, fontFamily:"'Barlow Condensed'", fontWeight:700, marginTop:40 }}>DAILY GRIND . FULL GYM</div>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:40 }}>
+          <div style={{ color:"#1a1a1a", fontSize:10, letterSpacing:3, fontFamily:"'Barlow Condensed'", fontWeight:700 }}>DAILY GRIND . FULL GYM</div>
+          <button onClick={() => setScreen("settings")} style={{ background:"transparent", border:"none", color:"#2a2a2a", fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:2, fontWeight:700, cursor:"pointer", padding:0 }}>⚙ SETTINGS</button>
+        </div>
       </div>
     </Wrap>
   );
@@ -1005,7 +1167,7 @@ export default function App() {
               <button className="cntbtn" disabled={broTotal >= broMax} onClick={() => setBroTotal(t => t+1)}>+</button>
             </div>
           </div>
-          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { setBroWorkout(generateBroWorkout(broSplit, broTotal)); setScreen("bro-workout"); }}>GENERATE WORKOUT</button>
+          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); setScreen("bro-workout"); }}>GENERATE WORKOUT</button>
         </div>
       </Wrap>
     );
@@ -1016,15 +1178,15 @@ export default function App() {
     <Wrap>
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={BRO_EXERCISE_BANK}
         onBack={() => setScreen("bro-home")}
-        onRegenerate={() => setBroWorkout(generateBroWorkout(broSplit, broTotal))}
-        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} />
+        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); }}
+        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} />
     </Wrap>
   );
 
   // ── BRO HISTORY ───────────────────────────────────────────────────────────
   if (screen === "bro-history") return (
     <Wrap>
-      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }} />
+      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }}  onDeleteSaved={deleteBroSaved} />
     </Wrap>
   );
 
@@ -1094,7 +1256,7 @@ export default function App() {
             <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
           </div>
         </div>
-        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode)); setScreen("wifey-workout"); }}>GENERATE WORKOUT</button>
+        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); setScreen("wifey-workout"); }}>GENERATE WORKOUT</button>
       </div>
     </Wrap>
   );
@@ -1105,15 +1267,15 @@ export default function App() {
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
         splitLabel={wifeyMode==="cables"?"All Cables":"Full Body"} color={wColor} bank={wifeyBank}
         onBack={() => setScreen("wifey-home")}
-        onRegenerate={() => setWifeyWorkout(generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode))}
-        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} />
+        onRegenerate={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); }}
+        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} />
     </Wrap>
   );
 
   // ── WIFEY HISTORY ─────────────────────────────────────────────────────────
   if (screen === "wifey-history") return (
     <Wrap>
-      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }} />
+      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }}  onDeleteSaved={deleteWifeySaved} />
     </Wrap>
   );
 
@@ -1159,6 +1321,55 @@ export default function App() {
               disabled={!cardioType||!cardioDuration} onClick={logCardio}>LOG CARDIO</button>
           </>
         )}
+      </div>
+    </Wrap>
+  );
+
+  // ── SETTINGS ──────────────────────────────────────────────────────────────
+  if (screen === "settings") return (
+    <Wrap>
+      <div className="sc" style={{ padding:"56px 20px 40px" }}>
+        <button className="bk" onClick={() => setScreen("landing")}>BACK</button>
+        <div style={{ marginTop:28, marginBottom:36 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>WORK<br/><span style={{ color:"#FF3D00" }}>OUT</span><br/>SETTINGS</div>
+        </div>
+
+        {/* REST TIMER */}
+        <div style={{ marginBottom:32 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", fontWeight:700, marginBottom:12 }}>REST TIMER</div>
+          <div style={{ display:"flex", gap:8 }}>
+            {[60, 90, 120].map(s => (
+              <button key={s} onClick={() => updateSetting("restDuration", s)}
+                style={{ flex:1, fontFamily:"'Barlow Condensed'", fontWeight:900, fontSize:20, letterSpacing:1, padding:"14px 0", borderRadius:4, cursor:"pointer",
+                  background: settings.restDuration === s ? "#FF3D00" : "#0f0f0f",
+                  color: settings.restDuration === s ? "#000" : "#333",
+                  border: settings.restDuration === s ? "1px solid #FF3D00" : "1px solid #1a1a1a" }}>
+                {s}s
+              </button>
+            ))}
+          </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:2, marginTop:8, fontWeight:600 }}>SECONDS BETWEEN SETS</div>
+        </div>
+
+        {/* SUPERSETS */}
+        <div style={{ marginBottom:32 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", fontWeight:700, marginBottom:12 }}>SUPERSETS</div>
+          <div style={{ background:"#0f0f0f", border:`1px solid ${settings.supersets ? "#FF3D0040" : "#1a1a1a"}`, borderLeft:`3px solid ${settings.supersets ? "#FF3D00" : "#1a1a1a"}`, borderRadius:4, padding:"16px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:18, fontWeight:800, letterSpacing:0.5, color: settings.supersets ? "#fff" : "#444" }}>INCLUDE SUPERSETS</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:1, marginTop:3, fontWeight:600 }}>GYM-FRIENDLY PAIRINGS . 1–2 PER WORKOUT</div>
+            </div>
+            <div onClick={() => updateSetting("supersets", !settings.supersets)}
+              style={{ width:44, height:26, borderRadius:13, background: settings.supersets ? "#FF3D00" : "#1a1a1a", border:`1px solid ${settings.supersets ? "#FF3D00" : "#333"}`, position:"relative", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
+              <div style={{ position:"absolute", top:3, left: settings.supersets ? 21 : 3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
+            </div>
+          </div>
+          {settings.supersets && (
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#333", letterSpacing:1, marginTop:8, fontWeight:600 }}>
+              PAIRS ONE MACHINE/BARBELL MOVE WITH A PORTABLE EXERCISE. TAKES EFFECT ON NEXT GENERATED WORKOUT.
+            </div>
+          )}
+        </div>
       </div>
     </Wrap>
   );
