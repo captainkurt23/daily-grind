@@ -1395,7 +1395,7 @@ export default function App() {
             </div>
           ))}
         </div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1432,8 +1432,8 @@ export default function App() {
               <div style={{ position:"absolute", top:3, left: broWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
             </div>
           </div>
-        </div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        </div>
       </Wrap>
     );
   }
@@ -1510,7 +1510,7 @@ export default function App() {
             </div>
           ))}
         </div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1545,7 +1545,7 @@ export default function App() {
             <div style={{ position:"absolute", top:3, left: wifeyWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
           </div>
         </div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1624,6 +1624,7 @@ export default function App() {
               disabled={!cardioType||!cardioDuration} onClick={logCardio}>LOG CARDIO</button>
           </>
         )}
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
