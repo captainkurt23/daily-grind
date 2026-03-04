@@ -515,7 +515,7 @@ function Wrap({ children, extraCss }) {
 }
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume, timerStyle }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume }) {
   const REST_DUR = restDurationProp || REST_DURATION;
   const [checked, setChecked] = useState({});
   const [setsDone, setSetsDone] = useState({});
@@ -551,7 +551,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   useEffect(() => {
     if (timerActive) {
       timerRef.current = setInterval(() => {
-        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); if (timerSound) playRestAlert(timerVolume ?? 0.5, timerStyle ?? "double-beep"); return REST_DUR; } return t - 1; });
+        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); if (timerSound) playRestAlert(timerVolume ?? 0.5, "triple-beep"); return REST_DUR; } return t - 1; });
       }, 1000);
     } else clearInterval(timerRef.current);
     return () => clearInterval(timerRef.current);
@@ -1121,7 +1121,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
 // ── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
-  const [settings, setSettings] = useState({ restDuration: 90, supersets: false, timerSound: true, timerVolume: 0.5, timerStyle: "double-beep" });
+  const [settings, setSettings] = useState({ restDuration: 90, supersets: false, timerSound: true, timerVolume: 0.5 });
   function updateSetting(key, val) {
     const next = { ...settings, [key]: val };
     setSettings(next);
@@ -1291,7 +1291,7 @@ export default function App() {
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={BRO_EXERCISE_BANK}
         onBack={() => setScreen("bro-home")}
         onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); }}
-        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} timerStyle={settings.timerStyle} />
+        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
     </Wrap>
   );
 
@@ -1380,7 +1380,7 @@ export default function App() {
         splitLabel={wifeyMode==="cables"?"All Cables":"Full Body"} color={wColor} bank={wifeyBank}
         onBack={() => setScreen("wifey-home")}
         onRegenerate={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); }}
-        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} timerStyle={settings.timerStyle} />
+        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
     </Wrap>
   );
 
@@ -1484,30 +1484,6 @@ export default function App() {
                   onChange={e => updateSetting("timerVolume", parseFloat(e.target.value))}
                   style={{ flex:1, accentColor:"#FF3D00", cursor:"pointer" }} />
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, color:"#FF3D00", fontWeight:900, minWidth:36, textAlign:"right" }}>{Math.round((settings.timerVolume ?? 0.5) * 100)}%</div>
-              </div>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, fontWeight:700, marginBottom:8, marginTop:16 }}>SOUND STYLE</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6, marginBottom:12 }}>
-                {[
-                  { id:"double-beep",  label:"Double Beep",   desc:"Two quick same-tone beeps" },
-                  { id:"single-ding",  label:"Single Ding",   desc:"One clean longer tone" },
-                  { id:"ascending",    label:"Ascending",     desc:"Low then high — go time" },
-                  { id:"descending",   label:"Descending",    desc:"High then low — mellow" },
-                  { id:"triple-beep",  label:"Triple Beep",   desc:"Three quick beeps — hard to miss" },
-                  { id:"soft-chime",   label:"Soft Chime",    desc:"Sine with long fade — zen" },
-                  { id:"power-up",     label:"Power Up",      desc:"Ascending sweep — energetic" },
-                ].map(s => (
-                  <div key={s.id} onClick={() => updateSetting("timerStyle", s.id)}
-                    style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${settings.timerStyle === s.id ? "#FF3D0060" : "#1a1a1a"}`, borderLeft:`3px solid ${settings.timerStyle === s.id ? "#FF3D00" : "#1a1a1a"}`, borderRadius:4, padding:"10px 14px", cursor:"pointer" }}>
-                    <div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:800, color: settings.timerStyle === s.id ? "#fff" : "#444", letterSpacing:0.5 }}>{s.label.toUpperCase()}</div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>{s.desc.toUpperCase()}</div>
-                    </div>
-                    <button onClick={e => { e.stopPropagation(); playRestAlert(settings.timerVolume ?? 0.5, s.id); }}
-                      style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:3, color:"#555", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", width:32, height:28 }}>
-                      <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><polygon points="0,0 10,6 0,12" fill="#555"/></svg>
-                    </button>
-                  </div>
-                ))}
               </div>
             </>
           )}
