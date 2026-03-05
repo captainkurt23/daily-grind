@@ -36,6 +36,8 @@ const BRO_EXERCISE_BANK = {
     { name: "Seated Row Machine",     sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "machine" },
     { name: "Barbell Row",            sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
     { name: "Face Pull",              sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
+    { name: "Deadlift",                sets: "4", reps: "4-6",   note: "", intensity: 10, eq: "barbell" },
+    { name: "Wide Grip Seated Cable Row", sets: "4", reps: "8-10", note: "", intensity: 6, eq: "cable"   },
   ],
   Chest: [
     { name: "Flat Bench Press",      sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
@@ -59,6 +61,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Side to Front Raise",            sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
     { name: "Cable Single Arm Lateral Raise", sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "cable"   },
     { name: "Smith Machine Shoulder Press",   sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "machine" },
+    { name: "Face Pull",                      sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
   ],
   Triceps: [
     { name: "V-Handle Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
@@ -81,6 +84,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Seated EZ Bar Curl", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
     { name: "Cable Bicep Curl",   sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
     { name: "Incline Dumbbell Curl", sets: "4", reps: "8-10", note: "", intensity: 6, eq: "db"    },
+    { name: "Chin Up",             sets: "4", reps: "6-10",  note: "", intensity: 7, eq: "bw"      },
   ],
   Legs: [
     { name: "Barbell Squat",         sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true,  eq: "barbell" },
@@ -139,6 +143,7 @@ const WIFEY_FULL_BODY_BANK = {
     { name: "Dumbbell Press", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
     { name: "Arnold Press",   sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
     { name: "Upright Row",    sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
+    { name: "Face Pull",      sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable"   },
   ],
   Legs: [
     { name: "Leg Press",             sets: "3", reps: "12-15", note: "", intensity: 6, eq: "machine" },
@@ -151,6 +156,7 @@ const WIFEY_FULL_BODY_BANK = {
     { name: "Abductor",              sets: "3", reps: "15",    note: "", intensity: 3, eq: "machine" },
     { name: "Adductor",              sets: "3", reps: "15",    note: "", intensity: 3, eq: "machine" },
     { name: "Step Ups",              sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
+    { name: "Hip Thrust",            sets: "3", reps: "12-15", note: "", intensity: 7, eq: "barbell"  },
   ],
   Core: [
     { name: "Plank",            sets: "3", reps: "30-45 sec", note: "", intensity: 4, eq: "bw" },
@@ -350,10 +356,10 @@ function distributeExercises(bank, groups, total, minPer) {
 
 const COMPOUND_NAMES = [
   "Flat Bench Press","Incline Bench Press","Decline Bench Press","Push Up",
-  "Barbell Row","Chest Supported Row","Pull Up","Seated Row Machine",
+  "Barbell Row","Chest Supported Row","Pull Up","Seated Row Machine","Deadlift","Wide Grip Seated Cable Row",
   "Barbell Squat","Box Squat","Hack Squat","Pendulum Squat","Leg Press",
-  "Bulgarian Split Squat","Elevated Lunges","Walking Lunges","Static Lunges","Step Ups","RDL",
-  "Standing Barbell Press","Dumbbell Press","Arnold Press",
+  "Bulgarian Split Squat","Elevated Lunges","Walking Lunges","Static Lunges","Step Ups","RDL","Hip Thrust",
+  "Standing Barbell Press","Dumbbell Press","Arnold Press","Chin Up",
 ];
 
 function orderByIntensity(exercises, total) {
