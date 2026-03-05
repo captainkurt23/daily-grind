@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Share2, Trophy, Settings, Star, TrendingUp, Wind, Activity, Zap, Dumbbell } from "lucide-react";
 
 // ============================================================
 //  CREATOR CONFIGURATION
@@ -203,12 +204,12 @@ const WIFEY_CABLE_BANK = {
 };
 
 const CARDIO_OPTIONS = [
-  { id: "stair-stepper",   label: "Stair Stepper",   emoji: "🪜" },
-  { id: "incline-walking", label: "Incline Walking",  emoji: "⛰️" },
-  { id: "flat-walking",    label: "Flat Walking",     emoji: "🚶" },
-  { id: "running",         label: "Running",          emoji: "🏃" },
-  { id: "jogging",         label: "Jogging",          emoji: "🏃" },
-  { id: "pilates",         label: "Pilates",          emoji: "🧘" },
+  { id: "stair-stepper",   label: "Stair Stepper",  icon: "TrendingUp"      },
+  { id: "incline-walking", label: "Incline Walking", icon: "TrendingUp"      },
+  { id: "flat-walking",    label: "Flat Walking",    icon: "Activity"      },
+  { id: "running",         label: "Running",         icon: "Wind"            },
+  { id: "jogging",         label: "Jogging",         icon: "Zap"  },
+  { id: "pilates",         label: "Pilates",         icon: "Dumbbell"           },
 ];
 
 const FINISH_MESSAGES = [
@@ -891,14 +892,14 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                     <span style={{ color:"#888", fontSize:13, fontFamily:"'Barlow Condensed'", fontWeight:600 }}>{name}</span>
                   </div>
                   {(summaryData.newPrs||[]).includes(name) && (
-                    <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700", marginTop:3, marginLeft:30 }}>NEW PR 🏆</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:3, marginLeft:30 }}><Trophy size={11} color="#FFD700" fill="#FFD700" /><span style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700" }}>NEW PR</span></div>
                   )}
                 </div>
               ))}
             </div>
             <button className="mbtn" style={{ background:summaryData.color, color:"#000", marginBottom:10 }} onClick={() => { setShowSummary(false); onBack(); }}>BACK TO HOME</button>
             <button className="mbtn" style={{ background:"transparent", color:"#333", border:"1px solid #1e1e1e" }} onClick={() => setShowSummary(false)}>KEEP VIEWING</button>
-            <button className="mbtn" onClick={handleScreenshot} style={{ background:"transparent", color:"#888", border:"1px solid #252525", marginTop:8 }}>SHARE WORKOUT 📸</button>
+            <button className="mbtn" onClick={handleScreenshot} style={{ background:"transparent", color:"#888", border:"1px solid #252525", marginTop:8, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}><Share2 size={14} color="#888" />SHARE WORKOUT</button>
             <button className="mbtn" onClick={() => { onSaveWorkout(summaryData); setIsSaved(true); }} style={{ background:"transparent", color: isSaved ? "#FFB300" : "#2a2a2a", border: isSaved ? "1px solid #FFB30040" : "1px solid #1e1e1e", marginTop:8 }}>{isSaved ? "SAVED" : "SAVE WORKOUT"}</button>
           </div>
         </div>
@@ -986,7 +987,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
         <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:430, padding:"16px 20px 28px", background:"linear-gradient(transparent, #080808 45%)" }}>
           <div style={{ display:"flex", gap:8 }}>
             <button className="mbtn" style={{ background: confirmRegen ? "#FF3D00" : "#111", color: confirmRegen ? "#000" : "#333", border: confirmRegen ? "1px solid #FF3D00" : "1px solid #1a1a1a", flex:3 }} onClick={() => { if (confirmRegen) { onRegenerate(); setConfirmRegen(false); } else { setConfirmRegen(true); setTimeout(() => setConfirmRegen(false), 3000); } }}>{confirmRegen ? "ARE YOU SURE?" : "REGENERATE"}</button>
-            <button className="mbtn" onClick={() => { const d = { split:splitLabel, color, date:Date.now(), exercises:workout.sections.flatMap(s=>s.exercises.map(e=>e.name)), exerciseDetails:workout.sections.flatMap(s=>s.exercises.map(e=>({name:e.name,sets:e.sets,reps:e.reps}))), total:workout.sections.flatMap(s=>s.exercises).length, type:"saved" }; onSaveWorkout(d); setIsSaved(true); }} style={{ background:isSaved ? "#FFB30015" : "#111", color:isSaved ? "#FFB300" : "#444", border:isSaved ? "1px solid #FFB30040" : "1px solid #1a1a1a", flex:1, fontSize:20, padding:0 }}>{isSaved ? "★" : "☆"}</button>
+            <button className="mbtn" onClick={() => { const d = { split:splitLabel, color, date:Date.now(), exercises:workout.sections.flatMap(s=>s.exercises.map(e=>e.name)), exerciseDetails:workout.sections.flatMap(s=>s.exercises.map(e=>({name:e.name,sets:e.sets,reps:e.reps}))), total:workout.sections.flatMap(s=>s.exercises).length, type:"saved" }; onSaveWorkout(d); setIsSaved(true); }} style={{ background:isSaved ? "#FFB30015" : "#111", border:isSaved ? "1px solid #FFB30040" : "1px solid #1a1a1a", flex:1, padding:0, display:"flex", alignItems:"center", justifyContent:"center" }}><Star size={18} color={isSaved ? "#FFB300" : "#444"} fill={isSaved ? "#FFB300" : "none"} /></button>
           </div>
         </div>
       </div>
@@ -1029,7 +1030,7 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
                 {typeof ex !== "string" && ex.sets && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#333", letterSpacing:1 }}>{ex.sets} x {ex.reps}</div>}
               </div>
               {(h.newPrs||[]).includes(typeof ex==="string"?ex:ex.name) && (
-                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700", marginTop:3 }}>NEW PR 🏆</div>
+                <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:3 }}><Trophy size={11} color="#FFD700" fill="#FFD700" /><span style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700" }}>NEW PR</span></div>
               )}
             </div>
           ))}
@@ -1464,7 +1465,7 @@ export default function App() {
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:40 }}>
           <div style={{ color:"#fff", fontSize:10, letterSpacing:3, fontFamily:"'Barlow Condensed'", fontWeight:700 }}>DAILY GRIND&#8482;</div>
-          <button onClick={() => setScreen("settings")} style={{ background:"transparent", border:"none", color:"#fff", fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:2, fontWeight:700, cursor:"pointer", padding:0 }}>⚙ SETTINGS</button>
+          <button onClick={() => setScreen("settings")} style={{ background:"transparent", border:"none", color:"#fff", fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:2, fontWeight:700, cursor:"pointer", padding:0, display:"flex", alignItems:"center", gap:6 }}><Settings size={11} color="#fff" />SETTINGS</button>
         </div>
       </div>
     </Wrap>
@@ -1713,7 +1714,11 @@ export default function App() {
             <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
               {CARDIO_OPTIONS.map(opt => (
                 <div key={opt.id} className={`caopt${cardioType?.id===opt.id?" sel":""}`} onClick={() => setCardioType(opt)}>
-                  <span style={{ fontSize:18 }}>{opt.emoji}</span>
+                  {opt.icon === "TrendingUp" && <TrendingUp size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
+                  {opt.icon === "Activity" && <Activity size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
+                  {opt.icon === "Wind" && <Wind size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
+                  {opt.icon === "Zap" && <Zap size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
+                  {opt.icon === "Dumbbell" && <Dumbbell size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
                   <span style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:800, letterSpacing:1 }}>{opt.label.toUpperCase()}</span>
                 </div>
               ))}
