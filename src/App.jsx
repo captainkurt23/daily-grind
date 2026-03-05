@@ -6,6 +6,23 @@ import { useState, useEffect, useRef } from "react";
 
 // eq: "machine" = fixed station, "cable" = cable machine, "barbell" = barbell needed,
 //     "db" = dumbbells (portable), "ez" = EZ bar (portable), "bw" = bodyweight (portable)
+const CORE_BANK = [
+  { name: "Cable Crunch",       sets: "3", reps: "15-20", intensity: 6, eq: "cable" },
+  { name: "Decline Sit Up",     sets: "3", reps: "15-20", intensity: 5, eq: "machine" },
+  { name: "Hanging Leg Raise",  sets: "3", reps: "12-15", intensity: 7, eq: "bw" },
+  { name: "Ab Wheel Rollout",   sets: "3", reps: "10-12", intensity: 8, eq: "bw" },
+  { name: "Weighted Crunch",    sets: "3", reps: "15-20", intensity: 5, eq: "db" },
+  { name: "Bicycle Crunch",     sets: "3", reps: "20-25", intensity: 4, eq: "bw" },
+  { name: "Leg Raise",          sets: "3", reps: "15-20", intensity: 5, eq: "bw" },
+  { name: "Russian Twist",      sets: "3", reps: "20-25", intensity: 4, eq: "bw" },
+  { name: "Toe Touches",        sets: "3", reps: "20-25", intensity: 3, eq: "bw" },
+  { name: "Mountain Climbers",  sets: "3", reps: "20-30", intensity: 5, eq: "bw" },
+  { name: "Flutter Kicks",      sets: "3", reps: "20-30", intensity: 4, eq: "bw" },
+  { name: "Hollow Hold",        sets: "3", reps: "30 SEC", intensity: 5, eq: "bw" },
+  { name: "Dead Bug",           sets: "3", reps: "10-12", intensity: 5, eq: "bw" },
+  { name: "Plank",              sets: "3", reps: "45 SEC", intensity: 4, eq: "bw" },
+];
+
 const BRO_EXERCISE_BANK = {
   Back: [
     { name: "Dumbbell Row",           sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
@@ -20,11 +37,14 @@ const BRO_EXERCISE_BANK = {
     { name: "Face Pull",              sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
   ],
   Chest: [
-    { name: "Flat Bench Press",    sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
-    { name: "Incline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
-    { name: "Decline Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "barbell" },
-    { name: "Dumbbell Fly",        sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Push Up",             sets: "4", reps: "15-20",  note: "", intensity: 4, eq: "bw"      },
+    { name: "Flat Bench Press",      sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
+    { name: "Incline Bench Press",   sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
+    { name: "Decline Bench Press",   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "barbell" },
+    { name: "Dumbbell Bench Press",  sets: "4", reps: "8-10",  note: "", intensity: 7, eq: "db"      },
+    { name: "Dumbbell Fly",          sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
+    { name: "Cable Fly (Upper)",     sets: "4", reps: "10-12", note: "", intensity: 5, eq: "cable"   },
+    { name: "Cable Fly (Lower)",     sets: "4", reps: "10-12", note: "", intensity: 5, eq: "cable"   },
+    { name: "Push Up",               sets: "4", reps: "15-20", note: "", intensity: 4, eq: "bw", supersetOnly: true },
   ],
   Shoulders: [
     { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "barbell" },
@@ -85,11 +105,12 @@ const BRO_EXERCISE_BANK = {
 };
 
 const BRO_SPLITS = [
-  { id: "chest-tri",      label: "Chest / Triceps",  sub: "PUSH DAY . CLASSIC",            groups: ["Chest","Triceps"],                color: "#FF3D00", fullBody: false, legsMode: null       },
-  { id: "legs",           label: "Legs",             sub: "LEG DAY . NO MERCY",            groups: ["Legs"],                           color: "#FFB300", fullBody: false, legsMode: "compound" },
-  { id: "back-bi",        label: "Back / Biceps",    sub: "PULL DAY . POWER",              groups: ["Back","Biceps"],                  color: "#00E5FF", fullBody: false, legsMode: null       },
-  { id: "shoulders-legs", label: "Shoulders / Legs", sub: "PRESS . ACCESSORY WORK",        groups: ["Shoulders","Legs"],               color: "#D500F9", fullBody: false, legsMode: "isolated" },
-  { id: "full-body",      label: "Full Body",        sub: "COMPOUND-FOCUSED . ALL MUSCLE", groups: ["Chest","Back","Legs","Shoulders"], color: "#76FF03", fullBody: true,  legsMode: "compound" },
+  { id: "chest-tri",      label: "Chest / Triceps",  sub: "PUSH DAY . CLASSIC",            groups: ["Chest","Triceps"],                color: "#FF3D00", fullBody: false, legsMode: null,       isCore: false },
+  { id: "legs",           label: "Legs",             sub: "LEG DAY . NO MERCY",            groups: ["Legs"],                           color: "#FFB300", fullBody: false, legsMode: "compound", isCore: false },
+  { id: "back-bi",        label: "Back / Biceps",    sub: "PULL DAY . POWER",              groups: ["Back","Biceps"],                  color: "#00E5FF", fullBody: false, legsMode: null,       isCore: false },
+  { id: "shoulders-legs", label: "Shoulders / Legs", sub: "PRESS . ACCESSORY WORK",        groups: ["Shoulders","Legs"],               color: "#D500F9", fullBody: false, legsMode: "isolated", isCore: false },
+  { id: "full-body",      label: "Full Body",        sub: "COMPOUND-FOCUSED . ALL MUSCLE", groups: ["Chest","Back","Legs","Shoulders"], color: "#76FF03", fullBody: true,  legsMode: "compound", isCore: false },
+  { id: "core",           label: "Core / Abs",       sub: "ABS . CORE STRENGTH",           groups: ["Core"],                           color: "#FF6B00", fullBody: false, legsMode: null,       isCore: true  },
 ];
 
 const WIFEY_COLOR = "#FF6B9D";
@@ -98,7 +119,7 @@ const WIFEY_FULL_BODY_BANK = {
   Chest: [
     { name: "Dumbbell Fly",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
     { name: "Incline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "barbell" },
-    { name: "Push Up",             sets: "3", reps: "15-20", note: "", intensity: 4, eq: "bw"      },
+    { name: "Push Up",             sets: "3", reps: "15-20", note: "", intensity: 4, eq: "bw", supersetOnly: true },
     { name: "Flat Bench Press",    sets: "3", reps: "12-15", note: "", intensity: 7, eq: "barbell" },
     { name: "Decline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "barbell" },
   ],
@@ -217,55 +238,95 @@ const PORTABLE_EQ = new Set(["db", "ez", "bw"]);
 function isPortable(eq) { return PORTABLE_EQ.has(eq); }
 function isFixed(eq) { return !isPortable(eq); }
 
-// Can these two exercises be supersetted? One must be portable, one must be fixed.
-// Also avoid pairing two exercises from the same muscle group (too much overlap).
-function canSuperset(a, b, groupA, groupB) {
-  const oneFixed = (isFixed(a.eq) && isPortable(b.eq)) || (isPortable(a.eq) && isFixed(b.eq));
-  const diffGroup = groupA !== groupB;
-  return oneFixed && diffGroup;
-}
+// ── SUPERSET RULES ────────────────────────────────────────────────────────────
+// Hardcoded valid superset definitions per muscle group.
+// Each entry: { groupA, exA (optional — any if null), groupB, exB (optional) }
+// For Back: any back exercise + EZ Bar Curl or Dumbbell Curl (pulled from Biceps)
+// For Shoulders: any shoulder primary + Lateral Raise / Front Raise / Rear Delt Fly
+// For Biceps: any 2 bicep exercises except 21s
+// For Chest/Triceps: fixed pairs only
 
-// Given a flat list of {exercise, group} pairs, find valid superset pairs.
-// Returns array of index pairs [i, j] that are good candidates.
-function findSupersetPairs(exWithGroups) {
-  const pairs = [];
-  for (let i = 0; i < exWithGroups.length; i++) {
-    for (let j = i + 1; j < exWithGroups.length; j++) {
-      const { ex: a, group: gA } = exWithGroups[i];
-      const { ex: b, group: gB } = exWithGroups[j];
-      if (canSuperset(a, b, gA, gB)) pairs.push([i, j]);
-    }
-  }
-  return pairs;
-}
+const SHOULDER_ISOLATION = ["Lateral Raise", "Front Raise", "Rear Delt Fly"];
+const BICEP_SUPERSET_EXCLUDE = ["21s"];
+const BACK_CURL_OPTIONS = ["EZ Bar Curl", "Dumbbell Curl"];
 
-// Inject supersets into sections. supersetCount = how many to create (1-2 typically).
-function injectSupersets(sections, supersetCount) {
-  // Flatten all exercises with their section/exercise indices
-  const flat = [];
-  sections.forEach((s, si) => s.exercises.forEach((ex, ei) => flat.push({ ex, group: s.group, si, ei })));
-  const validPairs = findSupersetPairs(flat);
-  if (validPairs.length === 0) return sections; // no valid pairs, skip
-  // Shuffle valid pairs and pick up to supersetCount non-overlapping ones
-  const shuffledPairs = shuffle(validPairs);
-  const usedIndices = new Set();
-  const chosen = [];
-  for (const [i, j] of shuffledPairs) {
-    if (chosen.length >= supersetCount) break;
-    if (!usedIndices.has(i) && !usedIndices.has(j)) {
-      chosen.push([i, j]);
-      usedIndices.add(i);
-      usedIndices.add(j);
-    }
-  }
-  // Tag chosen exercises with supersetId
-  chosen.forEach(([i, j], idx) => {
-    flat[i].ex = { ...flat[i].ex, supersetId: `ss${idx}`, supersetRole: "A" };
-    flat[j].ex = { ...flat[j].ex, supersetId: `ss${idx}`, supersetRole: "B" };
+const FIXED_TRICEP_CHEST_PAIRS = [
+  { a: { group: "Triceps", name: "Reverse Grip Pulldown" }, b: { group: "Triceps", name: "Straight Bar Pushdown" } },
+  { a: { group: "Triceps", name: "Skullcrusher" },          b: { group: "Chest",   name: "Dumbbell Bench Press" } },
+];
+
+function injectSupersets(sections) {
+  // Figure out which groups are present
+  const groups = sections.map(s => s.group);
+  const hasGroup = g => groups.includes(g);
+
+  // Build candidate superset options based on present groups
+  const options = [];
+
+  if (hasGroup("Back")) options.push("back");
+  if (hasGroup("Shoulders")) options.push("shoulders");
+  if (hasGroup("Biceps")) options.push("biceps");
+  // Tricep/Chest fixed pairs — only if relevant groups present
+  FIXED_TRICEP_CHEST_PAIRS.forEach((pair, i) => {
+    if (hasGroup(pair.a.group) && hasGroup(pair.b.group)) options.push("tricep_chest_" + i);
   });
-  // Rebuild sections with tagged exercises
-  const newSections = sections.map(s => ({ ...s, exercises: [] }));
-  flat.forEach(({ ex, si, ei }) => { newSections[si].exercises[ei] = ex; });
+
+  if (!options.length) return sections;
+
+  // Pick a random valid option
+  const choice = options[Math.floor(Math.random() * options.length)];
+  let newSections = sections.map(s => ({ ...s, exercises: [...s.exercises] }));
+
+  function tagPair(secA, idxA, secB, idxB) {
+    const nameA = newSections[secA].exercises[idxA].name;
+    const nameB = newSections[secB].exercises[idxB].name;
+    newSections[secA].exercises[idxA] = { ...newSections[secA].exercises[idxA], supersetId: "ss0", supersetRole: "A", supersetPartner: nameB };
+    newSections[secB].exercises[idxB] = { ...newSections[secB].exercises[idxB], supersetId: "ss0", supersetRole: "B", supersetPartner: nameA };
+  }
+
+  if (choice === "back") {
+    const backIdx = sections.findIndex(s => s.group === "Back");
+    const biIdx = sections.findIndex(s => s.group === "Biceps");
+    const backExes = newSections[backIdx].exercises;
+    if (!backExes.length) return sections;
+    // Pick a random back exercise
+    const anchorIdx = Math.floor(Math.random() * backExes.length);
+    // Pick curl from biceps section if present, else skip
+    if (biIdx !== -1) {
+      const curlName = BACK_CURL_OPTIONS[Math.floor(Math.random() * BACK_CURL_OPTIONS.length)];
+      const curlIdx = newSections[biIdx].exercises.findIndex(e => e.name === curlName);
+      if (curlIdx !== -1) {
+        tagPair(backIdx, anchorIdx, biIdx, curlIdx);
+      }
+    }
+  } else if (choice === "shoulders") {
+    const si = sections.findIndex(s => s.group === "Shoulders");
+    const exes = newSections[si].exercises;
+    // Pick one isolation exercise and one non-isolation exercise
+    const isolationIdxs = exes.map((e,i) => SHOULDER_ISOLATION.includes(e.name) ? i : -1).filter(i => i !== -1);
+    const primaryIdxs = exes.map((e,i) => !SHOULDER_ISOLATION.includes(e.name) ? i : -1).filter(i => i !== -1);
+    if (!isolationIdxs.length || !primaryIdxs.length) return sections;
+    const isoIdx = isolationIdxs[Math.floor(Math.random() * isolationIdxs.length)];
+    const priIdx = primaryIdxs[Math.floor(Math.random() * primaryIdxs.length)];
+    tagPair(si, priIdx, si, isoIdx);
+  } else if (choice === "biceps") {
+    const bi = sections.findIndex(s => s.group === "Biceps");
+    const eligible = newSections[bi].exercises.map((e,i) => !BICEP_SUPERSET_EXCLUDE.includes(e.name) ? i : -1).filter(i => i !== -1);
+    if (eligible.length < 2) return sections;
+    const [i, j] = shuffle(eligible).slice(0, 2);
+    tagPair(bi, i, bi, j);
+  } else if (choice.startsWith("tricep_chest_")) {
+    const pairIdx = parseInt(choice.split("_")[2]);
+    const pair = FIXED_TRICEP_CHEST_PAIRS[pairIdx];
+    const secA = sections.findIndex(s => s.group === pair.a.group);
+    const secB = sections.findIndex(s => s.group === pair.b.group);
+    const exA = newSections[secA].exercises.findIndex(e => e.name === pair.a.name);
+    const exB = newSections[secB].exercises.findIndex(e => e.name === pair.b.name);
+    // If either exercise isn't in this workout, skip
+    if (exA === -1 || exB === -1) return sections;
+    tagPair(secA, exA, secB, exB);
+  }
+
   return newSections;
 }
 // ============================================================
@@ -330,29 +391,37 @@ function assignSets(exercises, defaultSets) {
   });
 }
 
+function generateCoreWorkout(total) {
+  const pool = shuffle(CORE_BANK).slice(0, total);
+  const ordered = [...pool].sort((a, b) => b.intensity - a.intensity);
+  return { sections: [{ group: "Core", displayGroup: "CORE / ABS", exercises: ordered }], startTime: Date.now() };
+}
+
 function generateBroWorkout(split, total) {
+  // Core split uses shared core generator
+  if (split.isCore) return generateCoreWorkout(total);
   const minPer = split.fullBody ? 1 : MIN_PER_GROUP;
   const counts = distributeExercises(BRO_EXERCISE_BANK, split.groups, total, minPer);
   const sections = split.groups.map(group => {
     let pool;
     if (group === "Legs" && split.legsMode === "compound") {
-      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound));
-      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound));
+      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly));
+      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly));
       const cCount = Math.ceil(counts[group] * 0.7);
       const iCount = counts[group] - cCount;
       pool = [...compound.slice(0, cCount), ...isolated.slice(0, iCount)];
     } else if (group === "Legs" && split.legsMode === "isolated") {
-      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound));
-      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound));
+      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly));
+      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly));
       const iCount = Math.ceil(counts[group] * 0.65);
       const cCount = counts[group] - iCount;
       pool = [...isolated.slice(0, iCount), ...compound.slice(0, cCount)];
     } else if (split.fullBody && group === "Legs") {
-      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound))];
+      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly))];
     } else if (split.fullBody) {
-      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name))), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name)))];
+      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name) && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name) && !e.supersetOnly))];
     } else {
-      pool = shuffle(BRO_EXERCISE_BANK[group]);
+      pool = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.supersetOnly));
     }
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
@@ -384,8 +453,8 @@ function generateWifeyWorkout(bank, total, history, workoutType) {
   const groups = Object.keys(bank);
   const counts = distributeExercises(bank, groups, total, 1);
   const sections = groups.map(group => {
-    const fresh = shuffle(bank[group].filter(e => !usedRecently.has(e.name)));
-    const stale = shuffle(bank[group].filter(e => usedRecently.has(e.name)));
+    const fresh = shuffle(bank[group].filter(e => !usedRecently.has(e.name) && !e.supersetOnly));
+    const stale = shuffle(bank[group].filter(e => usedRecently.has(e.name) && !e.supersetOnly));
     const pool = [...fresh, ...stale];
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
@@ -670,9 +739,14 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const timerPct = (timerLeft / REST_DUR) * 100;
   const timerColor = timerLeft > 30 ? "#76FF03" : timerLeft > 10 ? "#FFB300" : "#FF3D00";
 
+  const prevWorkoutRef = useRef(null);
   useEffect(() => {
-    completedRef.current = false;
-    setChecked({}); setSetsDone({}); setExpanded({}); setShowSummary(false); setSummaryData(null);
+    // Only reset if it's a genuinely new workout (startTime changed), not a swap
+    if (prevWorkoutRef.current?.startTime !== workout.startTime) {
+      completedRef.current = false;
+      setChecked({}); setSetsDone({}); setExpanded({}); setShowSummary(false); setSummaryData(null);
+    }
+    prevWorkoutRef.current = workout;
   }, [workout]);
 
   useEffect(() => {
@@ -717,7 +791,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
     const section = sections[si];
     const current = section.exercises[ei];
     const usedNames = new Set(section.exercises.map(e => e.name));
-    const groupBank = bank[section.group] || [];
+    const groupBank = Array.isArray(bank) ? bank : (bank[section.group] || []);
     const candidates = groupBank.filter(e => e.name !== current.name && !usedNames.has(e.name));
     if (!candidates.length) return;
     const preferred = candidates.filter(e => Math.abs(e.intensity - current.intensity) <= 2);
@@ -725,6 +799,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
     const replacement = pool[Math.floor(Math.random() * pool.length)];
     setWorkout(w => ({ ...w, sections: w.sections.map((s, sI) => sI !== si ? s : { ...s, exercises: s.exercises.map((ex, eI) => eI !== ei ? ex : replacement) }) }));
     setChecked(c => { const n = { ...c }; delete n[`${si}-${ei}`]; return n; });
+    setSetsDone(c => { const n = { ...c }; delete n[`${si}-${ei}`]; return n; });
     setExpanded(e => { const n = { ...e }; delete n[`${si}-${ei}`]; return n; });
   }
 
@@ -846,18 +921,11 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                   const isSSB = ex.supersetId && ex.supersetRole === "B";
                   return (
                     <div key={key}>
-                      {isSSA && (
-                        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                          <div style={{ width:3, height:3, borderRadius:"50%", background:color, opacity:0.6 }} />
-                          <span style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:color, fontWeight:800, opacity:0.7 }}>SUPERSET</span>
-                          <div style={{ flex:1, height:1, background:color, opacity:0.15 }} />
-                        </div>
-                      )}
                       <div className={`exc${isPop?" pop":""}`} style={{ background:done?"#090909":"#0f0f0f", border:`1px solid ${ex.supersetId ? color+"33" : "#161616"}`, borderLeft:`3px solid ${done?"#1e1e1e":color}`, opacity:done?0.4:1 }}>
                       <div style={{ padding:"14px 14px", display:"flex", alignItems:"center", gap:12 }}>
                         <div className="chk" onClick={() => handleCheck(key, ex.sets)} style={{ background:done?color:inProgress?color+"22":"transparent", borderColor:done?color:inProgress?color:"#252525", position:"relative" }}>
                           {done
-                            ? <span style={{ fontSize:16, color:"#000", fontWeight:900, lineHeight:1 }}>✓</span>
+                            ? <span style={{ fontSize:18, color:"#000", fontWeight:900, lineHeight:1, fontFamily:"'Barlow Condensed'" }}>X</span>
                             : inProgress
                               ? <span style={{ fontSize:11, color:color, fontWeight:900, lineHeight:1, textAlign:"center" }}>{setsCompleted}<span style={{ color:color+"66" }}>/{totalSets}</span></span>
                               : <span style={{ fontSize:13, color:"#2e2e2e", fontWeight:900 }}>{n}</span>
@@ -869,6 +937,9 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                             {(ex.sets||ex.reps) && <span style={{ fontFamily:"'Barlow Condensed'", color:"#3a3a3a", fontSize:13, fontWeight:700, letterSpacing:1 }}>{ex.sets&&`${ex.sets} SETS`}{ex.sets&&ex.reps&&" . "}{ex.reps&&`${ex.reps} REPS`}</span>}
                             {hasPr && <span style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, color:"#FFB300", background:"#FFB30012", padding:"2px 7px", borderRadius:2 }}>PR {prs[ex.name].weight}x{prs[ex.name].reps}</span>}
                           </div>
+                          {ex.supersetId && ex.supersetPartner && (
+                            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:color, fontWeight:800, marginTop:4, opacity:0.8 }}>SUPERSET · W/ {ex.supersetPartner.toUpperCase()}</div>
+                          )}
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
                           {!done && <button className="swpbtn" onClick={() => { if (confirmSwap === key) { swapExercise(si, ei); setConfirmSwap(null); } else { setConfirmSwap(key); setTimeout(() => setConfirmSwap(null), 3000); } }} style={{ borderColor: confirmSwap === key ? "#FF3D00" : undefined, color: confirmSwap === key ? "#FF3D00" : undefined }}>{confirmSwap === key ? "sure?" : "swap"}</button>}
@@ -1303,12 +1374,13 @@ export default function App() {
     const wgw = loadStorage("wy-goalweight"); if (wgw) setWifeyGoalWeight(wgw);
   }, []);
 
-  const broMin = broSplit ? (broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
-  const broMax = broSplit ? (broSplit.fullBody ? 8 : broSplit.groups.reduce((s, g) => s + BRO_EXERCISE_BANK[g].length, 0)) : 20;
+  const broMin = broSplit ? (broSplit.isCore ? 4 : broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
+  const broMax = broSplit ? (broSplit.isCore ? CORE_BANK.length : broSplit.fullBody ? 8 : broSplit.groups.reduce((s, g) => s + BRO_EXERCISE_BANK[g].length, 0)) : 20;
   const wifeyBank = wifeyMode === "cables" ? WIFEY_CABLE_BANK : WIFEY_FULL_BODY_BANK;
+  const wifeyIsCore = wifeyMode === "core";
   const wifeyMin = 4;
-  const wifeyMax = Object.values(wifeyBank).reduce((s, arr) => s + arr.length, 0);
-  const wColor = wifeyMode === "cables" ? "#00E5FF" : WIFEY_COLOR;
+  const wifeyMax = wifeyIsCore ? CORE_BANK.length : Object.values(wifeyBank).reduce((s, arr) => s + arr.length, 0);
+  const wColor = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#FF6B00" : WIFEY_COLOR;
 
   function saveBroPr(name, data) {
     const u = { ...broPrs, [name]: data };
@@ -1387,7 +1459,7 @@ export default function App() {
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {BRO_SPLITS.map((s, idx) => (
-            <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setScreen("bro-configure"); }}
+            <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.isCore ? 7 : s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setScreen("bro-configure"); }}
               style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${s.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${s.color}08, transparent)` }} />
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
@@ -1422,7 +1494,7 @@ export default function App() {
               <button className="cntbtn" disabled={broTotal >= broMax} onClick={() => setBroTotal(t => t+1)}>+</button>
             </div>
           </div>
-          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); setScreen(broWarmup ? "bro-warmup" : "bro-workout"); }}>GENERATE WORKOUT</button>
+          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); setScreen(broWarmup ? "bro-warmup" : "bro-workout"); }}>GENERATE WORKOUT</button>
           <div onClick={() => setBroWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${broWarmup ? color+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${broWarmup ? color : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
             <div>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: broWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
@@ -1454,9 +1526,9 @@ export default function App() {
   // ── BRO WORKOUT ───────────────────────────────────────────────────────────
   if (screen === "bro-workout" && broSplit) return (
     <Wrap>
-      <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={BRO_EXERCISE_BANK}
+      <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={broSplit.isCore ? CORE_BANK : BRO_EXERCISE_BANK}
         onBack={() => setScreen("bro-home")}
-        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets) { const count = broTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setBroWorkout(w); }}
+        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); }}
         prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
     </Wrap>
   );
@@ -1496,12 +1568,13 @@ export default function App() {
           {[
             { id:"fullbody", label:"Full Body",  sub:"DUMBBELLS . MACHINES . FREE WEIGHTS", color:WIFEY_COLOR },
             { id:"cables",   label:"All Cables", sub:"CABLE MACHINE ONLY",                  color:"#00E5FF"   },
+            { id:"core",     label:"Core / Abs", sub:"ABS . CORE STRENGTH",                 color:"#FF6B00"   },
             { id:"cardio",   label:"Cardio Day", sub:"LOG YOUR SESSION",                    color:"#76FF03"   },
           ].map((opt, idx) => (
             <div key={opt.id} className="tc"
               onClick={() => {
                 if (opt.id === "cardio") { setCardioType(null); setCardioDuration(""); setCardioLogged(false); setScreen("cardio"); }
-                else { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:6); setScreen("wifey-configure"); }
+                else { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?7:6); setScreen("wifey-configure"); }
               }}
               style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${opt.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)` }} />
@@ -1522,7 +1595,7 @@ export default function App() {
         <button className="bk" onClick={() => setScreen("wifey-home")}>BACK</button>
         <div style={{ marginTop:28, marginBottom:36 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:wColor, fontWeight:700, marginBottom:4 }}>TODAY'S WORKOUT</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{wifeyMode==="cables"?"ALL CABLES":"FULL BODY"}</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{wifeyMode==="cables"?"ALL CABLES":wifeyMode==="core"?"CORE / ABS":"FULL BODY"}</div>
         </div>
         <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${wColor}`, padding:"28px 24px", marginBottom:28 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>TOTAL EXERCISES</div>
@@ -1535,7 +1608,7 @@ export default function App() {
             <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
           </div>
         </div>
-        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout"); }}>GENERATE WORKOUT</button>
+        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout"); }}>GENERATE WORKOUT</button>
         <div onClick={() => setWifeyWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${wifeyWarmup ? wColor+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${wifeyWarmup ? wColor : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
           <div>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: wifeyWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
@@ -1552,9 +1625,9 @@ export default function App() {
 
   // ── WIFEY WARMUP ──────────────────────────────────────────────────────────
   if (screen === "wifey-warmup") {
-    const warmupKey = wifeyMode === "cables" ? "All Cables" : wifeyMode === "cardio" ? "Cardio" : "Full Body";
+    const warmupKey = wifeyMode === "cables" ? "All Cables" : wifeyMode === "cardio" ? "Cardio" : wifeyMode === "core" ? "Full Body" : "Full Body";
     const exercises = WARMUP_BANK[warmupKey] || WARMUP_BANK["Full Body"];
-    const wColor2 = wifeyMode === "cables" ? "#00E5FF" : WIFEY_COLOR;
+    const wColor2 = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#FF6B00" : WIFEY_COLOR;
     return (
       <Wrap>
         <WarmupScreen exercises={exercises} color={wColor2}
@@ -1568,9 +1641,9 @@ export default function App() {
   if (screen === "wifey-workout") return (
     <Wrap>
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
-        splitLabel={wifeyMode==="cables"?"All Cables":"Full Body"} color={wColor} bank={wifeyBank}
+        splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyBank}
         onBack={() => setScreen("wifey-home")}
-        onRegenerate={() => { const w = generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (settings.supersets) { const count = wifeyTotal >= 7 ? (Math.random() < 0.3 ? 2 : 1) : 1; w.sections = injectSupersets(w.sections, count); } setWifeyWorkout(w); }}
+        onRegenerate={() => { const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); }}
         prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
     </Wrap>
   );
