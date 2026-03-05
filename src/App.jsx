@@ -730,6 +730,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const [isSaved, setIsSaved] = useState(false);
   const timerRef = useRef(null);
   const completedRef = useRef(false);
+  const summaryRef = useRef(null);
 
   const { sections } = workout;
   const allKeys = sections.flatMap((s, si) => s.exercises.map((_, ei) => `${si}-${ei}`));
@@ -740,6 +741,32 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const timerColor = timerLeft > 30 ? "#76FF03" : timerLeft > 10 ? "#FFB300" : "#FF3D00";
 
   const prevWorkoutRef = useRef(null);
+
+  async function handleScreenshot() {
+    if (!summaryRef.current) return;
+    try {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      document.head.appendChild(script);
+      await new Promise(res => { script.onload = res; });
+      const canvas = await window.html2canvas(summaryRef.current, {
+        backgroundColor: "#0e0e0e",
+        scale: 3,
+        useCORS: true,
+        logging: false,
+      });
+      canvas.toBlob(async blob => {
+        if (navigator.share && navigator.canShare({ files: [new File([blob], "daily-grind.png", { type: "image/png" })] })) {
+          await navigator.share({ files: [new File([blob], "daily-grind.png", { type: "image/png" })] });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = "daily-grind-workout.png"; a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, "image/png");
+    } catch (e) { console.error("Screenshot failed", e); }
+  }
   useEffect(() => {
     // Only reset if it's a genuinely new workout (startTime changed), not a swap
     if (prevWorkoutRef.current?.startTime !== workout.startTime) {
@@ -842,7 +869,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 
       {showSummary && summaryData && (
         <div className="sov">
-          <div style={{ background:"#0e0e0e", border:`1px solid ${summaryData.color}30`, borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
+          <div ref={summaryRef} style={{ background:"#0e0e0e", border:`1px solid ${summaryData.color}30`, borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ textAlign:"center", marginBottom:24 }}>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:summaryData.color, lineHeight:1, letterSpacing:2 }}>{summaryData.finishMsg}</div>
               <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(summaryData.date)}</div>
@@ -871,6 +898,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
             </div>
             <button className="mbtn" style={{ background:summaryData.color, color:"#000", marginBottom:10 }} onClick={() => { setShowSummary(false); onBack(); }}>BACK TO HOME</button>
             <button className="mbtn" style={{ background:"transparent", color:"#333", border:"1px solid #1e1e1e" }} onClick={() => setShowSummary(false)}>KEEP VIEWING</button>
+            <button className="mbtn" onClick={handleScreenshot} style={{ background:"transparent", color:"#888", border:"1px solid #252525", marginTop:8 }}>SHARE WORKOUT 📸</button>
             <button className="mbtn" onClick={() => { onSaveWorkout(summaryData); setIsSaved(true); }} style={{ background:"transparent", color: isSaved ? "#FFB300" : "#2a2a2a", border: isSaved ? "1px solid #FFB30040" : "1px solid #1e1e1e", marginTop:8 }}>{isSaved ? "SAVED" : "SAVE WORKOUT"}</button>
           </div>
         </div>
