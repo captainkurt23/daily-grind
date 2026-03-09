@@ -409,6 +409,12 @@ function generateBroWorkout(split, total) {
   if (split.isCore) return generateCoreWorkout(total);
   const minPer = split.fullBody ? 1 : MIN_PER_GROUP;
   const counts = distributeExercises(BRO_EXERCISE_BANK, split.groups, total, minPer);
+  // Shoulders/Legs split: ensure shoulders always >= legs
+  if (split.id === "shoulders-legs" && counts["Legs"] > counts["Shoulders"]) {
+    const diff = counts["Legs"] - counts["Shoulders"];
+    counts["Shoulders"] += diff;
+    counts["Legs"] -= diff;
+  }
   const sections = split.groups.map(group => {
     let pool;
     if (group === "Legs" && split.legsMode === "compound") {
@@ -420,9 +426,12 @@ function generateBroWorkout(split, total) {
     } else if (group === "Legs" && split.legsMode === "isolated") {
       const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly));
       const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly));
-      const iCount = Math.ceil(counts[group] * 0.65);
-      const cCount = counts[group] - iCount;
-      pool = [...isolated.slice(0, iCount), ...compound.slice(0, cCount)];
+      const total = counts[group];
+      // Always 1 compound minimum, rest isolated. Compounds never exceed isolations.
+      const maxCompounds = Math.floor(total / 2); // e.g. 3->1, 4->2, 2->1
+      const cCount = Math.min(Math.max(1, maxCompounds), compound.length);
+      const iCount = Math.min(total - cCount, isolated.length);
+      pool = [...compound.slice(0, cCount), ...isolated.slice(0, iCount)];
     } else if (split.fullBody && group === "Legs") {
       pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly))];
     } else if (split.fullBody) {
@@ -570,7 +579,226 @@ const WARMUP_BANK = {
 
 const WARMUP_DURATION = 45;
 
-function WarmupScreen({ exercises, color, onComplete, onSkip }) {
+// ── LOG WORKOUT FEATURE ───────────────────────────────────────────────────────
+// Self-contained component. To revert: remove this block and the two "LOG WORKOUT"
+// cards in bro-home / wifey-home, and the two screen handlers below (log-bro / log-wifey).
+function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onComplete, onBack }) {
+  const [workoutLabel, setWorkoutLabel] = useState("");
+  const [exercises, setExercises] = useState([]);
+  const [query, setQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [newPrNames, setNewPrNames] = useState(new Set());
+  const [prModal, setPrModal] = useState(null);
+  const [prWeight, setPrWeight] = useState("");
+  const [prReps, setPrReps] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [summaryData, setSummaryData] = useState(null);
+  const summaryRef = useRef(null);
+  const startTime = useRef(Date.now());
+
+  const suggestions = query.length >= 1
+    ? allExercises.filter(e => e.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
+    : [];
+
+  function addExercise(name) {
+    setExercises(ex => [...ex, { name, sets: "3", reps: "10" }]);
+    setQuery("");
+    setShowSuggestions(false);
+  }
+
+  function removeExercise(i) {
+    setExercises(ex => ex.filter((_, idx) => idx !== i));
+  }
+
+  function updateExercise(i, field, val) {
+    setExercises(ex => ex.map((e, idx) => idx === i ? { ...e, [field]: val } : e));
+  }
+
+  function openPr(name) {
+    setPrModal(name);
+    setPrWeight(prs[name]?.weight || "");
+    setPrReps(prs[name]?.reps || "");
+  }
+
+  function savePr() {
+    if (!prWeight || !prReps) return;
+    onSavePr(prModal, { weight: prWeight, reps: prReps, date: Date.now() });
+    setNewPrNames(prev => new Set([...prev, prModal]));
+    setPrModal(null);
+  }
+
+  function handleComplete() {
+    if (!exercises.length) return;
+    const FINISH_MESSAGES = ["CRUSHED IT.","DONE.","LOCKED IN.","WORK DONE.","LET'S GO."];
+    const finishMsg = FINISH_MESSAGES[Math.floor(Math.random() * FINISH_MESSAGES.length)];
+    const label = workoutLabel.trim() || "Custom Workout";
+    const data = {
+      split: label, color, date: Date.now(),
+      duration: Date.now() - startTime.current,
+      exercises: exercises.map(e => e.name),
+      exerciseDetails: exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps })),
+      total: exercises.length, finishMsg, type: "workout",
+      newPrs: [...newPrNames]
+    };
+    onComplete(data);
+    setSummaryData(data);
+    setSubmitted(true);
+  }
+
+  async function handleScreenshot() {
+    if (!summaryRef.current) return;
+    try {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      document.head.appendChild(script);
+      await new Promise(res => { script.onload = res; });
+      const canvas = await window.html2canvas(summaryRef.current, { backgroundColor: "#0e0e0e", scale: 3, useCORS: true, logging: false });
+      canvas.toBlob(async blob => {
+        if (navigator.share && navigator.canShare({ files: [new File([blob], "daily-grind.png", { type: "image/png" })] })) {
+          await navigator.share({ files: [new File([blob], "daily-grind.png", { type: "image/png" })] });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = "daily-grind-workout.png"; a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, "image/png");
+    } catch (e) { console.error("Screenshot failed", e); }
+  }
+
+  // Summary view
+  if (submitted && summaryData) return (
+    <Wrap>
+      <div className="sov">
+        <div ref={summaryRef} style={{ background:"#0e0e0e", border:`1px solid ${color}30`, borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
+          <div style={{ textAlign:"center", marginBottom:24 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color, lineHeight:1, letterSpacing:2 }}>{summaryData.finishMsg}</div>
+            <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{new Date(summaryData.date).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}</div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+            {[{label:"WORKOUT",value:summaryData.split},{label:"EXERCISES",value:summaryData.total}].map(({label,value}) => (
+              <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${color}`, padding:"12px 14px" }}>
+                <div style={{ color:"#444", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:3 }}>{label}</div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color:"#fff", lineHeight:1 }}>{value}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background:"#141414", padding:14, marginBottom:18 }}>
+            <div style={{ color:"#333", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:10 }}>EXERCISES</div>
+            {summaryData.exercises.map((name, i) => (
+              <div key={i} style={{ paddingBottom:7, marginBottom:7, borderBottom: i < summaryData.exercises.length-1?"1px solid #1a1a1a":"none" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ fontFamily:"'Barlow Condensed'", fontWeight:900, fontSize:15, color, minWidth:20 }}>{i+1}</span>
+                  <span style={{ color:"#888", fontSize:13, fontFamily:"'Barlow Condensed'", fontWeight:600 }}>{name}</span>
+                </div>
+                {summaryData.newPrs.includes(name) && (
+                  <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:3, marginLeft:30 }}>
+                    <Trophy size={11} color="#FFD700" fill="#FFD700" />
+                    <span style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:1.5, color:"#FFD700" }}>NEW PR</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <button className="mbtn" style={{ background:color, color:"#000", marginBottom:10 }} onClick={onBack}>BACK TO HOME</button>
+          <button className="mbtn" onClick={handleScreenshot} style={{ background:"transparent", color:"#888", border:"1px solid #252525", marginTop:8, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}><Share2 size={14} color="#888" />SHARE WORKOUT</button>
+        </div>
+      </div>
+    </Wrap>
+  );
+
+  // Logger view
+  return (
+    <Wrap>
+      <div className="sc" style={{ padding:"56px 20px 40px" }}>
+        <button className="bk" onClick={onBack}>BACK</button>
+        <div style={{ marginTop:28, marginBottom:28 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700, marginBottom:4 }}>LOG YOUR WORKOUT</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:52, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>WHAT DID<br/>YOU DO?</div>
+        </div>
+
+        {/* Workout label */}
+        <div style={{ marginBottom:20 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:8 }}>WORKOUT NAME (OPTIONAL)</div>
+          <input className="minput" placeholder="e.g. Push Day, Chest & Tris..." value={workoutLabel} onChange={e => setWorkoutLabel(e.target.value)} style={{ borderColor: workoutLabel ? color : "#2a2a2a" }} />
+        </div>
+
+        {/* Exercise search */}
+        <div style={{ marginBottom:20, position:"relative" }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:8 }}>ADD EXERCISES</div>
+          <input className="minput" placeholder="Search exercises..." value={query}
+            onChange={e => { setQuery(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            style={{ borderColor: query ? color : "#2a2a2a" }} />
+          {showSuggestions && suggestions.length > 0 && (
+            <div style={{ position:"absolute", top:"100%", left:0, right:0, background:"#111", border:`1px solid ${color}40`, borderRadius:2, zIndex:10, marginTop:2 }}>
+              {suggestions.map(name => (
+                <div key={name} onMouseDown={() => addExercise(name)}
+                  style={{ padding:"12px 14px", fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#ccc", borderBottom:"1px solid #1a1a1a", cursor:"pointer" }}>
+                  {name.toUpperCase()}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Exercise list */}
+        {exercises.length > 0 && (
+          <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
+            {exercises.map((ex, i) => (
+              <div key={i} style={{ background:"#0f0f0f", border:`1px solid #1a1a1a`, borderLeft:`3px solid ${color}`, padding:"12px 14px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, letterSpacing:0.5 }}>{ex.name.toUpperCase()}</div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={() => openPr(ex.name)} style={{ background: newPrNames.has(ex.name) ? "#FFD70015" : "#111", border: newPrNames.has(ex.name) ? "1px solid #FFD70040" : "1px solid #1e1e1e", borderRadius:2, padding:"4px 10px", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, color: newPrNames.has(ex.name) ? "#FFD700" : "#444", cursor:"pointer", letterSpacing:1 }}>
+                      {newPrNames.has(ex.name) ? "PR ✓" : "PR"}
+                    </button>
+                    <button onClick={() => removeExercise(i)} style={{ background:"transparent", border:"1px solid #1e1e1e", borderRadius:2, padding:"4px 8px", color:"#333", cursor:"pointer", fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:800 }}>✕</button>
+                  </div>
+                </div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontFamily:"'Barlow Condensed'", fontSize:9, letterSpacing:2, color:"#444", marginBottom:4 }}>SETS</div>
+                    <input className="minput" type="number" value={ex.sets} onChange={e => updateExercise(i, "sets", e.target.value)} style={{ padding:"8px 10px", fontSize:14, borderColor:"#1e1e1e" }} />
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontFamily:"'Barlow Condensed'", fontSize:9, letterSpacing:2, color:"#444", marginBottom:4 }}>REPS</div>
+                    <input className="minput" value={ex.reps} onChange={e => updateExercise(i, "reps", e.target.value)} style={{ padding:"8px 10px", fontSize:14, borderColor:"#1e1e1e" }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {exercises.length === 0 && (
+          <div style={{ textAlign:"center", padding:"32px 0", color:"#222", fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:2 }}>NO EXERCISES ADDED YET</div>
+        )}
+
+        <button className="mbtn" style={{ background: exercises.length ? color : "#161616", color: exercises.length ? "#000" : "#333" }}
+          disabled={!exercises.length} onClick={handleComplete}>COMPLETE WORKOUT</button>
+
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+      </div>
+
+      {/* PR Modal */}
+      {prModal && (
+        <div className="sov">
+          <div style={{ background:"#111", border:"1px solid #252525", borderRadius:4, padding:24, width:"100%", maxWidth:320 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:900, marginBottom:4 }}>{prModal.toUpperCase()}</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, marginBottom:20 }}>LOG NEW PR</div>
+            <input className="minput" type="number" placeholder="Weight (lbs)" value={prWeight} onChange={e => setPrWeight(e.target.value)} style={{ marginBottom:10 }} />
+            <input className="minput" type="number" placeholder="Reps" value={prReps} onChange={e => setPrReps(e.target.value)} style={{ marginBottom:16 }} />
+            <button className="mbtn" style={{ background:color, color:"#000", marginBottom:8 }} onClick={savePr}>SAVE PR</button>
+            <button className="mbtn" style={{ background:"transparent", color:"#333", border:"1px solid #1e1e1e" }} onClick={() => setPrModal(null)}>CANCEL</button>
+          </div>
+        </div>
+      )}
+    </Wrap>
+  );
+}
+// ── END LOG WORKOUT FEATURE ────────────────────────────────────────────────────
+
+
   const [current, setCurrent] = useState(0);
   const [timeLeft, setTimeLeft] = useState(WARMUP_DURATION);
   const [running, setRunning] = useState(false);
@@ -1502,6 +1730,12 @@ export default function App() {
             </div>
           ))}
         </div>
+        {/* LOG WORKOUT — remove to revert */}
+        <div className="tc" onClick={() => setScreen("log-bro")}
+          style={{ marginTop:10, background:"#0f0f0f", border:"1px dashed #2a2a2a", borderLeft:"4px dashed #FF3D00", padding:"24px 20px", position:"relative", overflow:"hidden" }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>LOG A WORKOUT</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF3D00", marginTop:6, fontWeight:700 }}>ALREADY TRAINED? LOG IT HERE</div>
+        </div>
         <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
@@ -1568,6 +1802,22 @@ export default function App() {
     </Wrap>
   );
 
+  // ── LOG WORKOUT SCREENS — remove both blocks to revert ────────────────────
+  const broAllExercises = [...new Set(Object.values(BRO_EXERCISE_BANK).flat().map(e => e.name).concat(CORE_BANK.map(e => e.name)))].sort();
+  const wifeyAllExercises = [...new Set([...Object.values(WIFEY_FULL_BODY_BANK).flat(), ...Object.values(WIFEY_CABLE_BANK).flat()].map(e => e.name).concat(CORE_BANK.map(e => e.name)))].sort();
+
+  if (screen === "log-bro") return (
+    <LogWorkoutScreen color="#FF3D00" profileName="The Bro" allExercises={broAllExercises}
+      prs={broPrs} onSavePr={saveBroPr} onComplete={entry => { addBroHistory(entry); }}
+      onBack={() => setScreen("bro-home")} />
+  );
+  if (screen === "log-wifey") return (
+    <LogWorkoutScreen color={WIFEY_COLOR} profileName="The Wifey" allExercises={wifeyAllExercises}
+      prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={entry => { addWifeyHistory(entry); }}
+      onBack={() => setScreen("wifey-home")} />
+  );
+  // ── END LOG WORKOUT SCREENS ───────────────────────────────────────────────
+
   // ── BRO HISTORY ───────────────────────────────────────────────────────────
   if (screen === "bro-history") return (
     <Wrap>
@@ -1617,6 +1867,12 @@ export default function App() {
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:opt.color, marginTop:6, fontWeight:700 }}>{opt.sub}</div>
             </div>
           ))}
+        </div>
+        {/* LOG WORKOUT — remove to revert */}
+        <div className="tc" onClick={() => setScreen("log-wifey")}
+          style={{ marginTop:10, background:"#0f0f0f", border:"1px dashed #2a2a2a", borderLeft:`4px dashed ${WIFEY_COLOR}`, padding:"24px 20px", position:"relative", overflow:"hidden" }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>LOG A WORKOUT</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:WIFEY_COLOR, marginTop:6, fontWeight:700 }}>ALREADY TRAINED? LOG IT HERE</div>
         </div>
         <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
       </div>
