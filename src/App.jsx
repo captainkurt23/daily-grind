@@ -115,7 +115,7 @@ const BRO_SPLITS = [
   { id: "back-bi",        label: "Back / Biceps",    sub: "PULL DAY . POWER",              groups: ["Back","Biceps"],                  color: "#00E5FF", fullBody: false, legsMode: null,       isCore: false },
   { id: "shoulders-legs", label: "Shoulders / Legs", sub: "PRESS . ACCESSORY WORK",        groups: ["Shoulders","Legs"],               color: "#D500F9", fullBody: false, legsMode: "isolated", isCore: false },
   { id: "full-body",      label: "Full Body",        sub: "COMPOUND-FOCUSED . ALL MUSCLE", groups: ["Chest","Back","Legs","Shoulders"], color: "#76FF03", fullBody: true,  legsMode: "compound", isCore: false },
-  { id: "core",           label: "Core / Abs",       sub: "ABS . CORE STRENGTH",           groups: ["Core"],                           color: "#FF6B00", fullBody: false, legsMode: null,       isCore: true  },
+  { id: "core",           label: "Core / Abs",       sub: "ABS . CORE STRENGTH",           groups: ["Core"],                           color: "#EEFF41", fullBody: false, legsMode: null,       isCore: true  },
 ];
 
 const WIFEY_COLOR = "#FF6B9D";
@@ -211,7 +211,7 @@ const WIFEY_CABLE_BANK = {
 
 const CARDIO_OPTIONS = [
   { id: "stair-stepper",   label: "Stair Stepper",  icon: "TrendingUp"      },
-  { id: "incline-walking", label: "Incline Walking", icon: "TrendingUp"      },
+  { id: "incline-walking", label: "Incline Walking", icon: "TriangleRight"  },
   { id: "flat-walking",    label: "Flat Walking",    icon: "Activity"      },
   { id: "running",         label: "Running",         icon: "Wind"            },
   { id: "jogging",         label: "Jogging",         icon: "Zap"  },
@@ -675,7 +675,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
             <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{new Date(summaryData.date).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}</div>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
-            {[{label:"WORKOUT",value:summaryData.split},{label:"EXERCISES",value:summaryData.total}].map(({label,value}) => (
+            {[{label:"WORKOUT",value:summaryData.split},{label:"TIME",value:summaryData.duration < 5*60*1000 ? "—" : formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
               <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${color}`, padding:"12px 14px" }}>
                 <div style={{ color:"#444", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:3 }}>{label}</div>
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color:"#fff", lineHeight:1 }}>{value}</div>
@@ -798,7 +798,105 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
 }
 // ── END LOG WORKOUT FEATURE ────────────────────────────────────────────────────
 
+// ── CARDIO SCREEN ─────────────────────────────────────────────────────────
+function CardioScreen({ color, onBack, onComplete }) {
+  const [cardioType, setCardioType] = useState(null);
+  const [duration, setDuration] = useState("");
+  const [distance, setDistance] = useState("");
+  const [calories, setCalories] = useState("");
+  const [logged, setLogged] = useState(false);
 
+  function handleLog() {
+    if (!cardioType || !duration) return;
+    const entry = {
+      type: "cardio",
+      cardioType: cardioType.label,
+      durationMins: duration,
+      distanceMiles: distance || null,
+      caloriesBurned: calories || null,
+      date: Date.now(),
+      color: "#888"
+    };
+    onComplete(entry);
+    setLogged(true);
+  }
+
+  const summaryParts = [
+    duration && `${duration} MIN`,
+    distance && `${distance} MI`,
+    calories && `${calories} CAL`,
+  ].filter(Boolean).join(" · ");
+
+  return (
+    <Wrap>
+      <div className="sc" style={{ padding:"56px 20px 40px" }}>
+        <button className="bk" onClick={onBack}>BACK</button>
+        <div style={{ marginTop:28, marginBottom:32 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700, marginBottom:4 }}>LOG SESSION</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9 }}>CARDIO<br/><span style={{ color }}>DAY</span></div>
+        </div>
+        {logged ? (
+          <div style={{ textAlign:"center", padding:"40px 0" }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, color, lineHeight:1 }}>LOGGED.</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color:"#444", letterSpacing:2, marginTop:8 }}>{cardioType?.label?.toUpperCase()} · {summaryParts}</div>
+            <button className="mbtn" style={{ background:color, color:"#000", marginTop:32 }} onClick={onBack}>BACK TO HOME</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:12 }}>SELECT ACTIVITY</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
+              {CARDIO_OPTIONS.map(opt => (
+                <div key={opt.id} className={`caopt${cardioType?.id===opt.id?" sel":""}`}
+                  style={{ borderColor: cardioType?.id===opt.id ? color : undefined, background: cardioType?.id===opt.id ? color+"10" : undefined }}
+                  onClick={() => setCardioType(opt)}>
+                  {opt.icon === "TrendingUp" && <TrendingUp size={18} color={cardioType?.id===opt.id?"#000":color} />}
+                  {opt.icon === "TriangleRight" && (
+                    <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={cardioType?.id===opt.id?"#000":color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 18L2 18L22 6L22 18Z" />
+                    </svg>
+                  )}
+                  {opt.icon === "Activity"   && <Activity   size={18} color={cardioType?.id===opt.id?"#000":color} />}
+                  {opt.icon === "Wind"       && <Wind       size={18} color={cardioType?.id===opt.id?"#000":color} />}
+                  {opt.icon === "Zap"        && <Zap        size={18} color={cardioType?.id===opt.id?"#000":color} />}
+                  {opt.icon === "Dumbbell"   && <Dumbbell   size={18} color={cardioType?.id===opt.id?"#000":color} />}
+                  <span style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:800, letterSpacing:1 }}>{opt.label.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>DURATION (MINUTES) <span style={{ color:"#2a2a2a" }}>*</span></div>
+            <input className="minput" type="number" placeholder="e.g. 30" value={duration}
+              onChange={e => setDuration(e.target.value)}
+              style={{ marginBottom:16, borderColor:duration?color:"#2a2a2a" }} />
+
+            <div style={{ display:"flex", gap:12, marginBottom:24 }}>
+              <div style={{ flex:1 }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>DISTANCE (MILES)</div>
+                <input className="minput" type="number" placeholder="e.g. 3.1" value={distance}
+                  onChange={e => setDistance(e.target.value)}
+                  style={{ borderColor:distance?color:"#2a2a2a" }} />
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>CALORIES BURNED</div>
+                <input className="minput" type="number" placeholder="e.g. 350" value={calories}
+                  onChange={e => setCalories(e.target.value)}
+                  style={{ borderColor:calories?color:"#2a2a2a" }} />
+              </div>
+            </div>
+
+            <button className="mbtn"
+              style={{ background:cardioType&&duration?color:"#161616", color:cardioType&&duration?"#000":"#333" }}
+              disabled={!cardioType||!duration} onClick={handleLog}>LOG CARDIO</button>
+          </>
+        )}
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+      </div>
+    </Wrap>
+  );
+}
+// ── END CARDIO SCREEN ──────────────────────────────────────────────────────
+
+function WarmupScreen({ exercises, color, onComplete, onSkip }) {
   const [current, setCurrent] = useState(0);
   const [timeLeft, setTimeLeft] = useState(WARMUP_DURATION);
   const [running, setRunning] = useState(false);
@@ -1110,7 +1208,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
               <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(summaryData.date)}</div>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
-              {[{label:"SPLIT",value:summaryData.split},{label:"TIME",value:formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
+              {[{label:"SPLIT",value:summaryData.split},{label:"TIME",value:summaryData.duration < 5*60*1000 ? "—" : formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
                 <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${summaryData.color}`, padding:"12px 14px" }}>
                   <div style={{ color:"#444", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:3 }}>{label}</div>
                   <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color:"#fff", lineHeight:1 }}>{value}</div>
@@ -1230,9 +1328,10 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 }
 
 // ── HISTORY SCREEN ────────────────────────────────────────────────────────
-function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, onDeleteSaved }) {
+function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, onDeleteSaved, onDeleteEntry }) {
   const [showSaved, setShowSaved] = useState(false);
   const [selectedHistory, setSelectedHistory] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const ONE_MONTH = 30 * 24 * 60 * 60 * 1000;
   const weeks = {};
   history.forEach(h => { const wk = getWeekKey(h.date); if (!weeks[wk]) weeks[wk] = []; weeks[wk].push(h); });
@@ -1248,7 +1347,7 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
           <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(h.date)}</div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
-          {[{label:"SPLIT",value:h.split},{label:"TIME",value:h.duration?formatDuration(h.duration):"—"},{label:"EXERCISES",value:h.total},{label:"SETS",value:(h.exerciseDetails||[]).reduce((a,e)=>a+(parseInt(e.sets)||0),0)}].map(({label,value}) => (
+          {[{label:"SPLIT",value:h.split},{label:"TIME",value:h.duration && h.duration >= 5*60*1000 ? formatDuration(h.duration) : "—"},{label:"EXERCISES",value:h.total},{label:"SETS",value:(h.exerciseDetails||[]).reduce((a,e)=>a+(parseInt(e.sets)||0),0)}].map(({label,value}) => (
             <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${h.color}`, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700 }}>{label}</div>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:900, color:"#fff" }}>{value}</div>
@@ -1339,10 +1438,17 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
                             {formatDate(h.date).toUpperCase()}
                             {h.duration ? ` . ${formatDuration(h.duration)}` : ""}
                             {h.durationMins ? ` . ${h.durationMins} MIN` : ""}
+                            {h.distanceMiles ? ` . ${h.distanceMiles} MI` : ""}
+                            {h.caloriesBurned ? ` . ${h.caloriesBurned} CAL` : ""}
                           </div>
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
                           {viewable && <span style={{ fontFamily:"'Barlow Condensed'", fontSize:18, color:"#2a2a2a", fontWeight:900 }}>›</span>}
+                          <button
+                            onClick={e => { e.stopPropagation(); const key = `${wk}-${i}`; if (confirmDelete === key) { onDeleteEntry(h); setConfirmDelete(null); } else { setConfirmDelete(key); setTimeout(() => setConfirmDelete(null), 3000); } }}
+                            style={{ background:"transparent", border:`1px solid ${confirmDelete===`${wk}-${i}`?"#FF3D00":"#1e1e1e"}`, borderRadius:3, color:confirmDelete===`${wk}-${i}`?"#FF3D00":"#2a2a2a", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"3px 8px", cursor:"pointer", flexShrink:0 }}>
+                            {confirmDelete===`${wk}-${i}` ? "sure?" : "✕"}
+                          </button>
                           <div style={{ width:3, height:30, background:h.type==="cardio"?"#444":h.color, borderRadius:2 }} />
                         </div>
                       </div>
@@ -1619,9 +1725,7 @@ export default function App() {
   const [wifeyWeightLog, setWifeyWeightLog] = useState([]);
   const [broGoalWeight, setBroGoalWeight] = useState(null);
   const [wifeyGoalWeight, setWifeyGoalWeight] = useState(null);
-  const [cardioType, setCardioType] = useState(null);
-  const [cardioDuration, setCardioDuration] = useState("");
-  const [cardioLogged, setCardioLogged] = useState(false);
+
 
   useEffect(() => {
     const bp = loadStorage("dg-prs"); if (bp) setBroPrs(bp);
@@ -1639,11 +1743,12 @@ export default function App() {
 
   const broMin = broSplit ? (broSplit.isCore ? 4 : broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
   const broMax = broSplit ? (broSplit.isCore ? CORE_BANK.length : broSplit.fullBody ? 8 : broSplit.groups.reduce((s, g) => s + BRO_EXERCISE_BANK[g].length, 0)) : 20;
+  const wifeyIsLegs = wifeyMode === "legs";
   const wifeyBank = wifeyMode === "cables" ? WIFEY_CABLE_BANK : WIFEY_FULL_BODY_BANK;
   const wifeyIsCore = wifeyMode === "core";
   const wifeyMin = 4;
-  const wifeyMax = wifeyIsCore ? CORE_BANK.length : Object.values(wifeyBank).reduce((s, arr) => s + arr.length, 0);
-  const wColor = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#FF6B00" : WIFEY_COLOR;
+  const wifeyMax = wifeyIsCore ? CORE_BANK.length : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"].length : Object.values(wifeyBank).reduce((s, arr) => s + arr.length, 0);
+  const wColor = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#EEFF41" : wifeyMode === "legs" ? "#D500F9" : WIFEY_COLOR;
 
   function saveBroPr(name, data) {
     const u = { ...broPrs, [name]: data };
@@ -1669,13 +1774,10 @@ export default function App() {
   function saveWifeyWorkout(w) { const n=[w,...wifeySaved].slice(0,20); setWifeySaved(n); saveStorage("wy-saved",n); }
   function deleteBroSaved(idx) { const n=broSaved.filter((_,i)=>i!==idx); setBroSaved(n); saveStorage("dg-saved",n); }
   function deleteWifeySaved(idx) { const n=wifeySaved.filter((_,i)=>i!==idx); setWifeySaved(n); saveStorage("wy-saved",n); }
+  function deleteBroHistory(entry) { const n=broHistory.filter(h=>h!==entry); setBroHistory(n); saveStorage("dg-history",n); }
+  function deleteWifeyHistory(entry) { const n=wifeyHistory.filter(h=>h!==entry); setWifeyHistory(n); saveStorage("wy-history",n); }
 
-  function logCardio() {
-    if (!cardioType || !cardioDuration) return;
-    const entry = { type:"cardio", cardioType:cardioType.label, durationMins:cardioDuration, date:Date.now(), color:"#888" };
-    addWifeyHistory(entry);
-    setCardioLogged(true);
-  }
+
 
   // ── LANDING ──────────────────────────────────────────────────────────────
   if (screen === "landing") return (
@@ -1729,6 +1831,13 @@ export default function App() {
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:s.color, marginTop:6, fontWeight:700 }}>{s.sub}</div>
             </div>
           ))}
+        </div>
+        {/* CARDIO DAY */}
+        <div className="tc" onClick={() => setScreen("bro-cardio")}
+          style={{ marginTop:10, background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:"4px solid #FF1744", padding:"24px 20px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:"linear-gradient(to left, #FF174408, transparent)" }} />
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>CARDIO</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF1744", marginTop:6, fontWeight:700 }}>LOG YOUR SESSION</div>
         </div>
         {/* LOG WORKOUT — remove to revert */}
         <div className="tc" onClick={() => setScreen("log-bro")}
@@ -1821,7 +1930,7 @@ export default function App() {
   // ── BRO HISTORY ───────────────────────────────────────────────────────────
   if (screen === "bro-history") return (
     <Wrap>
-      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }}  onDeleteSaved={deleteBroSaved} />
+      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }}  onDeleteSaved={deleteBroSaved} onDeleteEntry={deleteBroHistory} />
     </Wrap>
   );
 
@@ -1853,13 +1962,14 @@ export default function App() {
           {[
             { id:"fullbody", label:"Full Body",  sub:"DUMBBELLS . MACHINES . FREE WEIGHTS", color:WIFEY_COLOR },
             { id:"cables",   label:"All Cables", sub:"CABLE MACHINE ONLY",                  color:"#00E5FF"   },
-            { id:"core",     label:"Core / Abs", sub:"ABS . CORE STRENGTH",                 color:"#FF6B00"   },
-            { id:"cardio",   label:"Cardio Day", sub:"LOG YOUR SESSION",                    color:"#76FF03"   },
+            { id:"core",     label:"Core / Abs", sub:"ABS . CORE STRENGTH",                 color:"#EEFF41"   },
+            { id:"legs",     label:"Leg Day",    sub:"LOWER BODY . GLUTES . STRENGTH",    color:"#D500F9"   },
+            { id:"cardio",   label:"Cardio",     sub:"LOG YOUR SESSION",                    color:"#76FF03"   },
           ].map((opt, idx) => (
             <div key={opt.id} className="tc"
               onClick={() => {
-                if (opt.id === "cardio") { setCardioType(null); setCardioDuration(""); setCardioLogged(false); setScreen("cardio"); }
-                else { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?7:6); setScreen("wifey-configure"); }
+                if (opt.id === "cardio") { setScreen("cardio"); }
+                else { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?7:opt.id==="legs"?6:6); setScreen("wifey-configure"); }
               }}
               style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${opt.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)` }} />
@@ -1886,7 +1996,7 @@ export default function App() {
         <button className="bk" onClick={() => setScreen("wifey-home")}>BACK</button>
         <div style={{ marginTop:28, marginBottom:36 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:wColor, fontWeight:700, marginBottom:4 }}>TODAY'S WORKOUT</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{wifeyMode==="cables"?"ALL CABLES":wifeyMode==="core"?"CORE / ABS":"FULL BODY"}</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{wifeyMode==="cables"?"ALL CABLES":wifeyMode==="core"?"CORE / ABS":wifeyMode==="legs"?"LEG DAY":"FULL BODY"}</div>
         </div>
         <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${wColor}`, padding:"28px 24px", marginBottom:28 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>TOTAL EXERCISES</div>
@@ -1899,7 +2009,7 @@ export default function App() {
             <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
           </div>
         </div>
-        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout"); }}>GENERATE WORKOUT</button>
+        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout"); }}>GENERATE WORKOUT</button>
         <div onClick={() => setWifeyWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${wifeyWarmup ? wColor+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${wifeyWarmup ? wColor : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
           <div>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: wifeyWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
@@ -1918,7 +2028,7 @@ export default function App() {
   if (screen === "wifey-warmup") {
     const warmupKey = wifeyMode === "cables" ? "All Cables" : wifeyMode === "cardio" ? "Cardio" : wifeyMode === "core" ? "Full Body" : "Full Body";
     const exercises = WARMUP_BANK[warmupKey] || WARMUP_BANK["Full Body"];
-    const wColor2 = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#FF6B00" : WIFEY_COLOR;
+    const wColor2 = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#EEFF41" : WIFEY_COLOR;
     return (
       <Wrap>
         <WarmupScreen exercises={exercises} color={wColor2}
@@ -1932,9 +2042,9 @@ export default function App() {
   if (screen === "wifey-workout") return (
     <Wrap>
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
-        splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyBank}
+        splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":wifeyMode==="legs"?"Leg Day":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"] : wifeyBank}
         onBack={() => setScreen("wifey-home")}
-        onRegenerate={() => { const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); }}
+        onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); }}
         prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
     </Wrap>
   );
@@ -1942,7 +2052,7 @@ export default function App() {
   // ── WIFEY HISTORY ─────────────────────────────────────────────────────────
   if (screen === "wifey-history") return (
     <Wrap>
-      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }}  onDeleteSaved={deleteWifeySaved} />
+      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }}  onDeleteSaved={deleteWifeySaved} onDeleteEntry={deleteWifeyHistory} />
     </Wrap>
   );
 
@@ -1955,46 +2065,14 @@ export default function App() {
   );
 
 
-  // ── CARDIO ────────────────────────────────────────────────────────────────
+  // ── BRO CARDIO ────────────────────────────────────────────────────────────
+  if (screen === "bro-cardio") return (
+    <CardioScreen color="#FF1744" onBack={() => setScreen("bro-home")} onComplete={entry => { addBroHistory(entry); }} />
+  );
+
+  // ── WIFEY CARDIO ──────────────────────────────────────────────────────────
   if (screen === "cardio") return (
-    <Wrap>
-      <div className="sc" style={{ padding:"56px 20px 40px" }}>
-        <button className="bk" onClick={() => setScreen("wifey-home")}>BACK</button>
-        <div style={{ marginTop:28, marginBottom:32 }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#76FF03", fontWeight:700, marginBottom:4 }}>LOG SESSION</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9 }}>CARDIO<br/><span style={{ color:"#76FF03" }}>DAY</span></div>
-        </div>
-        {cardioLogged ? (
-          <div style={{ textAlign:"center", padding:"40px 0" }}>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, color:"#76FF03", lineHeight:1 }}>LOGGED.</div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color:"#444", letterSpacing:2, marginTop:8 }}>{cardioType?.label?.toUpperCase()} . {cardioDuration} MIN</div>
-            <button className="mbtn" style={{ background:"#76FF03", color:"#000", marginTop:32 }} onClick={() => setScreen("wifey-home")}>BACK TO HOME</button>
-          </div>
-        ) : (
-          <>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:12 }}>SELECT ACTIVITY</div>
-            <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
-              {CARDIO_OPTIONS.map(opt => (
-                <div key={opt.id} className={`caopt${cardioType?.id===opt.id?" sel":""}`} onClick={() => setCardioType(opt)}>
-                  {opt.icon === "TrendingUp" && <TrendingUp size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
-                  {opt.icon === "Activity" && <Activity size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
-                  {opt.icon === "Wind" && <Wind size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
-                  {opt.icon === "Zap" && <Zap size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
-                  {opt.icon === "Dumbbell" && <Dumbbell size={18} color={cardioType?.id===opt.id?"#000":"#76FF03"} />}
-                  <span style={{ fontFamily:"'Barlow Condensed'", fontSize:20, fontWeight:800, letterSpacing:1 }}>{opt.label.toUpperCase()}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>DURATION (MINUTES)</div>
-            <input className="minput" type="number" placeholder="e.g. 30" value={cardioDuration} onChange={e => setCardioDuration(e.target.value)}
-              style={{ marginBottom:24, borderColor:cardioDuration?"#76FF03":"#2a2a2a" }} />
-            <button className="mbtn" style={{ background:cardioType&&cardioDuration?"#76FF03":"#161616", color:cardioType&&cardioDuration?"#000":"#333" }}
-              disabled={!cardioType||!cardioDuration} onClick={logCardio}>LOG CARDIO</button>
-          </>
-        )}
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
-      </div>
-    </Wrap>
+    <CardioScreen color="#76FF03" onBack={() => setScreen("wifey-home")} onComplete={entry => { addWifeyHistory(entry); }} />
   );
 
   // ── SETTINGS ──────────────────────────────────────────────────────────────
