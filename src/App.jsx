@@ -669,7 +669,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
   if (submitted && summaryData) return (
     <Wrap>
       <div className="sov">
-        <div ref={summaryRef} style={{ background:"#0e0e0e", border:`1px solid ${color}30`, borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
+        <div ref={summaryRef} style={{ background:"#0e0e0e", borderTop:`4px solid ${color}`, borderLeft:`4px solid ${color}`, borderRight:"1px solid #1a1a1a", borderBottom:"1px solid #1a1a1a", borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
           <div style={{ textAlign:"center", marginBottom:24 }}>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color, lineHeight:1, letterSpacing:2 }}>{summaryData.finishMsg}</div>
             <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{new Date(summaryData.date).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}</div>
@@ -1279,7 +1279,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 
       {showSummary && summaryData && (
         <div className="sov">
-          <div ref={summaryRef} style={{ background:"#0e0e0e", border:`1px solid ${summaryData.color}30`, borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
+          <div ref={summaryRef} style={{ background:"#0e0e0e", borderTop:`4px solid ${summaryData.color}`, borderLeft:`4px solid ${summaryData.color}`, borderRight:"1px solid #1a1a1a", borderBottom:"1px solid #1a1a1a", borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ textAlign:"center", marginBottom:24 }}>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:summaryData.color, lineHeight:1, letterSpacing:2 }}>{summaryData.finishMsg}</div>
               <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(summaryData.date)}</div>
@@ -1604,9 +1604,8 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
   }
 
   function calcWeeklyCount(hist) {
-    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const days = new Set(hist.filter(h => h.date >= cutoff).map(h => new Date(h.date).toISOString().slice(0,10)));
-    return days.size;
+    const currentWeekKey = getWeekKey(Date.now());
+    return hist.filter(h => getWeekKey(h.date) === currentWeekKey).length;
   }
 
   function saveWeight() {
