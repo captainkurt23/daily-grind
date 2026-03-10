@@ -1043,10 +1043,10 @@ function Wrap({ children, extraCss }) {
 }
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume, initialChecked, initialSetsDone, onProgressSave }) {
   const REST_DUR = restDurationProp || REST_DURATION;
-  const [checked, setChecked] = useState({});
-  const [setsDone, setSetsDone] = useState({});
+  const [checked, setChecked] = useState(initialChecked || {});
+  const [setsDone, setSetsDone] = useState(initialSetsDone || {});
   const [expanded, setExpanded] = useState({});
   const [justChecked, setJustChecked] = useState(null);
   const [confirmSwap, setConfirmSwap] = useState(null);
@@ -1054,6 +1054,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const [confirmExit, setConfirmExit] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [timerLeft, setTimerLeft] = useState(REST_DUR);
+  const timerEndRef = useRef(null);
   const [prModal, setPrModal] = useState(null);
   const [prWeight, setPrWeight] = useState("");
   const [prReps, setPrReps] = useState("");
@@ -1101,6 +1102,10 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
     } catch (e) { console.error("Screenshot failed", e); }
   }
   useEffect(() => {
+    if (onProgressSave) onProgressSave(checked, setsDone);
+  }, [checked, setsDone]);
+
+  useEffect(() => {
     // Only reset if it's a genuinely new workout (startTime changed), not a swap
     if (prevWorkoutRef.current?.startTime !== workout.startTime) {
       completedRef.current = false;
@@ -1111,12 +1116,40 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 
   useEffect(() => {
     if (timerActive) {
+      timerEndRef.current = Date.now() + timerLeft * 1000;
       timerRef.current = setInterval(() => {
-        setTimerLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setTimerActive(false); if (timerSound) playRestAlert(timerVolume ?? 0.5); return REST_DUR; } return t - 1; });
-      }, 1000);
-    } else clearInterval(timerRef.current);
+        const left = Math.round((timerEndRef.current - Date.now()) / 1000);
+        if (left <= 0) {
+          clearInterval(timerRef.current);
+          setTimerActive(false);
+          setTimerLeft(REST_DUR);
+          if (timerSound) playRestAlert(timerVolume ?? 0.5);
+        } else {
+          setTimerLeft(left);
+        }
+      }, 500);
+    } else {
+      clearInterval(timerRef.current);
+    }
     return () => clearInterval(timerRef.current);
   }, [timerActive]);
+
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible" && timerActive && timerEndRef.current) {
+        const left = Math.round((timerEndRef.current - Date.now()) / 1000);
+        if (left <= 0) {
+          setTimerActive(false);
+          setTimerLeft(REST_DUR);
+          if (timerSound) playRestAlert(timerVolume ?? 0.5);
+        } else {
+          setTimerLeft(left);
+        }
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [timerActive, timerSound, timerVolume]);
 
   useEffect(() => {
     if (allDone && !completedRef.current) {
@@ -1248,7 +1281,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
         </div>
       )}
 
-      <div className="sc" style={{ padding:`${timerActive?78:56}px 20px 120px` }}>
+      <div className="sc" style={{ padding:`${timerActive?78:56}px 20px ${timerActive?180:140}px` }}>
         <button className="bk" onClick={() => { if (confirmExit) { onBack(); } else { setConfirmExit(true); setTimeout(() => setConfirmExit(false), 3000); } }} style={{ color: confirmExit ? "#FF3D00" : undefined }}>{confirmExit ? "EXIT WORKOUT?" : "BACK"}</button>
         <div style={{ marginTop:20, marginBottom:6 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700 }}>{splitLabel.toUpperCase()} DAY</div>
@@ -1725,6 +1758,10 @@ export default function App() {
   const [wifeyWeightLog, setWifeyWeightLog] = useState([]);
   const [broGoalWeight, setBroGoalWeight] = useState(null);
   const [wifeyGoalWeight, setWifeyGoalWeight] = useState(null);
+  const [broSessionChecked, setBroSessionChecked] = useState({});
+  const [broSessionSetsDone, setBroSessionSetsDone] = useState({});
+  const [wifeySessionChecked, setWifeySessionChecked] = useState({});
+  const [wifeySessionSetsDone, setWifeySessionSetsDone] = useState({});
 
 
   useEffect(() => {
@@ -1739,6 +1776,23 @@ export default function App() {
     const st = loadStorage("dg-settings"); if (st) setSettings(st);
     const bgw = loadStorage("dg-goalweight"); if (bgw) setBroGoalWeight(bgw);
     const wgw = loadStorage("wy-goalweight"); if (wgw) setWifeyGoalWeight(wgw);
+    // Restore active workout session if app was reloaded mid-workout
+    const bSession = loadStorage("dg-session");
+    if (bSession?.workout?.sections?.length && bSession?.screen) {
+      setBroWorkout(bSession.workout);
+      setBroSplit(bSession.split || null);
+      setBroSessionChecked(bSession.checked || {});
+      setBroSessionSetsDone(bSession.setsDone || {});
+      setScreen(bSession.screen);
+    }
+    const wSession = loadStorage("wy-session");
+    if (wSession?.workout?.sections?.length && wSession?.screen) {
+      setWifeyWorkout(wSession.workout);
+      setWifeyMode(wSession.mode || null);
+      setWifeySessionChecked(wSession.checked || {});
+      setWifeySessionSetsDone(wSession.setsDone || {});
+      setScreen(wSession.screen);
+    }
   }, []);
 
   const broMin = broSplit ? (broSplit.isCore ? 4 : broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
@@ -1776,6 +1830,10 @@ export default function App() {
   function deleteWifeySaved(idx) { const n=wifeySaved.filter((_,i)=>i!==idx); setWifeySaved(n); saveStorage("wy-saved",n); }
   function deleteBroHistory(entry) { const n=broHistory.filter(h=>h!==entry); setBroHistory(n); saveStorage("dg-history",n); }
   function deleteWifeyHistory(entry) { const n=wifeyHistory.filter(h=>h!==entry); setWifeyHistory(n); saveStorage("wy-history",n); }
+  function saveBroSession(workout, split, checked, setsDone, screen) { saveStorage("dg-session", { workout, split, checked, setsDone, screen }); }
+  function clearBroSession() { saveStorage("dg-session", null); setBroSessionChecked({}); setBroSessionSetsDone({}); }
+  function saveWifeySession(workout, mode, checked, setsDone, screen) { saveStorage("wy-session", { workout, mode, checked, setsDone, screen }); }
+  function clearWifeySession() { saveStorage("wy-session", null); setWifeySessionChecked({}); setWifeySessionSetsDone({}); }
 
 
 
@@ -1872,7 +1930,7 @@ export default function App() {
               <button className="cntbtn" disabled={broTotal >= broMax} onClick={() => setBroTotal(t => t+1)}>+</button>
             </div>
           </div>
-          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); setScreen(broWarmup ? "bro-warmup" : "bro-workout"); }}>GENERATE WORKOUT</button>
+          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); clearBroSession(); setScreen(broWarmup ? "bro-warmup" : "bro-workout"); }}>GENERATE WORKOUT</button>
           <div onClick={() => setBroWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${broWarmup ? color+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${broWarmup ? color : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
             <div>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: broWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
@@ -1905,9 +1963,13 @@ export default function App() {
   if (screen === "bro-workout" && broSplit) return (
     <Wrap>
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={broSplit.isCore ? CORE_BANK : BRO_EXERCISE_BANK}
-        onBack={() => setScreen("bro-home")}
-        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); }}
-        prs={broPrs} onSavePr={saveBroPr} onComplete={addBroHistory} onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
+        onBack={() => { clearBroSession(); setScreen("bro-home"); }}
+        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); clearBroSession(); }}
+        prs={broPrs} onSavePr={saveBroPr}
+        onComplete={entry => { addBroHistory(entry); clearBroSession(); }}
+        onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume}
+        initialChecked={broSessionChecked} initialSetsDone={broSessionSetsDone}
+        onProgressSave={(c, s) => saveBroSession(broWorkout, broSplit, c, s, "bro-workout")} />
     </Wrap>
   );
 
@@ -2043,9 +2105,13 @@ export default function App() {
     <Wrap>
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
         splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":wifeyMode==="legs"?"Leg Day":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"] : wifeyBank}
-        onBack={() => setScreen("wifey-home")}
-        onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); }}
-        prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={addWifeyHistory} onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume} />
+        onBack={() => { clearWifeySession(); setScreen("wifey-home"); }}
+        onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); clearWifeySession(); }}
+        prs={wifeyPrs} onSavePr={saveWifeyPr}
+        onComplete={entry => { addWifeyHistory(entry); clearWifeySession(); }}
+        onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume}
+        initialChecked={wifeySessionChecked} initialSetsDone={wifeySessionSetsDone}
+        onProgressSave={(c, s) => saveWifeySession(wifeyWorkout, wifeyMode, c, s, "wifey-workout")} />
     </Wrap>
   );
 
