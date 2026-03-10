@@ -1903,7 +1903,7 @@ export default function App() {
           <div className="tc" onClick={() => setScreen("wifey-home")} style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${WIFEY_COLOR}`, padding:"28px 24px", position:"relative", overflow:"hidden" }}>
             <div style={{ position:"absolute", right:-10, top:"50%", transform:"translateY(-50%)", fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:`${WIFEY_COLOR}10`, lineHeight:1 }}>WIFEY</div>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:32, fontWeight:900, letterSpacing:1 }}>THE WIFEY WORKOUT</div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, letterSpacing:3, color:WIFEY_COLOR, marginTop:6, fontWeight:700 }}>TONE . CABLES . CARDIO</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, letterSpacing:3, color:WIFEY_COLOR, marginTop:6, fontWeight:700 }}>TONE . CABLES . SCULPT</div>
           </div>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:40 }}>
