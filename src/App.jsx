@@ -1324,7 +1324,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       )}
 
       <div className="sc" style={{ padding:`${timerActive?78:56}px 20px ${timerActive?180:140}px` }}>
-        <button className="bk" onClick={() => { if (confirmExit) { onBack(); } else { setConfirmExit(true); setTimeout(() => setConfirmExit(false), 3000); } }} style={{ color: confirmExit ? "#FF3D00" : undefined }}>{confirmExit ? "EXIT WORKOUT?" : "BACK"}</button>
+        <button className="bk" onClick={() => { if (confirmExit) { onBack(); } else { setConfirmExit(true); setTimeout(() => setConfirmExit(false), 3000); } }} style={{ color: confirmExit ? color : undefined }}>{confirmExit ? "EXIT WORKOUT?" : "BACK"}</button>
         <div style={{ marginTop:20, marginBottom:6 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700 }}>{splitLabel.toUpperCase()} DAY</div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:52, fontWeight:900, lineHeight:0.9, letterSpacing:1, marginTop:2 }}>YOUR<br/>WORKOUT</div>
@@ -1378,7 +1378,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
                           )}
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
-                          {!done && <button className="swpbtn" onClick={() => { if (confirmSwap === key) { swapExercise(si, ei); setConfirmSwap(null); } else { setConfirmSwap(key); setTimeout(() => setConfirmSwap(null), 3000); } }} style={{ borderColor: confirmSwap === key ? "#FF3D00" : undefined, color: confirmSwap === key ? "#FF3D00" : undefined }}>{confirmSwap === key ? "sure?" : "swap"}</button>}
+                          {!done && <button className="swpbtn" onClick={() => { if (confirmSwap === key) { swapExercise(si, ei); setConfirmSwap(null); } else { setConfirmSwap(key); setTimeout(() => setConfirmSwap(null), 3000); } }} style={{ borderColor: confirmSwap === key ? color : undefined, color: confirmSwap === key ? color : undefined }}>{confirmSwap === key ? "sure?" : "swap"}</button>}
                           <button className={`prbtn${hasPr?" got":""}`} onClick={() => openPr(ex.name)}>PR</button>
                         </div>
                       </div>
@@ -1393,7 +1393,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 
         <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:430, padding:"16px 20px 28px", background:"linear-gradient(transparent, #080808 45%)" }}>
           <div style={{ display:"flex", gap:8 }}>
-            <button className="mbtn" style={{ background: confirmRegen ? "#FF3D00" : "#111", color: confirmRegen ? "#000" : "#333", border: confirmRegen ? "1px solid #FF3D00" : "1px solid #1a1a1a", flex:3 }} onClick={() => { if (confirmRegen) { onRegenerate(); setConfirmRegen(false); } else { setConfirmRegen(true); setTimeout(() => setConfirmRegen(false), 3000); } }}>{confirmRegen ? "ARE YOU SURE?" : "REGENERATE"}</button>
+            <button className="mbtn" style={{ background: confirmRegen ? color : "#111", color: confirmRegen ? "#000" : "#333", border: confirmRegen ? `1px solid ${color}` : "1px solid #1a1a1a", flex:3 }} onClick={() => { if (confirmRegen) { onRegenerate(); setConfirmRegen(false); } else { setConfirmRegen(true); setTimeout(() => setConfirmRegen(false), 3000); } }}>{confirmRegen ? "ARE YOU SURE?" : "REGENERATE"}</button>
             <button className="mbtn" onClick={() => { const d = { split:splitLabel, color, date:Date.now(), exercises:workout.sections.flatMap(s=>s.exercises.map(e=>e.name)), exerciseDetails:workout.sections.flatMap(s=>s.exercises.map(e=>({name:e.name,sets:e.sets,reps:e.reps}))), total:workout.sections.flatMap(s=>s.exercises).length, type:"saved" }; onSaveWorkout(d); setIsSaved(true); }} style={{ background:isSaved ? "#FFB30015" : "#111", border:isSaved ? "1px solid #FFB30040" : "1px solid #1a1a1a", flex:1, padding:0, display:"flex", alignItems:"center", justifyContent:"center" }}><Star size={18} color={isSaved ? "#FFB300" : "#444"} fill={isSaved ? "#FFB300" : "none"} /></button>
           </div>
         </div>
@@ -1407,6 +1407,7 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
   const [showSaved, setShowSaved] = useState(false);
   const [selectedHistory, setSelectedHistory] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(0); // 0=idle, 1=confirming
   const ONE_MONTH = 30 * 24 * 60 * 60 * 1000;
   const weeks = {};
   history.forEach(h => { const wk = getWeekKey(h.date); if (!weeks[wk]) weeks[wk] = []; weeks[wk].push(h); });
@@ -1522,7 +1523,7 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
                           {viewable && <span style={{ fontFamily:"'Barlow Condensed'", fontSize:18, color:"#2a2a2a", fontWeight:900 }}>›</span>}
                           <button
                             onClick={e => { e.stopPropagation(); const key = `${wk}-${i}`; if (confirmDelete === key) { onDeleteEntry(h); setConfirmDelete(null); } else { setConfirmDelete(key); setTimeout(() => setConfirmDelete(null), 3000); } }}
-                            style={{ background:"transparent", border:`1px solid ${confirmDelete===`${wk}-${i}`?"#FF3D00":"#1e1e1e"}`, borderRadius:3, color:confirmDelete===`${wk}-${i}`?"#FF3D00":"#2a2a2a", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"3px 8px", cursor:"pointer", flexShrink:0 }}>
+                            style={{ background:"transparent", border:`1px solid ${confirmDelete===`${wk}-${i}`?profileColor:"#1e1e1e"}`, borderRadius:3, color:confirmDelete===`${wk}-${i}`?profileColor:"#2a2a2a", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"3px 8px", cursor:"pointer", flexShrink:0 }}>
                             {confirmDelete===`${wk}-${i}` ? "sure?" : "✕"}
                           </button>
                           <div style={{ width:3, height:30, background:h.type==="cardio"?"#444":h.color, borderRadius:2 }} />
@@ -1536,9 +1537,19 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
           })
       )}
       {!showSaved && history.length > 0 && (
-        <button onClick={onClear} style={{ marginTop:16, background:"none", border:"1px solid #1e1e1e", borderRadius:4, color:"#2a2a2a", fontSize:12, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"12px 20px", cursor:"pointer", width:"100%" }}>
-          CLEAR HISTORY
-        </button>
+        confirmClear === 0 ? (
+          <button onClick={() => setConfirmClear(1)} style={{ marginTop:16, background:"none", border:"1px solid #1e1e1e", borderRadius:4, color:"#2a2a2a", fontSize:12, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"12px 20px", cursor:"pointer", width:"100%" }}>
+            CLEAR HISTORY
+          </button>
+        ) : (
+          <div style={{ marginTop:16, background:"#1a0000", border:`1px solid ${profileColor}`, borderRadius:4, padding:"16px 20px" }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:2, color:profileColor, fontWeight:700, marginBottom:12, textAlign:"center" }}>THIS WILL DELETE ALL YOUR HISTORY. ARE YOU SURE?</div>
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={() => setConfirmClear(0)} style={{ flex:1, background:"none", border:"1px solid #2a2a2a", borderRadius:4, color:"#666", fontSize:12, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>CANCEL</button>
+              <button onClick={() => { onClear(); setConfirmClear(0); }} style={{ flex:1, background:profileColor, border:"none", borderRadius:4, color:"#000", fontSize:12, fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>DELETE ALL</button>
+            </div>
+          </div>
+        )
       )}
     </div>
     {tabBar}
