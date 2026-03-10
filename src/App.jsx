@@ -1031,6 +1031,12 @@ const BASE_STYLES = `
   .wkrow:last-child { border-bottom:none; }
   .caopt { cursor:pointer; background:#0f0f0f; border:1px solid #1a1a1a; border-radius:4px; padding:14px 18px; display:flex; align-items:center; gap:14px; transition:all 0.15s; }
   .caopt.sel { border-color:#76FF03; background:#76FF0310; }
+  .tabbar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; height:68px; background:#0d0d0d; border-top:1px solid #1a1a1a; display:flex; align-items:stretch; z-index:80; }
+  .tbtab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; position:relative; border:none; background:transparent; transition:opacity 0.15s; -webkit-tap-highlight-color:transparent; }
+  .tbtab::before { content:''; position:absolute; top:0; left:25%; right:25%; height:2px; border-radius:0 0 2px 2px; background:transparent; transition:background 0.2s; }
+  .tbtab.active::before { background:var(--tab-color); }
+  .tbtab-label { font-family:'Barlow Condensed',sans-serif; font-size:9px; letter-spacing:2px; font-weight:700; color:#2a2a2a; transition:color 0.2s; }
+  .tbtab.active .tbtab-label { color:var(--tab-color); }
 `;
 
 function Wrap({ children, extraCss }) {
@@ -1041,6 +1047,44 @@ function Wrap({ children, extraCss }) {
     </div>
   );
 }
+// ── TAB BAR ───────────────────────────────────────────────────────────────
+function TabBar({ active, onTab, color }) {
+  const tabs = [
+    { id:"train", label:"TRAIN", icon:(c) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 4v16M18 4v16M6 12h12M3 8h3M18 8h3M3 16h3M18 16h3"/>
+      </svg>
+    )},
+    { id:"log", label:"LOG", icon:(c) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    )},
+    { id:"history", label:"HISTORY", icon:(c) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    )},
+    { id:"stats", label:"STATS", icon:(c) => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    )},
+  ];
+  return (
+    <div className="tabbar" style={{ "--tab-color": color }}>
+      {tabs.map(t => (
+        <button key={t.id} className={`tbtab${active===t.id?" active":""}`} onClick={() => onTab(t.id)}>
+          {t.icon(active===t.id ? color : "#2a2a2a")}
+          <span className="tbtab-label">{t.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+// ── END TAB BAR ────────────────────────────────────────────────────────────
+
+
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
 function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume, initialChecked, initialSetsDone, onProgressSave }) {
@@ -1361,7 +1405,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 }
 
 // ── HISTORY SCREEN ────────────────────────────────────────────────────────
-function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, onDeleteSaved, onDeleteEntry }) {
+function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, onDeleteSaved, onDeleteEntry, tabBar }) {
   const [showSaved, setShowSaved] = useState(false);
   const [selectedHistory, setSelectedHistory] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -1405,7 +1449,8 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
     );
   }
   return (
-    <div className="sc" style={{ padding:"56px 20px 40px" }}>
+    <>
+    <div className="sc" style={{ padding:"56px 20px 88px" }}>
       <button className="bk" onClick={onBack}>BACK</button>
       <div style={{ marginTop:28, marginBottom:32 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
@@ -1497,13 +1542,15 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
           CLEAR HISTORY
         </button>
       )}
-      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
     </div>
+    {tabBar}
+    </>
   );
 }
 
 // ── STATS SCREEN ─────────────────────────────────────────────────────────────
-function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileName, onBack, goalWeight, onSaveGoalWeight }) {
+function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileName, onBack, goalWeight, onSaveGoalWeight, tabBar }) {
   const [weightInput, setWeightInput] = useState("");
   const [showInput, setShowInput] = useState(false);
   const [goalInput, setGoalInput] = useState("");
@@ -1589,7 +1636,8 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
   const polyline = chartData.map((e,i) => `${toX(i)},${toY(e.weight)}`).join(" ");
 
   return (
-    <div className="sc" style={{ padding:"56px 20px 40px" }}>
+    <>
+    <div className="sc" style={{ padding:"56px 20px 88px" }}>
       <button className="bk" onClick={onBack}>BACK</button>
       <div style={{ marginTop:28, marginBottom:32 }}>
         <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>
@@ -1725,9 +1773,11 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
             NO WEIGHT LOGGED YET
           </div>
         )}
-      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
       </div>
     </div>
+    {tabBar}
+    </>
   );
 }
 
@@ -1865,20 +1915,15 @@ export default function App() {
     </Wrap>
   );
 
+
   // ── BRO HOME ─────────────────────────────────────────────────────────────
   if (screen === "bro-home") return (
     <Wrap>
-      <div className="sc" style={{ padding:"56px 20px 40px" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:40 }}>
-          <div>
-            <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE BRO<br/><span style={{ color:"#FF3D00" }}>SPLIT</span></div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>SELECT YOUR SPLIT</div>
-          </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:32 }}>
-            <button onClick={() => setScreen("bro-history")} style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:4, padding:"8px 14px", color:"#444", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>HISTORY</button>
-            <button onClick={() => setScreen("bro-stats")} style={{ background:"#111", border:"1px solid #FF3D0040", borderRadius:4, padding:"8px 14px", color:"#FF3D00", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>STATS</button>
-          </div>
+      <div className="sc" style={{ padding:"56px 20px 88px" }}>
+        <div style={{ marginBottom:32 }}>
+          <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE BRO<br/><span style={{ color:"#FF3D00" }}>SPLIT</span></div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>SELECT YOUR SPLIT</div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {BRO_SPLITS.map((s, idx) => (
@@ -1890,21 +1935,14 @@ export default function App() {
             </div>
           ))}
         </div>
-        {/* CARDIO DAY */}
-        <div className="tc" onClick={() => setScreen("bro-cardio")}
-          style={{ marginTop:10, background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:"4px solid #FF1744", padding:"24px 20px", position:"relative", overflow:"hidden" }}>
-          <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:"linear-gradient(to left, #FF174408, transparent)" }} />
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>CARDIO</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF1744", marginTop:6, fontWeight:700 }}>LOG YOUR SESSION</div>
-        </div>
-        {/* LOG WORKOUT — remove to revert */}
-        <div className="tc" onClick={() => setScreen("log-bro")}
-          style={{ marginTop:10, background:"#0f0f0f", border:"1px dashed #2a2a2a", borderLeft:"4px dashed #FF3D00", padding:"24px 20px", position:"relative", overflow:"hidden" }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>LOG A WORKOUT</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF3D00", marginTop:6, fontWeight:700 }}>ALREADY TRAINED? LOG IT HERE</div>
-        </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
       </div>
+      <TabBar active="train" color="#FF3D00" onTab={t => {
+        if (t==="train") setScreen("bro-home");
+        else if (t==="log") setScreen("log-bro");
+        else if (t==="history") setScreen("bro-history");
+        else if (t==="stats") setScreen("bro-stats");
+      }} />
     </Wrap>
   );
 
@@ -1978,21 +2016,83 @@ export default function App() {
   const wifeyAllExercises = [...new Set([...Object.values(WIFEY_FULL_BODY_BANK).flat(), ...Object.values(WIFEY_CABLE_BANK).flat()].map(e => e.name).concat(CORE_BANK.map(e => e.name)))].sort();
 
   if (screen === "log-bro") return (
+    <Wrap>
+      <div className="sc" style={{ padding:"56px 20px 88px" }}>
+        <div style={{ marginBottom:32 }}>
+          <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE BRO<br/><span style={{ color:"#FF3D00" }}>SPLIT</span></div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>WHAT DID YOU DO?</div>
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:12 }}>ALREADY TRAINED?</div>
+        <div className="tc" onClick={() => setScreen("log-bro-form")}
+          style={{ background:"#0f0f0f", border:"1px dashed #2a2a2a", borderLeft:"4px dashed #FF3D00", padding:"24px 20px", position:"relative", overflow:"hidden", marginBottom:10 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>LOG A WORKOUT</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF3D00", marginTop:6, fontWeight:700 }}>MANUALLY ENTER YOUR SESSION</div>
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:12, marginTop:24 }}>CARDIO SESSION</div>
+        <div className="tc" onClick={() => setScreen("bro-cardio")}
+          style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:"4px solid #FF1744", padding:"24px 20px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:"linear-gradient(to left, #FF174408, transparent)" }} />
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>CARDIO</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF1744", marginTop:6, fontWeight:700 }}>LOG YOUR SESSION</div>
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+      </div>
+      <TabBar active="log" color="#FF3D00" onTab={t => {
+        if (t==="train") setScreen("bro-home");
+        else if (t==="log") setScreen("log-bro");
+        else if (t==="history") setScreen("bro-history");
+        else if (t==="stats") setScreen("bro-stats");
+      }} />
+    </Wrap>
+  );
+  if (screen === "log-bro-form") return (
     <LogWorkoutScreen color="#FF3D00" profileName="The Bro" allExercises={broAllExercises}
       prs={broPrs} onSavePr={saveBroPr} onComplete={entry => { addBroHistory(entry); }}
-      onBack={() => setScreen("bro-home")} />
+      onBack={() => setScreen("log-bro")} />
   );
   if (screen === "log-wifey") return (
+    <Wrap>
+      <div className="sc" style={{ padding:"56px 20px 88px" }}>
+        <div style={{ marginBottom:32 }}>
+          <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE WIFEY<br/><span style={{ color:WIFEY_COLOR }}>WORKOUT</span></div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>WHAT DID YOU DO?</div>
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:12 }}>ALREADY TRAINED?</div>
+        <div className="tc" onClick={() => setScreen("log-wifey-form")}
+          style={{ background:"#0f0f0f", border:"1px dashed #2a2a2a", borderLeft:`4px dashed ${WIFEY_COLOR}`, padding:"24px 20px", position:"relative", overflow:"hidden", marginBottom:10 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>LOG A WORKOUT</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:WIFEY_COLOR, marginTop:6, fontWeight:700 }}>MANUALLY ENTER YOUR SESSION</div>
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:12, marginTop:24 }}>CARDIO SESSION</div>
+        <div className="tc" onClick={() => setScreen("cardio")}
+          style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:"4px solid #76FF03", padding:"24px 20px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:"linear-gradient(to left, #76FF0308, transparent)" }} />
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>CARDIO</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#76FF03", marginTop:6, fontWeight:700 }}>LOG YOUR SESSION</div>
+        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+      </div>
+      <TabBar active="log" color={WIFEY_COLOR} onTab={t => {
+        if (t==="train") setScreen("wifey-home");
+        else if (t==="log") setScreen("log-wifey");
+        else if (t==="history") setScreen("wifey-history");
+        else if (t==="stats") setScreen("wifey-stats");
+      }} />
+    </Wrap>
+  );
+  if (screen === "log-wifey-form") return (
     <LogWorkoutScreen color={WIFEY_COLOR} profileName="The Wifey" allExercises={wifeyAllExercises}
       prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={entry => { addWifeyHistory(entry); }}
-      onBack={() => setScreen("wifey-home")} />
+      onBack={() => setScreen("log-wifey")} />
   );
   // ── END LOG WORKOUT SCREENS ───────────────────────────────────────────────
 
   // ── BRO HISTORY ───────────────────────────────────────────────────────────
   if (screen === "bro-history") return (
     <Wrap>
-      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }}  onDeleteSaved={deleteBroSaved} onDeleteEntry={deleteBroHistory} />
+      <HistoryScreen history={broHistory} savedWorkouts={broSaved} profileColor="#FF3D00" onBack={() => setScreen("bro-home")} onClear={() => { setBroHistory([]); saveStorage("dg-history", []); }}  onDeleteSaved={deleteBroSaved} onDeleteEntry={deleteBroHistory} tabBar={<TabBar active="history" color="#FF3D00" onTab={t => { if (t==="train") setScreen("bro-home"); else if (t==="log") setScreen("log-bro"); else if (t==="history") setScreen("bro-history"); else if (t==="stats") setScreen("bro-stats"); }} />} />
     </Wrap>
   );
 
@@ -2000,39 +2100,30 @@ export default function App() {
   if (screen === "bro-stats") return (
     <Wrap>
       <StatsScreen history={broHistory} weightLog={broWeightLog} onSaveWeight={saveBroWeight}
-        profileColor="#FF3D00" profileName="The Bro" onBack={() => setScreen("bro-home")} goalWeight={broGoalWeight} onSaveGoalWeight={saveBroGoalWeight} />
+        profileColor="#FF3D00" profileName="The Bro" onBack={() => setScreen("bro-home")} goalWeight={broGoalWeight} onSaveGoalWeight={saveBroGoalWeight} tabBar={<TabBar active="stats" color="#FF3D00" onTab={t => { if (t==="train") setScreen("bro-home"); else if (t==="log") setScreen("log-bro"); else if (t==="history") setScreen("bro-history"); else if (t==="stats") setScreen("bro-stats"); }} />} />
     </Wrap>
   );
+
 
 
   // ── WIFEY HOME ────────────────────────────────────────────────────────────
   if (screen === "wifey-home") return (
     <Wrap>
-      <div className="sc" style={{ padding:"56px 20px 40px" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:40 }}>
-          <div>
-            <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE WIFEY<br/><span style={{ color:WIFEY_COLOR }}>WORKOUT</span></div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>WHAT'S THE PLAN TODAY?</div>
-          </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:32 }}>
-            <button onClick={() => setScreen("wifey-history")} style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:4, padding:"8px 14px", color:"#444", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>HISTORY</button>
-            <button onClick={() => setScreen("wifey-stats")} style={{ background:"#111", border:"1px solid #FF6B9D40", borderRadius:4, padding:"8px 14px", color:"#FF6B9D", fontSize:11, cursor:"pointer", fontFamily:"'Barlow Condensed'", fontWeight:700, letterSpacing:2 }}>STATS</button>
-          </div>
+      <div className="sc" style={{ padding:"56px 20px 88px" }}>
+        <div style={{ marginBottom:32 }}>
+          <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE WIFEY<br/><span style={{ color:WIFEY_COLOR }}>WORKOUT</span></div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>SELECT YOUR SPLIT</div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {[
             { id:"fullbody", label:"Full Body",  sub:"DUMBBELLS . MACHINES . FREE WEIGHTS", color:WIFEY_COLOR },
             { id:"cables",   label:"All Cables", sub:"CABLE MACHINE ONLY",                  color:"#00E5FF"   },
             { id:"core",     label:"Core / Abs", sub:"ABS . CORE STRENGTH",                 color:"#EEFF41"   },
-            { id:"legs",     label:"Leg Day",    sub:"LOWER BODY . GLUTES . STRENGTH",    color:"#D500F9"   },
-            { id:"cardio",   label:"Cardio",     sub:"LOG YOUR SESSION",                    color:"#76FF03"   },
+            { id:"legs",     label:"Leg Day",    sub:"LOWER BODY . GLUTES . STRENGTH",      color:"#D500F9"   },
           ].map((opt, idx) => (
             <div key={opt.id} className="tc"
-              onClick={() => {
-                if (opt.id === "cardio") { setScreen("cardio"); }
-                else { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?7:opt.id==="legs"?6:6); setScreen("wifey-configure"); }
-              }}
+              onClick={() => { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?7:opt.id==="legs"?6:6); setScreen("wifey-configure"); }}
               style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${opt.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)` }} />
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{opt.label.toUpperCase()}</div>
@@ -2040,14 +2131,14 @@ export default function App() {
             </div>
           ))}
         </div>
-        {/* LOG WORKOUT — remove to revert */}
-        <div className="tc" onClick={() => setScreen("log-wifey")}
-          style={{ marginTop:10, background:"#0f0f0f", border:"1px dashed #2a2a2a", borderLeft:`4px dashed ${WIFEY_COLOR}`, padding:"24px 20px", position:"relative", overflow:"hidden" }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>LOG A WORKOUT</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:WIFEY_COLOR, marginTop:6, fontWeight:700 }}>ALREADY TRAINED? LOG IT HERE</div>
-        </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
       </div>
+      <TabBar active="train" color={WIFEY_COLOR} onTab={t => {
+        if (t==="train") setScreen("wifey-home");
+        else if (t==="log") setScreen("log-wifey");
+        else if (t==="history") setScreen("wifey-history");
+        else if (t==="stats") setScreen("wifey-stats");
+      }} />
     </Wrap>
   );
 
@@ -2118,7 +2209,7 @@ export default function App() {
   // ── WIFEY HISTORY ─────────────────────────────────────────────────────────
   if (screen === "wifey-history") return (
     <Wrap>
-      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }}  onDeleteSaved={deleteWifeySaved} onDeleteEntry={deleteWifeyHistory} />
+      <HistoryScreen history={wifeyHistory} savedWorkouts={wifeySaved} profileColor={WIFEY_COLOR} onBack={() => setScreen("wifey-home")} onClear={() => { setWifeyHistory([]); saveStorage("wy-history", []); }}  onDeleteSaved={deleteWifeySaved} onDeleteEntry={deleteWifeyHistory} tabBar={<TabBar active="history" color={WIFEY_COLOR} onTab={t => { if (t==="train") setScreen("wifey-home"); else if (t==="log") setScreen("log-wifey"); else if (t==="history") setScreen("wifey-history"); else if (t==="stats") setScreen("wifey-stats"); }} />} />
     </Wrap>
   );
 
@@ -2126,19 +2217,19 @@ export default function App() {
   if (screen === "wifey-stats") return (
     <Wrap>
       <StatsScreen history={wifeyHistory} weightLog={wifeyWeightLog} onSaveWeight={saveWifeyWeight}
-        profileColor={WIFEY_COLOR} profileName="The Wifey" onBack={() => setScreen("wifey-home")} goalWeight={wifeyGoalWeight} onSaveGoalWeight={saveWifeyGoalWeight} />
+        profileColor={WIFEY_COLOR} profileName="The Wifey" onBack={() => setScreen("wifey-home")} goalWeight={wifeyGoalWeight} onSaveGoalWeight={saveWifeyGoalWeight} tabBar={<TabBar active="stats" color={WIFEY_COLOR} onTab={t => { if (t==="train") setScreen("wifey-home"); else if (t==="log") setScreen("log-wifey"); else if (t==="history") setScreen("wifey-history"); else if (t==="stats") setScreen("wifey-stats"); }} />} />
     </Wrap>
   );
 
 
   // ── BRO CARDIO ────────────────────────────────────────────────────────────
   if (screen === "bro-cardio") return (
-    <CardioScreen color="#FF1744" onBack={() => setScreen("bro-home")} onComplete={entry => { addBroHistory(entry); }} />
+    <CardioScreen color="#FF1744" onBack={() => setScreen("log-bro")} onComplete={entry => { addBroHistory(entry); }} />
   );
 
   // ── WIFEY CARDIO ──────────────────────────────────────────────────────────
   if (screen === "cardio") return (
-    <CardioScreen color="#76FF03" onBack={() => setScreen("wifey-home")} onComplete={entry => { addWifeyHistory(entry); }} />
+    <CardioScreen color="#76FF03" onBack={() => setScreen("log-wifey")} onComplete={entry => { addWifeyHistory(entry); }} />
   );
 
   // ── SETTINGS ──────────────────────────────────────────────────────────────
