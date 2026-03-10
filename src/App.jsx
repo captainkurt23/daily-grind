@@ -777,7 +777,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
         <button className="mbtn" style={{ background: exercises.length ? color : "#161616", color: exercises.length ? "#000" : "#333" }}
           disabled={!exercises.length} onClick={handleComplete}>COMPLETE WORKOUT</button>
 
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer">DAILY GRIND&#8482;</div>
       </div>
 
       {/* PR Modal */}
@@ -889,7 +889,7 @@ function CardioScreen({ color, onBack, onComplete }) {
               disabled={!cardioType||!duration} onClick={handleLog}>LOG CARDIO</button>
           </>
         )}
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer">DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -1031,6 +1031,8 @@ const BASE_STYLES = `
   .wkrow:last-child { border-bottom:none; }
   .caopt { cursor:pointer; background:#0f0f0f; border:1px solid #1a1a1a; border-radius:4px; padding:14px 18px; display:flex; align-items:center; gap:14px; transition:all 0.15s; }
   .caopt.sel { border-color:#76FF03; background:#76FF0310; }
+  .dg-footer { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; padding:0 20px 12px; font-family:'Barlow Condensed',sans-serif; font-size:10px; letter-spacing:3px; color:#fff; font-weight:700; background:#080808; z-index:70; pointer-events:none; }
+  .dg-footer.tabbed { bottom:68px; }
   .tabbar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; height:68px; background:#0d0d0d; border-top:1px solid #1a1a1a; display:flex; align-items:stretch; z-index:80; }
   .tbtab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; position:relative; border:none; background:transparent; transition:opacity 0.15s; -webkit-tap-highlight-color:transparent; }
   .tbtab::before { content:''; position:absolute; top:0; left:25%; right:25%; height:2px; border-radius:0 0 2px 2px; background:transparent; transition:background 0.2s; }
@@ -1542,7 +1544,7 @@ function HistoryScreen({ history, savedWorkouts, profileColor, onBack, onClear, 
           CLEAR HISTORY
         </button>
       )}
-      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+      <div className="dg-footer">DAILY GRIND&#8482;</div>
     </div>
     {tabBar}
     </>
@@ -1772,7 +1774,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
             NO WEIGHT LOGGED YET
           </div>
         )}
-      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+      <div className="dg-footer">DAILY GRIND&#8482;</div>
       </div>
     </div>
     {tabBar}
@@ -1907,7 +1909,7 @@ export default function App() {
           </div>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:40 }}>
-          <div style={{ color:"#fff", fontSize:10, letterSpacing:3, fontFamily:"'Barlow Condensed'", fontWeight:700 }}>DAILY GRIND&#8482;</div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700 }}>DAILY GRIND&#8482;</div>
           <button onClick={() => setScreen("settings")} style={{ background:"transparent", border:"none", color:"#fff", fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:2, fontWeight:700, cursor:"pointer", padding:0, display:"flex", alignItems:"center", gap:6 }}><Settings size={11} color="#fff" />SETTINGS</button>
         </div>
       </div>
@@ -1934,7 +1936,7 @@ export default function App() {
             </div>
           ))}
         </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
       </div>
       <TabBar active="train" color="#FF3D00" onTab={t => {
         if (t==="train") setScreen("bro-home");
@@ -1977,7 +1979,7 @@ export default function App() {
               <div style={{ position:"absolute", top:3, left: broWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
             </div>
           </div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+          <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
         </div>
       </Wrap>
     );
@@ -2035,7 +2037,7 @@ export default function App() {
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>CARDIO</div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF1744", marginTop:6, fontWeight:700 }}>LOG YOUR SESSION</div>
         </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
       </div>
       <TabBar active="log" color="#FF3D00" onTab={t => {
         if (t==="train") setScreen("bro-home");
@@ -2071,7 +2073,7 @@ export default function App() {
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>CARDIO</div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#76FF03", marginTop:6, fontWeight:700 }}>LOG YOUR SESSION</div>
         </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
       </div>
       <TabBar active="log" color={WIFEY_COLOR} onTab={t => {
         if (t==="train") setScreen("wifey-home");
@@ -2130,7 +2132,7 @@ export default function App() {
             </div>
           ))}
         </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:8 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
       </div>
       <TabBar active="train" color={WIFEY_COLOR} onTab={t => {
         if (t==="train") setScreen("wifey-home");
@@ -2171,7 +2173,7 @@ export default function App() {
             <div style={{ position:"absolute", top:3, left: wifeyWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
           </div>
         </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
@@ -2306,7 +2308,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:"#fff", fontWeight:700, marginTop:40, paddingBottom:20 }}>DAILY GRIND&#8482;</div>
+        <div className="dg-footer tabbed">DAILY GRIND&#8482;</div>
       </div>
     </Wrap>
   );
