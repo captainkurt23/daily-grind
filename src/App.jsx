@@ -1064,7 +1064,7 @@ function TabBar({ active, onTab, color }) {
     )},
     { id:"stats", label:"STATS", icon:(c) => (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        <line x1="3" y1="20" x2="3" y2="14"/><line x1="9" y1="20" x2="9" y2="4"/><line x1="15" y1="20" x2="15" y2="10"/><line x1="21" y1="20" x2="21" y2="7"/>
       </svg>
     )},
   ];
@@ -1840,12 +1840,12 @@ export default function App() {
     }
   }, []);
 
-  const broMin = broSplit ? (broSplit.isCore ? 4 : broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
+  const broMin = broSplit ? (broSplit.isCore ? 1 : broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
   const broMax = broSplit ? (broSplit.isCore ? CORE_BANK.length : broSplit.fullBody ? 8 : broSplit.groups.reduce((s, g) => s + BRO_EXERCISE_BANK[g].length, 0)) : 20;
   const wifeyIsLegs = wifeyMode === "legs";
   const wifeyBank = wifeyMode === "cables" ? WIFEY_CABLE_BANK : WIFEY_FULL_BODY_BANK;
   const wifeyIsCore = wifeyMode === "core";
-  const wifeyMin = 4;
+  const wifeyMin = wifeyIsCore ? 1 : 4;
   const wifeyMax = wifeyIsCore ? CORE_BANK.length : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"].length : Object.values(wifeyBank).reduce((s, arr) => s + arr.length, 0);
   const wColor = wifeyMode === "cables" ? "#00E5FF" : wifeyMode === "core" ? "#EEFF41" : wifeyMode === "legs" ? "#D500F9" : WIFEY_COLOR;
 
@@ -1922,7 +1922,7 @@ export default function App() {
         </div>
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {BRO_SPLITS.map((s, idx) => (
-            <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.isCore ? 7 : s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setScreen("bro-configure"); }}
+            <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.isCore ? 4 : s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setScreen("bro-configure"); }}
               style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${s.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${s.color}08, transparent)` }} />
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
@@ -2114,7 +2114,7 @@ export default function App() {
             { id:"legs",     label:"Leg Day",    sub:"LOWER BODY . GLUTES . STRENGTH",      color:"#D500F9"   },
           ].map((opt, idx) => (
             <div key={opt.id} className="tc"
-              onClick={() => { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?7:opt.id==="legs"?6:6); setScreen("wifey-configure"); }}
+              onClick={() => { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?4:opt.id==="legs"?6:6); setScreen("wifey-configure"); }}
               style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${opt.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
               <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)` }} />
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{opt.label.toUpperCase()}</div>
