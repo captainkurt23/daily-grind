@@ -556,27 +556,17 @@ function formatWeekLabel(weekKey) {
   const end = new Date(d); end.setDate(d.getDate() + 6);
   return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
-function playRestAlert(volume = 0.5) {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const beep = (startTime) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, startTime);
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
-      gain.gain.setValueAtTime(volume, startTime + 0.06);
-      gain.gain.linearRampToValueAtTime(0, startTime + 0.09);
-      osc.start(startTime);
-      osc.stop(startTime + 0.09);
-    };
-    beep(ctx.currentTime);
-    beep(ctx.currentTime + 0.14);
-    beep(ctx.currentTime + 0.28);
-  } catch(e) {}
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+function formatDuration(ms) {
+  const m = Math.floor(ms / 60000);
+  return m < 1 ? "< 1 min" : `${m} min`;
+}
+function formatWeekLabel(weekKey) {
+  const d = new Date(weekKey + "T12:00:00");
+  const end = new Date(d); end.setDate(d.getDate() + 6);
+  return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 // ── WARMUP BANK ───────────────────────────────────────────────────────────
 const WARMUP_BANK = {
@@ -1146,7 +1136,7 @@ function TabBar({ active, onTab, color }) {
 
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, timerSound, timerVolume, initialChecked, initialSetsDone, onProgressSave }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, initialChecked, initialSetsDone, onProgressSave }) {
   const REST_DUR = restDurationProp || REST_DURATION;
   const [checked, setChecked] = useState(initialChecked || {});
   const [setsDone, setSetsDone] = useState(initialSetsDone || {});
@@ -1227,7 +1217,6 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
           clearInterval(timerRef.current);
           setTimerActive(false);
           setTimerLeft(REST_DUR);
-          if (timerSound) playRestAlert(timerVolume ?? 0.5);
         } else {
           setTimerLeft(left);
         }
@@ -1245,7 +1234,6 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
         if (left <= 0) {
           setTimerActive(false);
           setTimerLeft(REST_DUR);
-          if (timerSound) playRestAlert(timerVolume ?? 0.5);
         } else {
           setTimerLeft(left);
         }
@@ -1253,7 +1241,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
     }
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, [timerActive, timerSound, timerVolume]);
+  }, [timerActive]);
 
   useEffect(() => {
     if (allDone && !completedRef.current) {
@@ -1852,7 +1840,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
 // ── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
-  const [settings, setSettings] = useState({ restDuration: 90, supersets: false, timerSound: true, timerVolume: 0.5 });
+  const [settings, setSettings] = useState({ restDuration: 90, supersets: false, defaultProfile: "none" });
   function updateSetting(key, val) {
     const next = { ...settings, [key]: val };
     setSettings(next);
@@ -1891,7 +1879,7 @@ export default function App() {
     const wwl = loadStorage("wy-weightlog"); if (wwl) setWifeyWeightLog(wwl);
     const bs = loadStorage("dg-saved"); if (bs) setBroSaved(bs);
     const ws = loadStorage("wy-saved"); if (ws) setWifeySaved(ws);
-    const st = loadStorage("dg-settings"); if (st) setSettings(st);
+    const st = loadStorage("dg-settings"); if (st) { setSettings(st); if (st.defaultProfile === "bro") setScreen("bro-home"); else if (st.defaultProfile === "wifey") setScreen("wifey-home"); }
     const bgw = loadStorage("dg-goalweight"); if (bgw) setBroGoalWeight(bgw);
     const wgw = loadStorage("wy-goalweight"); if (wgw) setWifeyGoalWeight(wgw);
     // Restore active workout session if app was reloaded mid-workout
@@ -2073,7 +2061,7 @@ export default function App() {
         onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); clearBroSession(); }}
         prs={broPrs} onSavePr={saveBroPr}
         onComplete={entry => { addBroHistory(entry); clearBroSession(); }}
-        onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume}
+        onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration}
         initialChecked={broSessionChecked} initialSetsDone={broSessionSetsDone}
         onProgressSave={(c, s) => saveBroSession(broWorkout, broSplit, c, s, "bro-workout")} />
     </Wrap>
@@ -2264,7 +2252,7 @@ export default function App() {
         onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); clearWifeySession(); }}
         prs={wifeyPrs} onSavePr={saveWifeyPr}
         onComplete={entry => { addWifeyHistory(entry); clearWifeySession(); }}
-        onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration} timerSound={settings.timerSound} timerVolume={settings.timerVolume}
+        onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration}
         initialChecked={wifeySessionChecked} initialSetsDone={wifeySessionSetsDone}
         onProgressSave={(c, s) => saveWifeySession(wifeyWorkout, wifeyMode, c, s, "wifey-workout")} />
     </Wrap>
@@ -2322,36 +2310,6 @@ export default function App() {
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:2, marginTop:8, fontWeight:600 }}>SECONDS BETWEEN SETS</div>
         </div>
 
-        {/* TIMER SOUND */}
-        <div style={{ marginBottom:32 }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", fontWeight:700, marginBottom:12 }}>TIMER SOUND</div>
-          <div style={{ background:"#0f0f0f", border:`1px solid ${settings.timerSound ? "#FF3D0040" : "#1a1a1a"}`, borderLeft:`3px solid ${settings.timerSound ? "#FF3D00" : "#1a1a1a"}`, borderRadius:4, padding:"16px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:18, fontWeight:800, letterSpacing:0.5, color: settings.timerSound ? "#fff" : "#444" }}>ALERT WHEN REST ENDS</div>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:1, marginTop:3, fontWeight:600 }}>DOUBLE BEEP AT END OF REST TIMER</div>
-            </div>
-            <div onClick={() => updateSetting("timerSound", !settings.timerSound)}
-              style={{ width:44, height:26, borderRadius:13, background: settings.timerSound ? "#FF3D00" : "#1a1a1a", border:`1px solid ${settings.timerSound ? "#FF3D00" : "#333"}`, position:"relative", cursor:"pointer", transition:"background 0.2s", flexShrink:0 }}>
-              <div style={{ position:"absolute", top:3, left: settings.timerSound ? 21 : 3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
-            </div>
-          </div>
-          {settings.timerSound && (
-            <>
-              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
-                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:2, fontWeight:700, flexShrink:0 }}>VOLUME</div>
-                <input type="range" min="0.1" max="1" step="0.05" value={settings.timerVolume ?? 0.5}
-                  onChange={e => updateSetting("timerVolume", parseFloat(e.target.value))}
-                  style={{ flex:1, accentColor:"#FF3D00", cursor:"pointer" }} />
-                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, color:"#FF3D00", fontWeight:900, minWidth:36, textAlign:"right" }}>{Math.round((settings.timerVolume ?? 0.5) * 100)}%</div>
-              </div>
-              <button onClick={() => playRestAlert(settings.timerVolume ?? 0.5)}
-                style={{ background:"transparent", border:"1px solid #2a2a2a", borderRadius:4, color:"#555", fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:700, letterSpacing:2, padding:"10px 20px", cursor:"pointer", width:"100%", marginTop:8 }}>
-                PREVIEW SOUND
-              </button>
-            </>
-          )}
-        </div>
-
         {/* SUPERSETS */}
         <div style={{ marginBottom:32 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", fontWeight:700, marginBottom:12 }}>SUPERSETS</div>
@@ -2370,6 +2328,23 @@ export default function App() {
               PAIRS ONE MACHINE/BARBELL MOVE WITH A PORTABLE EXERCISE. TAKES EFFECT ON NEXT GENERATED WORKOUT.
             </div>
           )}
+        </div>
+
+        {/* DEFAULT PROFILE */}
+        <div style={{ marginBottom:32 }}>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", fontWeight:700, marginBottom:12 }}>DEFAULT PROFILE</div>
+          <div style={{ display:"flex", gap:8 }}>
+            {[["none","NONE"],["bro","THE BRO"],["wifey","THE WIFEY"]].map(([id, label]) => (
+              <button key={id} onClick={() => updateSetting("defaultProfile", id)}
+                style={{ flex:1, fontFamily:"'Barlow Condensed'", fontWeight:900, fontSize:15, letterSpacing:1, padding:"14px 0", borderRadius:4, cursor:"pointer",
+                  background: settings.defaultProfile === id ? "#FF3D00" : "#0f0f0f",
+                  color: settings.defaultProfile === id ? "#000" : "#333",
+                  border: settings.defaultProfile === id ? "1px solid #FF3D00" : "1px solid #1a1a1a" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#2a2a2a", letterSpacing:2, marginTop:8, fontWeight:600 }}>SKIP LANDING SCREEN ON OPEN</div>
         </div>
       </div>
     </Wrap>
