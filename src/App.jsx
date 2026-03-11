@@ -1923,11 +1923,13 @@ export default function App() {
     setWifeyPrs(u); saveStorage("wy-prs", u);
   }
   function addBroHistory(entry) {
-    const n = [entry, ...broHistory].slice(0, 60);
+    const current = loadStorage("dg-history") || [];
+    const n = [entry, ...current].slice(0, 60);
     setBroHistory(n); saveStorage("dg-history", n);
   }
   function addWifeyHistory(entry) {
-    const n = [entry, ...wifeyHistory].slice(0, 60);
+    const current = loadStorage("wy-history") || [];
+    const n = [entry, ...current].slice(0, 60);
     setWifeyHistory(n); saveStorage("wy-history", n);
   }
   function saveBroWeight(log) { setBroWeightLog(log); saveStorage("dg-weightlog", log); }
