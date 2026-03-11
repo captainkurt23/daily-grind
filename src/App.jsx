@@ -51,11 +51,11 @@ const BRO_EXERCISE_BANK = {
   ],
   Shoulders: [
     { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "barbell" },
-    { name: "Shrug",                          sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "db"      },
+    { name: "Dumbbell Shrug",                          sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "db"      },
     { name: "Lateral Raise",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
     { name: "Rear Delt Fly",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
     { name: "Standing Barbell Press",         sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
-    { name: "Dumbbell Press",                 sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
+    { name: "Dumbbell Shoulder Press",                 sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
     { name: "Arnold Press",                   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
     { name: "Front Raise",                    sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
     { name: "Side to Front Raise",            sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
@@ -64,12 +64,12 @@ const BRO_EXERCISE_BANK = {
     { name: "Face Pull",                      sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
   ],
   Triceps: [
-    { name: "V-Handle Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Rope Pulldown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Reverse Grip Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
+    { name: "Tricep V-Bar Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Tricep Rope Pushdown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Tricep Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Tricep Reverse Grip Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
     { name: "Skullcrusher",           sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
-    { name: "Overhead Rope Pull",     sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "cable"   },
+    { name: "Tricep Overhead Rope Extension",     sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "cable"   },
     { name: "Close Grip Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
     { name: "Dips",                   sets: "4", reps: "15-20",   note: "", intensity: 7, eq: "bw"      },
   ],
@@ -79,7 +79,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Hammer Curl",        sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
     { name: "Concentration Curl", sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
     { name: "Reverse Grip Curl",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "21s",                sets: "4", reps: "21",    note: "", intensity: 6, eq: "db"      },
+    { name: "Barbell 21s (Bicep Curl)",                sets: "4", reps: "21",    note: "", intensity: 6, eq: "db"      },
     { name: "EZ Bar Curl",        sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
     { name: "Seated EZ Bar Curl", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
     { name: "Cable Bicep Curl",   sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
@@ -92,7 +92,7 @@ const BRO_EXERCISE_BANK = {
     { name: "Hack Squat",            sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true,  eq: "machine" },
     { name: "Box Squat",             sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true,  eq: "barbell" },
     { name: "Leg Press",             sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "machine" },
-    { name: "RDL",                   sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "barbell" },
+    { name: "Romanian Deadlift (RDL)",                   sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "barbell" },
     { name: "Bulgarian Split Squat", sets: "4", reps: "8-10", note: "", intensity: 7, compound: true,  eq: "db"      },
     { name: "Elevated Lunges",       sets: "4", reps: "8-10", note: "", intensity: 6, compound: true,  eq: "db"      },
     { name: "Walking Lunges",        sets: "4", reps: "8-10", note: "", intensity: 6, compound: true,  eq: "db"      },
@@ -102,8 +102,8 @@ const BRO_EXERCISE_BANK = {
     { name: "Lying Leg Curl",        sets: "4", reps: "8-10", note: "", intensity: 5, compound: false, eq: "machine" },
     { name: "Leg Extension",         sets: "4", reps: "8-10", note: "", intensity: 4, compound: false, eq: "machine" },
     { name: "Single Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 4, compound: false, eq: "machine" },
-    { name: "Adductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
-    { name: "Abductor",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
+    { name: "Hip Adductor Machine",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
+    { name: "Hip Abductor Machine",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
     { name: "Calf Raises",           sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "db"      },
     { name: "Deficit Lunges",        sets: "4", reps: "8-10", note: "", intensity: 7, compound: true,  eq: "db"      },
   ],
@@ -143,7 +143,7 @@ const WIFEY_FULL_BODY_BANK = {
     { name: "Lateral Raise",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
     { name: "Front Raise",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
     { name: "Rear Delt Fly",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
-    { name: "Dumbbell Press",     sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"    },
+    { name: "Dumbbell Shoulder Press",     sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"    },
     { name: "Arnold Press",       sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"    },
     { name: "Upright Row",        sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"    },
     { name: "Face Pull",          sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable" },
@@ -153,7 +153,7 @@ const WIFEY_FULL_BODY_BANK = {
     { name: "Barbell Squat",         sets: "3", reps: "10-12", note: "", intensity: 8, compound: true,  eq: "barbell" },
     { name: "Goblet Squat",          sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
     { name: "Leg Press",             sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "machine" },
-    { name: "RDL",                   sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
+    { name: "Romanian Deadlift (RDL)",                   sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
     { name: "Walking Lunges",        sets: "3", reps: "12-15", note: "", intensity: 5, compound: true,  eq: "db"      },
     { name: "Bulgarian Split Squat", sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
     { name: "Hip Thrust",            sets: "3", reps: "12-15", note: "", intensity: 8, compound: true,  eq: "barbell" },
@@ -161,8 +161,8 @@ const WIFEY_FULL_BODY_BANK = {
     { name: "Leg Extension",         sets: "3", reps: "12-15", note: "", intensity: 4, compound: false, eq: "machine" },
     { name: "Seated Leg Curl",       sets: "3", reps: "12-15", note: "", intensity: 4, compound: false, eq: "machine" },
     { name: "Calf Raises",           sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "db"      },
-    { name: "Abductor",              sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "machine" },
-    { name: "Adductor",              sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "machine" },
+    { name: "Hip Abductor Machine",              sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "machine" },
+    { name: "Hip Adductor Machine",              sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "machine" },
     { name: "Step Ups",              sets: "3", reps: "12-15", note: "", intensity: 4, compound: true,  eq: "db"      },
     { name: "Cable Hip Abduction",   sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "cable"   },
   ],
@@ -283,11 +283,11 @@ function isFixed(eq) { return !isPortable(eq); }
 // For Chest/Triceps: fixed pairs only
 
 const SHOULDER_ISOLATION = ["Lateral Raise", "Front Raise", "Rear Delt Fly"];
-const BICEP_SUPERSET_EXCLUDE = ["21s"];
+const BICEP_SUPERSET_EXCLUDE = ["Barbell 21s (Bicep Curl)"];
 const BACK_CURL_OPTIONS = ["EZ Bar Curl", "Dumbbell Curl"];
 
 const FIXED_TRICEP_CHEST_PAIRS = [
-  { a: { group: "Triceps", name: "Reverse Grip Pulldown" }, b: { group: "Triceps", name: "Straight Bar Pushdown" } },
+  { a: { group: "Triceps", name: "Tricep Reverse Grip Pushdown" }, b: { group: "Triceps", name: "Tricep Straight Bar Pushdown" } },
   { a: { group: "Triceps", name: "Skullcrusher" },          b: { group: "Chest",   name: "Dumbbell Bench Press" } },
 ];
 
@@ -387,8 +387,8 @@ const COMPOUND_NAMES = [
   "Flat Bench Press","Incline Bench Press","Decline Bench Press","Push Up",
   "Barbell Row","Chest Supported Row","Pull Up","Seated Row Machine","Deadlift","Wide Grip Seated Cable Row",
   "Barbell Squat","Box Squat","Hack Squat","Pendulum Squat","Leg Press",
-  "Bulgarian Split Squat","Elevated Lunges","Walking Lunges","Static Lunges","Step Ups","RDL","Hip Thrust",
-  "Standing Barbell Press","Dumbbell Press","Arnold Press","Chin Up",
+  "Bulgarian Split Squat","Elevated Lunges","Walking Lunges","Static Lunges","Step Ups","Romanian Deadlift (RDL)","Hip Thrust",
+  "Standing Barbell Press","Dumbbell Shoulder Press","Arnold Press","Chin Up",
 ];
 
 function orderByIntensity(exercises, total) {
@@ -412,9 +412,9 @@ function orderByIntensity(exercises, total) {
 const COMPOUND_MOVEMENTS = new Set([
   "Flat Bench Press","Incline Bench Press","Decline Bench Press","Close Grip Bench Press",
   "Standing Barbell Press","Barbell Row","Rack Pull","Pull Up","Dips",
-  "Barbell Squat","Pendulum Squat","Hack Squat","Box Squat","Leg Press","RDL",
+  "Barbell Squat","Pendulum Squat","Hack Squat","Box Squat","Leg Press","Romanian Deadlift (RDL)",
   "Bulgarian Split Squat","Elevated Lunges","Walking Lunges","Step Ups","Static Lunges",
-  "Arnold Press","Dumbbell Press","Upright Row","Smith Machine Shoulder Press",
+  "Arnold Press","Dumbbell Shoulder Press","Upright Row","Smith Machine Shoulder Press",
 ]);
 function assignSets(exercises, defaultSets) {
   const total = exercises.length;
@@ -497,7 +497,7 @@ function generateWifeyWorkout(bank, total, history, workoutType) {
   const usedRecently = getUsedExercisesLast2Weeks(history || [], workoutType);
   const groups = Object.keys(bank);
   const counts = distributeExercises(bank, groups, total, 1);
-  const GLUTE_NAMES = new Set(["Hip Thrust","Cable Glute Kickback","Cable Hip Abduction","RDL","Bulgarian Split Squat","Walking Lunges","Step Ups","Goblet Squat"]);
+  const GLUTE_NAMES = new Set(["Hip Thrust","Cable Glute Kickback","Cable Hip Abduction","Romanian Deadlift (RDL)","Bulgarian Split Squat","Walking Lunges","Step Ups","Goblet Squat"]);
   const sections = groups.map(group => {
     let pool;
     if (group === "Legs") {
@@ -544,6 +544,18 @@ function getWeekKey(ts) {
   return monday.toISOString().slice(0, 10);
 }
 
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+function formatDuration(ms) {
+  const m = Math.floor(ms / 60000);
+  return m < 1 ? "< 1 min" : `${m} min`;
+}
+function formatWeekLabel(weekKey) {
+  const d = new Date(weekKey + "T12:00:00");
+  const end = new Date(d); end.setDate(d.getDate() + 6);
+  return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+}
 function formatDate(ts) {
   return new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
