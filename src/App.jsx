@@ -647,6 +647,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
   const [prReps, setPrReps] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
+  const [workoutDate, setWorkoutDate] = useState(() => new Date().toISOString().slice(0, 10));
   const summaryRef = useRef(null);
   const startTime = useRef(Date.now());
 
@@ -686,8 +687,9 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
     const FINISH_MESSAGES = ["CRUSHED IT.","DONE.","LOCKED IN.","WORK DONE.","LET'S GO."];
     const finishMsg = FINISH_MESSAGES[Math.floor(Math.random() * FINISH_MESSAGES.length)];
     const label = workoutLabel.trim() || "Custom Workout";
+    const selectedDate = new Date(workoutDate + "T12:00:00").getTime();
     const data = {
-      split: label, color, date: Date.now(),
+      split: label, color, date: selectedDate,
       duration: Date.now() - startTime.current,
       exercises: exercises.map(e => e.name),
       exerciseDetails: exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps })),
@@ -774,6 +776,8 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
         <div style={{ marginBottom:20 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:8 }}>WORKOUT NAME (OPTIONAL)</div>
           <input className="minput" placeholder="e.g. Push Day, Chest & Tris..." value={workoutLabel} onChange={e => setWorkoutLabel(e.target.value)} style={{ borderColor: workoutLabel ? color : "#2a2a2a" }} />
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:8, marginTop:16 }}>DATE</div>
+          <input type="date" className="minput" value={workoutDate} onChange={e => setWorkoutDate(e.target.value)} style={{ borderColor: color, colorScheme:"dark" }} />
         </div>
 
         {/* Exercise search */}
