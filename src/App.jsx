@@ -563,11 +563,6 @@ function formatDuration(ms) {
   const m = Math.floor(ms / 60000);
   return m < 1 ? "< 1 min" : `${m} min`;
 }
-function formatWeekLabel(weekKey) {
-  const d = new Date(weekKey + "T12:00:00");
-  const end = new Date(d); end.setDate(d.getDate() + 6);
-  return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-}
 // ── WARMUP BANK ───────────────────────────────────────────────────────────
 const WARMUP_BANK = {
   Chest: [
