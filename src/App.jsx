@@ -562,7 +562,10 @@ function getWeekKey(ts) {
   const day = d.getDay();
   const monday = new Date(d);
   monday.setDate(d.getDate() - ((day + 6) % 7));
-  return monday.toISOString().slice(0, 10);
+  const y = monday.getFullYear();
+  const m = String(monday.getMonth() + 1).padStart(2, "0");
+  const dd = String(monday.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
 }
 
 function formatDate(ts) {
