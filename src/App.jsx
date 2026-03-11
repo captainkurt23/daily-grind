@@ -777,7 +777,11 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:8 }}>WORKOUT NAME (OPTIONAL)</div>
           <input className="minput" placeholder="e.g. Push Day, Chest & Tris..." value={workoutLabel} onChange={e => setWorkoutLabel(e.target.value)} style={{ borderColor: workoutLabel ? color : "#2a2a2a" }} />
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:8, marginTop:16 }}>DATE</div>
-          <input type="date" className="minput" value={workoutDate} onChange={e => setWorkoutDate(e.target.value)} style={{ borderColor: color, colorScheme:"dark" }} />
+          <div style={{ background:"#161616", border:"1px solid #2a2a2a", borderRadius:4, padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <button onClick={() => { const d = new Date(workoutDate + "T12:00:00"); d.setDate(d.getDate()-1); setWorkoutDate(d.toISOString().slice(0,10)); }} style={{ background:"none", border:"none", color:"#666", fontSize:22, cursor:"pointer", padding:"0 8px", fontFamily:"'Barlow Condensed'", fontWeight:700, lineHeight:1 }}>‹</button>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:18, fontWeight:600, color:"#fff", letterSpacing:1 }}>{new Date(workoutDate + "T12:00:00").toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" }).toUpperCase()}</div>
+            <button onClick={() => { const d = new Date(workoutDate + "T12:00:00"); d.setDate(d.getDate()+1); const today = new Date().toISOString().slice(0,10); if (d.toISOString().slice(0,10) <= today) setWorkoutDate(d.toISOString().slice(0,10)); }} style={{ background:"none", border:"none", color:"#666", fontSize:22, cursor:"pointer", padding:"0 8px", fontFamily:"'Barlow Condensed'", fontWeight:700, lineHeight:1 }}>›</button>
+          </div>
         </div>
 
         {/* Exercise search */}
