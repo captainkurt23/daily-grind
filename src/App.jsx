@@ -70,9 +70,10 @@ const BRO_EXERCISE_BANK = {
     { name: "Cable Y Raise",                  sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable"   },
   ],
   Triceps: [
-    { name: "Single Arm Tricep Pushdown", sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable"   },
+    { name: "Single Arm Tricep Pulldown", sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable"   },
+    { name: "Tricep Pushdown Machine",    sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "machine" },
     { name: "Tricep V-Bar Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Tricep Rope Pushdown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
+    { name: "Tricep Rope Pulldown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
     { name: "Tricep Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
     { name: "Tricep Reverse Grip Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
     { name: "Skullcrusher",           sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
@@ -192,7 +193,8 @@ const WIFEY_FULL_BODY_BANK = {
     { name: "Preacher Curl",         sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine"},
   ],
   Triceps: [
-    { name: "Single Arm Tricep Pushdown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
+    { name: "Tricep Pushdown Machine",    sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine" },
+    { name: "Single Arm Tricep Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
     { name: "Tricep Pushdown",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
     { name: "Overhead Tricep Extension",   sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
     { name: "Tricep Kickback",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
@@ -234,7 +236,7 @@ const WIFEY_CABLE_BANK = {
     { name: "Cable Hammer Curl",               sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
     { name: "Cable Reverse Curl",              sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
     { name: "Cable Overhead Tricep Extension", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
-    { name: "Cable Tricep Rope Pushdown",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Cable Tricep Rope Pulldown",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
     { name: "Cable Tricep Kickback",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
     { name: "Cable Single Arm Curl",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
     { name: "Cable Bar Curl",                  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
@@ -267,6 +269,8 @@ const CARDIO_OPTIONS = [
   { id: "jogging",         label: "Jogging",         icon: "Zap"  },
   { id: "pilates",         label: "Pilates",         icon: "Dumbbell"           },
 ];
+
+const APP_VERSION = "1.1";
 
 const FINISH_MESSAGES = [
   "BEAST MODE.",
@@ -691,7 +695,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
     const label = workoutLabel.trim() || "Custom Workout";
     const selectedDate = new Date(workoutDate + "T12:00:00").getTime();
     const data = {
-      split: label, color, date: selectedDate,
+      split: label, color: "#FFFFFF", date: selectedDate,
       duration: Date.now() - startTime.current,
       exercises: exercises.map(e => e.name),
       exerciseDetails: exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps })),
@@ -1260,7 +1264,8 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       completedRef.current = true;
       const duration = workout.startTime ? Date.now() - workout.startTime : 0;
       const finishMsg = FINISH_MESSAGES[Math.floor(Math.random() * FINISH_MESSAGES.length)];
-      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: sections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: sections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: totalCount, finishMsg, type: "workout", newPrs: [...newPrNames] };
+      const liveSections = workout.sections;
+      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: liveSections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: liveSections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: liveSections.flatMap(s => s.exercises).length, finishMsg, type: "workout", newPrs: [...newPrNames] };
       setSummaryData(data);
       onComplete(data);
       setTimeout(() => setShowSummary(true), 700);
@@ -1280,16 +1285,18 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       setTimerLeft(REST_DUR);
     } else {
       setJustChecked(key); setTimeout(() => setJustChecked(null), 600);
-      setTimerLeft(REST_DUR); setTimerActive(true);
+      setTimerActive(false);
+      setTimerLeft(REST_DUR);
+      setTimeout(() => setTimerActive(true), 0);
     }
   }
 
   function swapExercise(si, ei) {
-    const section = sections[si];
+    const section = workout.sections[si];
     const current = section.exercises[ei];
-    const usedNames = new Set(section.exercises.map(e => e.name));
+    const usedNames = new Set(section.exercises.filter((_, i) => i !== ei).map(e => e.name));
     const groupBank = Array.isArray(bank) ? bank : (bank[section.group] || []);
-    const candidates = groupBank.filter(e => e.name !== current.name && !usedNames.has(e.name));
+    const candidates = groupBank.filter(e => e.name !== current.name && !usedNames.has(e.name) && !e.supersetOnly);
     if (!candidates.length) return;
     const preferred = candidates.filter(e => Math.abs(e.intensity - current.intensity) <= 2);
     const pool = preferred.length ? preferred : candidates;
@@ -1852,6 +1859,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
 // ── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
   const [settings, setSettings] = useState({ restDuration: 90, supersets: false, defaultProfile: "none" });
   function updateSetting(key, val) {
     const next = { ...settings, [key]: val };
@@ -1894,6 +1902,8 @@ export default function App() {
     const st = loadStorage("dg-settings"); if (st) { setSettings(st); if (st.defaultProfile === "bro") setScreen("bro-home"); else if (st.defaultProfile === "wifey") setScreen("wifey-home"); }
     const bgw = loadStorage("dg-goalweight"); if (bgw) setBroGoalWeight(bgw);
     const wgw = loadStorage("wy-goalweight"); if (wgw) setWifeyGoalWeight(wgw);
+    const seenVersion = loadStorage("dg-version");
+    if (seenVersion !== APP_VERSION) setShowWhatsNew(true);
     // Restore active workout session if app was reloaded mid-workout
     const bSession = loadStorage("dg-session");
     if (bSession?.workout?.sections?.length && bSession?.screen) {
@@ -1958,8 +1968,35 @@ export default function App() {
 
 
   // ── LANDING ──────────────────────────────────────────────────────────────
+  const WhatsNewModal = () => (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", zIndex:999, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 24px" }}>
+      <div style={{ background:"#111", border:"1px solid #2a2a2a", borderRadius:6, width:"100%", maxWidth:400, padding:"32px 28px" }}>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:3, color:"#FF3D00", marginBottom:8 }}>WHAT'S NEW</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1, marginBottom:20 }}>v1.1 — MARCH 2026</div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color:"#888", lineHeight:1.6, marginBottom:24, fontWeight:600 }}>
+          Thank you to everyone who has been using Daily Grind and sending feedback. It means everything and keeps us building.
+        </div>
+        <div style={{ marginBottom:28 }}>
+          {[
+            "20+ new exercises added to both profiles",
+            "Improved exercise swap algorithm",
+            "Rest timer now resets correctly on every set",
+            "Weekly session count fixed",
+            "Exercise names updated for easier searching",
+          ].map((item, i) => (
+            <div key={i} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
+              <div style={{ width:4, height:4, borderRadius:"50%", background:"#FF3D00", marginTop:6, flexShrink:0 }} />
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#fff", letterSpacing:0.5, lineHeight:1.4 }}>{item}</div>
+            </div>
+          ))}
+        </div>
+        <button className="mbtn" style={{ background:"#FF3D00", color:"#000" }} onClick={() => { saveStorage("dg-version", APP_VERSION); setShowWhatsNew(false); }}>GOT IT</button>
+      </div>
+    </div>
+  );
+
   if (screen === "landing") return (
-    <Wrap>
+    <Wrap>{showWhatsNew && <WhatsNewModal />}
       <div className="sc" style={{ padding:"60px 20px 40px", display:"flex", flexDirection:"column", minHeight:"100vh" }}>
         <div style={{ marginBottom:52 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:72, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>DAILY<br/><span style={{ color:"#FF3D00" }}>GRIND</span></div>
@@ -1988,7 +2025,7 @@ export default function App() {
 
   // ── BRO HOME ─────────────────────────────────────────────────────────────
   if (screen === "bro-home") return (
-    <Wrap>
+    <Wrap>{showWhatsNew && <WhatsNewModal />}
       <div className="sc" style={{ padding:"56px 20px 88px" }}>
         <div style={{ marginBottom:32 }}>
           <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
@@ -2174,7 +2211,7 @@ export default function App() {
 
   // ── WIFEY HOME ────────────────────────────────────────────────────────────
   if (screen === "wifey-home") return (
-    <Wrap>
+    <Wrap>{showWhatsNew && <WhatsNewModal />}
       <div className="sc" style={{ padding:"56px 20px 88px" }}>
         <div style={{ marginBottom:32 }}>
           <button className="bk" onClick={() => setScreen("landing")} style={{ marginBottom:12 }}>BACK</button>
