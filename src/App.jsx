@@ -1090,7 +1090,7 @@ const BASE_STYLES = `
   @keyframes shUp { from{transform:translateY(100%);}to{transform:translateY(0);} }
   .minput { background:#161616; border:1px solid #2a2a2a; border-radius:4px; color:#fff; font-size:18px; font-family:'Barlow Condensed',sans-serif; font-weight:600; padding:14px 16px; width:100%; outline:none; }
   .minput:focus { border-color:#FFB300; }
-  .sov { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:99; display:flex; align-items:center; justify-content:center; padding:20px; animation:fi 0.3s ease; }
+  .sov { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:99; display:flex; align-items:center; justify-content:center; padding:20px; animation:fi 0.3s ease; overflow:hidden; touch-action:none; }
   @keyframes fi { from{opacity:0;}to{opacity:1;} }
   .wkrow { border-bottom:1px solid #141414; }
   .wkrow:last-child { border-bottom:none; }
@@ -1346,7 +1346,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
 
       {showSummary && summaryData && (
         <div className="sov">
-          <div ref={summaryRef} style={{ background:"#0e0e0e", borderTop:`4px solid ${summaryData.color}`, borderLeft:`4px solid ${summaryData.color}`, borderRight:"1px solid #1a1a1a", borderBottom:"1px solid #1a1a1a", borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto" }}>
+          <div ref={summaryRef} style={{ background:"#0e0e0e", borderTop:`4px solid ${summaryData.color}`, borderLeft:`4px solid ${summaryData.color}`, borderRight:"1px solid #1a1a1a", borderBottom:"1px solid #1a1a1a", borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto", WebkitOverflowScrolling:"touch", touchAction:"pan-y" }}>
             <div style={{ textAlign:"center", marginBottom:24 }}>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:64, fontWeight:900, color:summaryData.color, lineHeight:1, letterSpacing:2 }}>{summaryData.finishMsg}</div>
               <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(summaryData.date)}</div>
