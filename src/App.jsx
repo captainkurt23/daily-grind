@@ -697,7 +697,6 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
     const selectedDate = new Date(workoutDate + "T12:00:00").getTime();
     const data = {
       split: label, color: "#FFFFFF", date: selectedDate,
-      duration: Date.now() - startTime.current,
       exercises: exercises.map(e => e.name),
       exerciseDetails: exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps, weight: e.weight || null })),
       total: exercises.length, finishMsg, type: "workout",
@@ -2039,7 +2038,7 @@ export default function App() {
     }
   }, []);
 
-  const broMin = broSplit ? (broSplit.isCore ? 1 : broSplit.fullBody ? 6 : MIN_PER_GROUP * broSplit.groups.length) : MIN_PER_GROUP;
+  const broMin = broSplit ? (broSplit.isCore ? 1 : 4) : 4;
   const broMax = broSplit ? (broSplit.isCore ? CORE_BANK.length : broSplit.fullBody ? 8 : broSplit.groups.reduce((s, g) => s + BRO_EXERCISE_BANK[g].length, 0)) : 20;
   const wifeyIsLegs = wifeyMode === "legs";
   const wifeyBank = wifeyMode === "cables" ? WIFEY_CABLE_BANK : WIFEY_FULL_BODY_BANK;
