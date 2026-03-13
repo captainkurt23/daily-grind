@@ -1666,6 +1666,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
   const [goalInput, setGoalInput] = useState("");
   const [showGoalInput, setShowGoalInput] = useState(false);
   const [confirmDeletePr, setConfirmDeletePr] = useState(null);
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   // ── Streak calculation ────────────────────────────────────────────────────
   function calcStreak(hist) {
@@ -1886,39 +1887,85 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
       </div>
 
       {/* PR SECTION */}
-      {prs && Object.keys(prs).length > 0 && (
-        <div style={{ marginTop:28, paddingLeft:20, paddingRight:20, paddingBottom:8 }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>PERSONAL RECORDS</div>
-          <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-            {Object.entries(prs)
-              .sort((a, b) => (b[1].date || 0) - (a[1].date || 0))
-              .map(([name, pr]) => {
-                const isPendingDelete = confirmDeletePr === name;
-                return (
-                  <div key={name} onClick={() => {
-                    if (isPendingDelete) {
-                      onDeletePr && onDeletePr(name);
-                      setConfirmDeletePr(null);
-                    } else {
-                      setConfirmDeletePr(name);
-                      setTimeout(() => setConfirmDeletePr(c => c === name ? null : c), 3000);
-                    }
-                  }} style={{ background: isPendingDelete ? "#1a0000" : "#0f0f0f", border:`1px solid ${isPendingDelete ? "#ff000040" : "#1a1a1a"}`, borderLeft:`3px solid ${isPendingDelete ? "#ff3333" : profileColor}`, padding:"12px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer", transition:"all 0.15s" }}>
-                    <div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:800, letterSpacing:0.5, color: isPendingDelete ? "#ff3333" : "#fff", marginBottom:3 }}>{isPendingDelete ? "DELETE?" : name.toUpperCase()}</div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color: isPendingDelete ? "#ff333366" : "#333", letterSpacing:2, fontWeight:700 }}>{isPendingDelete ? "TAP AGAIN TO CONFIRM" : (pr.date ? timeAgo(pr.date) : "")}</div>
+      {prs && Object.keys(prs).length > 0 && (() => {
+        const nameToGroup = {};
+        Object.entries(BRO_EXERCISE_BANK).forEach(([group, exes]) => exes.forEach(e => { if (!nameToGroup[e.name]) nameToGroup[e.name] = group; }));
+        Object.entries(WIFEY_FULL_BODY_BANK).forEach(([group, exes]) => exes.forEach(e => { if (!nameToGroup[e.name]) nameToGroup[e.name] = group; }));
+        Object.entries(WIFEY_CABLE_BANK).forEach(([group, exes]) => exes.forEach(e => { if (!nameToGroup[e.name]) nameToGroup[e.name] = group; }));
+        CORE_BANK.forEach(e => { if (!nameToGroup[e.name]) nameToGroup[e.name] = "Core"; });
+
+        const GROUP_ORDER = ["Chest","Back","Shoulders","Biceps","Triceps","Legs","Core","Other"];
+        const grouped = {};
+        Object.entries(prs).forEach(([name, pr]) => {
+          const g = nameToGroup[name] || "Other";
+          if (!grouped[g]) grouped[g] = [];
+          grouped[g].push([name, pr]);
+        });
+        Object.values(grouped).forEach(arr => arr.sort((a,b) => (parseFloat(b[1].weight)||0) - (parseFloat(a[1].weight)||0)));
+        const orderedGroups = GROUP_ORDER.filter(g => grouped[g]);
+
+        return (
+          <div style={{ marginTop:28, paddingBottom:8 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#444", fontWeight:700, marginBottom:10 }}>
+              PERSONAL RECORDS <span style={{ color:profileColor, marginLeft:6 }}>{Object.keys(prs).length}</span>
+            </div>
+            {orderedGroups.map(group => {
+              const isOpen = !!expandedGroups[group];
+              const entries = grouped[group];
+              const topPr = entries[0];
+              return (
+                <div key={group} style={{ marginBottom:4 }}>
+                  {/* Collapsible header */}
+                  <div onClick={() => setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }))}
+                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#0f0f0f", border:`1px solid ${isOpen ? profileColor+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${isOpen ? profileColor : "#2a2a2a"}`, padding:"12px 14px", cursor:"pointer", transition:"all 0.15s" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:900, letterSpacing:2, color: isOpen ? "#fff" : "#555" }}>{group.toUpperCase()}</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, fontWeight:700, letterSpacing:1, color: isOpen ? profileColor : "#2a2a2a", background: isOpen ? profileColor+"18" : "#161616", padding:"2px 7px", borderRadius:2 }}>{entries.length}</div>
                     </div>
-                    <div style={{ textAlign:"right" }}>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, color: isPendingDelete ? "#ff333366" : profileColor, lineHeight:1 }}>{pr.weight}</div>
-                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700 }}>× {pr.reps} REPS</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      {!isOpen && (
+                        <div style={{ textAlign:"right" }}>
+                          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, color:"#2a2a2a", letterSpacing:0.5, lineHeight:1.2 }}>{topPr[0].toUpperCase()}</div>
+                          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:900, color:"#333", letterSpacing:1 }}>{topPr[1].weight} <span style={{ color:"#2a2a2a", fontWeight:700 }}>LBS</span></div>
+                        </div>
+                      )}
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color: isOpen ? profileColor : "#2a2a2a", fontWeight:900, transition:"transform 0.2s", display:"inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</div>
                     </div>
                   </div>
-                );
-              })
-            }
+
+                  {/* Expanded entries */}
+                  {isOpen && (
+                    <div style={{ border:`1px solid ${profileColor+"25"}`, borderTop:"none" }}>
+                      {entries.map(([name, pr], i) => {
+                        const isPendingDelete = confirmDeletePr === name;
+                        return (
+                          <div key={name} onClick={() => {
+                            if (isPendingDelete) { onDeletePr && onDeletePr(name); setConfirmDeletePr(null); }
+                            else { setConfirmDeletePr(name); setTimeout(() => setConfirmDeletePr(c => c === name ? null : c), 3000); }
+                          }} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 14px", background: isPendingDelete ? "#1a0000" : i % 2 === 0 ? "#0c0c0c" : "#0f0f0f", borderBottom: i < entries.length-1 ? "1px solid #141414" : "none", cursor:"pointer", transition:"all 0.15s" }}>
+                            <div>
+                              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:800, letterSpacing:0.5, color: isPendingDelete ? "#ff3333" : "#fff" }}>
+                                {isPendingDelete ? "DELETE?" : name.toUpperCase()}
+                              </div>
+                              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color: isPendingDelete ? "#ff333366" : "#333", letterSpacing:2, fontWeight:700, marginTop:1 }}>
+                                {isPendingDelete ? "TAP AGAIN TO CONFIRM" : (pr.date ? timeAgo(pr.date) : "")}
+                              </div>
+                            </div>
+                            <div style={{ textAlign:"right" }}>
+                              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color: isPendingDelete ? "#ff333366" : profileColor, lineHeight:1 }}>{pr.weight}<span style={{ fontSize:11, color:"#333", marginLeft:3 }}>LBS</span></div>
+                              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1.5, color:"#333", fontWeight:700 }}>× {pr.reps} REPS</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
     {tabBar}
     </>
