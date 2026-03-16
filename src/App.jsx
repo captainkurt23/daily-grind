@@ -643,8 +643,12 @@ function formatDate(ts) {
   return new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 function formatDuration(ms) {
-  const m = Math.floor(ms / 60000);
-  return m < 1 ? "< 1 min" : `${m} min`;
+  const totalMins = Math.floor(ms / 60000);
+  if (totalMins < 1) return "< 1 MIN";
+  if (totalMins < 60) return `${totalMins} MIN`;
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  return mins === 0 ? `${hrs} HR` : `${hrs} HR ${mins} MIN`;
 }
 function formatWeekLabel(weekKey) {
   const d = new Date(weekKey + "T12:00:00");
