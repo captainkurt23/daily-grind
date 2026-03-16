@@ -517,7 +517,7 @@ function assignSets(exercises, defaultSets) {
 function generateCoreWorkout(total) {
   const pool = shuffle(CORE_BANK).slice(0, total);
   const ordered = [...pool].sort((a, b) => b.intensity - a.intensity);
-  return { sections: [{ group: "Core", displayGroup: "CORE / ABS", exercises: ordered }], startTime: Date.now() };
+  return { sections: [{ group: "Core", displayGroup: "CORE / ABS", exercises: ordered }], startTime: null };
 }
 
 function generateBroWorkout(split, total) {
@@ -566,7 +566,7 @@ function generateBroWorkout(split, total) {
   const withSets = assignSets(allEx, "4");
   let idx = 0;
   const finalSections = sections.map(s => ({ ...s, exercises: s.exercises.map(() => withSets[idx++]) }));
-  return { sections: finalSections, startTime: Date.now() };
+  return { sections: finalSections, startTime: null };
 }
 
 function getUsedExercisesLast2Weeks(history, workoutType) {
@@ -625,7 +625,7 @@ function generateWifeyWorkout(bank, total, history, workoutType) {
   const withSets = assignSets(allEx, "3");
   let idx = 0;
   const finalSections = sections.map(s => ({ ...s, exercises: s.exercises.map(() => withSets[idx++]) }));
-  return { sections: finalSections, startTime: Date.now() };
+  return { sections: finalSections, startTime: null };
 }
 
 function getWeekKey(ts) {
@@ -2560,7 +2560,7 @@ export default function App() {
 
     function commitAndStart() {
       const launch = () => {
-        setBroWorkout(pw);
+        setBroWorkout({ ...pw, startTime: Date.now() });
         clearBroSession();
         setPausedBroSession(null);
         saveStorage("dg-session", null);
@@ -2634,7 +2634,7 @@ export default function App() {
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={broSplit.isCore ? CORE_BANK : BRO_EXERCISE_BANK}
         onBack={() => { clearBroSession(); setScreen("bro-home"); }}
         onSaveAndExit={saveBroAndExit}
-        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); clearBroSession(); }}
+        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout({ ...w, startTime: Date.now() }); clearBroSession(); }}
         prs={broPrs} onSavePr={saveBroPr}
         onComplete={entry => { addBroHistory(entry); clearBroSession(); }}
         onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration}
@@ -2881,7 +2881,7 @@ export default function App() {
 
     function commitAndStart() {
       const launch = () => {
-        setWifeyWorkout(pw);
+        setWifeyWorkout({ ...pw, startTime: Date.now() });
         clearWifeySession();
         setPausedWifeySession(null);
         saveStorage("wy-session", null);
@@ -2957,7 +2957,7 @@ export default function App() {
         splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":wifeyMode==="legs"?"Leg Day":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"] : wifeyBank}
         onBack={() => { clearWifeySession(); setScreen("wifey-home"); }}
         onSaveAndExit={saveWifeyAndExit}
-        onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); clearWifeySession(); }}
+        onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout({ ...w, startTime: Date.now() }); clearWifeySession(); }}
         prs={wifeyPrs} onSavePr={saveWifeyPr}
         onComplete={entry => { addWifeyHistory(entry); clearWifeySession(); }}
         onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration}
