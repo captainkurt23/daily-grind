@@ -270,7 +270,7 @@ const CARDIO_OPTIONS = [
   { id: "pilates",         label: "Pilates",         icon: "Dumbbell"           },
 ];
 
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.5";
 
 const FINISH_MESSAGES = [
   "BEAST MODE.",
@@ -309,6 +309,12 @@ function isFixed(eq) { return !isPortable(eq); }
 
 const SHOULDER_ISOLATION = ["Lateral Raise", "Front Raise", "Rear Delt Fly"];
 const BICEP_SUPERSET_EXCLUDE = ["Barbell 21s (Bicep Curl)"];
+
+function tooSimilar(nameA, nameB) {
+  const a = nameA.toLowerCase();
+  const b = nameB.toLowerCase();
+  return a === b || a.includes(b) || b.includes(a);
+}
 const BACK_CURL_OPTIONS = ["EZ Bar Curl", "Dumbbell Curl"];
 
 const FIXED_TRICEP_CHEST_PAIRS = [
@@ -374,8 +380,19 @@ function injectSupersets(sections) {
     const bi = sections.findIndex(s => s.group === "Biceps");
     const eligible = newSections[bi].exercises.map((e,i) => !BICEP_SUPERSET_EXCLUDE.includes(e.name) ? i : -1).filter(i => i !== -1);
     if (eligible.length < 2) return sections;
-    const [i, j] = shuffle(eligible).slice(0, 2);
-    tagPair(bi, i, bi, j);
+    const shuffled = shuffle(eligible);
+    let paired = false;
+    for (let a = 0; a < shuffled.length && !paired; a++) {
+      for (let b = a + 1; b < shuffled.length && !paired; b++) {
+        const nameA = newSections[bi].exercises[shuffled[a]].name;
+        const nameB = newSections[bi].exercises[shuffled[b]].name;
+        if (!tooSimilar(nameA, nameB)) {
+          tagPair(bi, shuffled[a], bi, shuffled[b]);
+          paired = true;
+        }
+      }
+    }
+    if (!paired) return sections;
   } else if (choice.startsWith("tricep_chest_")) {
     const pairIdx = parseInt(choice.split("_")[2]);
     const pair = FIXED_TRICEP_CHEST_PAIRS[pairIdx];
@@ -383,8 +400,8 @@ function injectSupersets(sections) {
     const secB = sections.findIndex(s => s.group === pair.b.group);
     const exA = newSections[secA].exercises.findIndex(e => e.name === pair.a.name);
     const exB = newSections[secB].exercises.findIndex(e => e.name === pair.b.name);
-    // If either exercise isn't in this workout, skip
     if (exA === -1 || exB === -1) return sections;
+    if (tooSimilar(pair.a.name, pair.b.name)) return sections;
     tagPair(secA, exA, secB, exB);
   }
 
@@ -415,6 +432,51 @@ const COMPOUND_NAMES = [
   "Bulgarian Split Squat","Deficit Reverse Lunge","Walking Lunges","Static Lunges","Step Ups","Romanian Deadlift (RDL)","Hip Thrust",
   "Standing Barbell Shoulder Press","Dumbbell Shoulder Press","Arnold Press","Chin Up",
 ];
+
+function selectByIntensity(pool, count) {
+  // Soft intensity bias based on workout size — preserves variety, raises the floor
+  const high   = pool.filter(e => e.intensity >= 7);
+  const medium = pool.filter(e => e.intensity >= 4 && e.intensity < 7);
+  const light  = pool.filter(e => e.intensity < 4);
+
+  let selected = [];
+
+  if (count <= 5) {
+    // Short & brutal: bias heavily toward high intensity, fill gaps with medium
+    const highCount  = Math.min(Math.ceil(count * 0.75), high.length);
+    const remaining  = count - highCount;
+    selected = [
+      ...shuffle(high).slice(0, highCount),
+      ...shuffle(medium).slice(0, Math.min(remaining, medium.length)),
+      ...shuffle(light).slice(0, Math.max(0, remaining - medium.length)),
+    ];
+  } else if (count <= 7) {
+    // Mixed: at least 60% high/medium, light work welcome but not dominant
+    const highCount   = Math.min(Math.ceil(count * 0.5), high.length);
+    const mediumCount = Math.min(Math.ceil(count * 0.35), medium.length);
+    const lightCount  = count - highCount - mediumCount;
+    selected = [
+      ...shuffle(high).slice(0, highCount),
+      ...shuffle(medium).slice(0, mediumCount),
+      ...shuffle(light).slice(0, Math.max(0, lightCount)),
+    ];
+  } else {
+    // Longer workout: cap max-intensity (9+) at 2 per call, ensure variety
+    const peak    = shuffle(pool.filter(e => e.intensity >= 9)).slice(0, 2);
+    const midHigh = shuffle(pool.filter(e => e.intensity >= 6 && e.intensity < 9));
+    const lower   = shuffle(pool.filter(e => e.intensity < 6));
+    selected = [...peak, ...midHigh, ...lower];
+  }
+
+  // Top up with anything from the full pool if we're still short
+  if (selected.length < count) {
+    const usedNames = new Set(selected.map(e => e.name));
+    const extras = shuffle(pool.filter(e => !usedNames.has(e.name)));
+    selected = [...selected, ...extras];
+  }
+
+  return selected.slice(0, count);
+}
 
 function orderByIntensity(exercises, total) {
   const sorted = [...exercises].sort((a, b) => b.intensity - a.intensity);
@@ -491,9 +553,12 @@ function generateBroWorkout(split, total) {
     } else if (split.fullBody) {
       pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name) && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name) && !e.supersetOnly))];
     } else {
-      pool = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.supersetOnly));
+      pool = BRO_EXERCISE_BANK[group].filter(e => !e.supersetOnly);
     }
-    const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
+    // For legs paths, pool is already structured — just slice. For general paths, use intensity-aware selection.
+    const isLegsStructured = (group === "Legs" && (split.legsMode === "compound" || split.legsMode === "isolated")) || (split.fullBody && group === "Legs") || (split.fullBody && group !== "Legs");
+    const selected = isLegsStructured ? pool.slice(0, counts[group]) : selectByIntensity(pool, counts[group]);
+    const ordered = orderByIntensity(selected, total);
     return { group, displayGroup: group, exercises: ordered };
   });
   // Flatten all exercises, assign sets, then put back
@@ -547,9 +612,11 @@ function generateWifeyWorkout(bank, total, history, workoutType) {
         pool = [...pool, ...remaining].slice(0, n);
       }
     } else {
-      const fresh = shuffle(bank[group].filter(e => !usedRecently.has(e.name) && !e.supersetOnly));
-      const stale = shuffle(bank[group].filter(e => usedRecently.has(e.name) && !e.supersetOnly));
-      pool = [...fresh, ...stale];
+      const fresh = bank[group].filter(e => !usedRecently.has(e.name) && !e.supersetOnly);
+      const stale = bank[group].filter(e => usedRecently.has(e.name) && !e.supersetOnly);
+      const fullPool = [...fresh, ...stale];
+      // Use intensity-aware selection, but prefer fresh exercises within each tier
+      pool = selectByIntensity(fullPool, counts[group]);
     }
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
@@ -737,7 +804,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
             <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{new Date(summaryData.date).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}).toUpperCase()}</div>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
-            {[{label:"WORKOUT",value:summaryData.split},{label:"TIME",value:summaryData.duration < 5*60*1000 ? "—" : formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
+            {[{label:"WORKOUT",value:summaryData.split},{label:"TIME",value:summaryData.duration && summaryData.duration >= 5*60*1000 ? formatDuration(summaryData.duration) : "—"},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
               <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${color}`, padding:"12px 14px" }}>
                 <div style={{ color:"#444", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:3 }}>{label}</div>
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color:"#fff", lineHeight:1 }}>{value}</div>
@@ -1099,6 +1166,7 @@ const BASE_STYLES = `
   .minput:focus { border-color:#FFB300; }
   .sov { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:99; display:flex; align-items:center; justify-content:center; padding:20px; animation:fi 0.3s ease; overflow:hidden; touch-action:none; }
   @keyframes fi { from{opacity:0;}to{opacity:1;} }
+  @keyframes fadeIn { from{opacity:0;}to{opacity:1;} }
   .wkrow { border-bottom:1px solid #141414; }
   .wkrow:last-child { border-bottom:none; }
   .caopt { cursor:pointer; background:#0f0f0f; border:1px solid #1a1a1a; border-radius:4px; padding:14px 18px; display:flex; align-items:center; gap:14px; transition:all 0.15s; }
@@ -1159,7 +1227,7 @@ function TabBar({ active, onTab, color }) {
 
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, initialChecked, initialSetsDone, onProgressSave }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onSaveAndExit, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, initialChecked, initialSetsDone, onProgressSave }) {
   const REST_DUR = restDurationProp || REST_DURATION;
   const [checked, setChecked] = useState(initialChecked || {});
   const [setsDone, setSetsDone] = useState(initialSetsDone || {});
@@ -1167,7 +1235,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
   const [justChecked, setJustChecked] = useState(null);
   const [confirmSwap, setConfirmSwap] = useState(null);
   const [confirmRegen, setConfirmRegen] = useState(false);
-  const [confirmExit, setConfirmExit] = useState(false);
+  const [showExitSheet, setShowExitSheet] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [timerLeft, setTimerLeft] = useState(REST_DUR);
   const timerEndRef = useRef(null);
@@ -1351,6 +1419,23 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
         </div>
       )}
 
+
+      {/* Exit Sheet */}
+      {showExitSheet && (
+        <div className="overlay" onClick={() => setShowExitSheet(false)}>
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#444", marginBottom:4, fontWeight:700 }}>EXIT WORKOUT</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:26, fontWeight:900, marginBottom:6, lineHeight:1 }}>{splitLabel.toUpperCase()}</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#333", letterSpacing:2, fontWeight:700, marginBottom:20 }}>
+              {Object.keys(checked).filter(k => checked[k]).length} / {allKeys.length} EXERCISES DONE
+            </div>
+            <button className="mbtn" style={{ background:color, color:"#000", marginBottom:10 }} onClick={() => { const elapsed = workout.startTime ? Date.now() - workout.startTime : 0; onSaveAndExit && onSaveAndExit(elapsed); setShowExitSheet(false); }}>SAVE & EXIT</button>
+            <button className="mbtn" style={{ background:"transparent", color:"#ff3333", border:"1px solid #ff333330", marginBottom:10 }} onClick={() => { setShowExitSheet(false); onBack(); }}>DISCARD WORKOUT</button>
+            <button className="mbtn" style={{ background:"transparent", color:"#333", border:"1px solid #1e1e1e" }} onClick={() => setShowExitSheet(false)}>KEEP GOING</button>
+          </div>
+        </div>
+      )}
+
       {showSummary && summaryData && (
         <div className="sov">
           <div ref={summaryRef} style={{ background:"#0e0e0e", borderTop:`4px solid ${summaryData.color}`, borderLeft:`4px solid ${summaryData.color}`, borderRight:"1px solid #1a1a1a", borderBottom:"1px solid #1a1a1a", borderRadius:4, padding:28, width:"100%", maxWidth:390, maxHeight:"90vh", overflowY:"auto", WebkitOverflowScrolling:"touch", touchAction:"pan-y" }}>
@@ -1359,7 +1444,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
               <div style={{ color:"#333", fontSize:12, fontFamily:"'Barlow Condensed'", letterSpacing:2, marginTop:4 }}>{formatDate(summaryData.date)}</div>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
-              {[{label:"SPLIT",value:summaryData.split},{label:"TIME",value:summaryData.duration < 5*60*1000 ? "—" : formatDuration(summaryData.duration)},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
+              {[{label:"SPLIT",value:summaryData.split},{label:"TIME",value:summaryData.duration && summaryData.duration >= 5*60*1000 ? formatDuration(summaryData.duration) : "—"},{label:"EXERCISES",value:summaryData.total},{label:"SETS",value:(summaryData.exerciseDetails||[]).reduce((acc,ex)=>acc+(parseInt(ex.sets)||0),0)}].map(({label,value}) => (
                 <div key={label} style={{ background:"#141414", borderLeft:`3px solid ${summaryData.color}`, padding:"12px 14px" }}>
                   <div style={{ color:"#444", fontSize:10, letterSpacing:2, fontFamily:"'Barlow Condensed'", fontWeight:700, marginBottom:3 }}>{label}</div>
                   <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, color:"#fff", lineHeight:1 }}>{value}</div>
@@ -1400,7 +1485,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       )}
 
       <div className="sc" style={{ padding:`${timerActive?78:56}px 20px ${timerActive?180:140}px` }}>
-        <button className="bk" onClick={() => { if (confirmExit) { onBack(); } else { setConfirmExit(true); setTimeout(() => setConfirmExit(false), 3000); } }} style={{ color: confirmExit ? color : undefined }}>{confirmExit ? "EXIT WORKOUT?" : "BACK"}</button>
+        <button className="bk" onClick={() => setShowExitSheet(true)}>BACK</button>
         <div style={{ marginTop:20, marginBottom:6 }}>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700 }}>{splitLabel.toUpperCase()} DAY</div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:52, fontWeight:900, lineHeight:0.9, letterSpacing:1, marginTop:2 }}>YOUR<br/>WORKOUT</div>
@@ -1423,14 +1508,16 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {section.exercises.map((ex, ei) => {
-                  num++;
-                  const n = num; const key = `${si}-${ei}`;
+                  const key = `${si}-${ei}`;
+                  const isSSB = ex.supersetId && ex.supersetRole === "B";
+                  if (!isSSB) num++;
+                  const n = num; 
                   const done = checked[key]; const isExp = expanded[key]; const isPop = justChecked === key; const hasPr = !!prs[ex.name];
                   const setsCompleted = setsDone[key] || 0;
                   const totalSets = parseInt(ex.sets) || 1;
                   const inProgress = setsCompleted > 0 && !done;
                   const isSSA = ex.supersetId && ex.supersetRole === "A";
-                  const isSSB = ex.supersetId && ex.supersetRole === "B";
+                  if (isSSB) return null;
                   return (
                     <div key={key}>
                       <div className={`exc${isPop?" pop":""}`} style={{ background:done?"#090909":"#0f0f0f", border:`1px solid ${ex.supersetId ? color+"33" : "#161616"}`, borderLeft:`3px solid ${done?"#1e1e1e":color}`, opacity:done?0.4:1 }}>
@@ -1664,6 +1751,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
   const [showInput, setShowInput] = useState(false);
   const [goalInput, setGoalInput] = useState("");
   const [showGoalInput, setShowGoalInput] = useState(false);
+  const [confirmDeleteWeight, setConfirmDeleteWeight] = useState(null);
   const [confirmDeletePr, setConfirmDeletePr] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
 
@@ -1829,7 +1917,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
                           ? `${(latestWeight.weight - goalWeight).toFixed(1)} LBS TO GO`
                           : latestWeight.weight < goalWeight
                             ? `${(goalWeight - latestWeight.weight).toFixed(1)} LBS TO GAIN`
-                            : "GOAL REACHED 🎯"}
+                            : "GOAL REACHED!"}
                       </div>
                     </>
                   : <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, color:"#2a2a2a", fontWeight:700, letterSpacing:1, marginTop:4 }}>TAP TO SET</div>
@@ -1870,12 +1958,44 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
               <div style={{ padding:"12px 14px", borderBottom:"1px solid #1a1a1a" }}>
                 <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#444", fontWeight:700 }}>LOG</div>
               </div>
-              {weightLog.slice(0,10).map((e,i) => (
-                <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderBottom: i<Math.min(weightLog.length,10)-1?"1px solid #141414":"none" }}>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800 }}>{e.weight} <span style={{ color:"#333", fontSize:12 }}>LBS</span></div>
-                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600 }}>{formatDate(e.date).toUpperCase()}</div>
-                </div>
-              ))}
+              {weightLog.slice(0,10).map((e,i) => {
+                const prev = weightLog[i+1];
+                const delta = prev ? parseFloat((e.weight - prev.weight).toFixed(1)) : null;
+                const isCutting = goalWeight && latestWeight && goalWeight < latestWeight.weight;
+                const isBulking = goalWeight && latestWeight && goalWeight > latestWeight.weight;
+                const deltaColor = delta === null ? null : delta === 0 ? "#444" : isCutting ? (delta < 0 ? "#4CAF50" : "#ff3333") : isBulking ? (delta > 0 ? "#4CAF50" : "#ff3333") : "#888";
+                const isPendingDelete = confirmDeleteWeight === i;
+                return (
+                  <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderBottom: i<Math.min(weightLog.length,10)-1?"1px solid #141414":"none", background: isPendingDelete ? "#1a0000" : "transparent", transition:"background 0.15s" }}>
+                    <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: isPendingDelete ? "#ff3333" : "#fff" }}>{e.weight} <span style={{ color:"#333", fontSize:12 }}>LBS</span></div>
+                      {!isPendingDelete && delta !== null && delta !== 0 && (
+                        <span style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, color:deltaColor, letterSpacing:0.5 }}>
+                          {delta > 0 ? `+${delta}` : delta}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      {!isPendingDelete && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600 }}>{formatDate(e.date).toUpperCase()}</div>}
+                      {isPendingDelete && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#ff333388", letterSpacing:1, fontWeight:700 }}>TAP TO CONFIRM</div>}
+                      <button
+                        onClick={() => {
+                          if (isPendingDelete) {
+                            const updated = weightLog.filter((_,idx) => idx !== i);
+                            onSaveWeight(updated);
+                            setConfirmDeleteWeight(null);
+                          } else {
+                            setConfirmDeleteWeight(i);
+                            setTimeout(() => setConfirmDeleteWeight(c => c === i ? null : c), 3000);
+                          }
+                        }}
+                        style={{ background:"transparent", border:`1px solid ${isPendingDelete ? "#ff333340" : "#1e1e1e"}`, borderRadius:3, color: isPendingDelete ? "#ff3333" : "#2a2a2a", fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, padding:"3px 8px", cursor:"pointer", flexShrink:0 }}>
+                        {isPendingDelete ? "sure?" : "✕"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </>
         ) : (
@@ -1975,6 +2095,7 @@ function StatsScreen({ history, weightLog, onSaveWeight, profileColor, profileNa
 export default function App() {
   const [screen, setScreen] = useState("landing");
   const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [pendingWorkoutAction, setPendingWorkoutAction] = useState(null); // { profile: "bro"|"wifey", action: fn }
   const [settings, setSettings] = useState({ restDuration: 90, supersets: false, defaultProfile: "none" });
   function updateSetting(key, val) {
     const next = { ...settings, [key]: val };
@@ -1987,6 +2108,11 @@ export default function App() {
   const [broWarmup, setBroWarmup] = useState(false);
   const [broPrs, setBroPrs] = useState({});
   const [broHistory, setBroHistory] = useState([]);
+  const [pausedBroSession, setPausedBroSession] = useState(null);
+  const [pausedWifeySession, setPausedWifeySession] = useState(null);
+  const [broPreviewWorkout, setBroPreviewWorkout] = useState(null);
+  const [wifeyPreviewWorkout, setWifeyPreviewWorkout] = useState(null);
+  const [previewKey, setPreviewKey] = useState(0);
   const [wifeyMode, setWifeyMode] = useState(null);
   const [wifeyTotal, setWifeyTotal] = useState(6);
   const [wifeyWorkout, setWifeyWorkout] = useState({ sections:[], startTime:null });
@@ -2022,19 +2148,29 @@ export default function App() {
     // Restore active workout session if app was reloaded mid-workout
     const bSession = loadStorage("dg-session");
     if (bSession?.workout?.sections?.length && bSession?.screen) {
-      setBroWorkout(bSession.workout);
-      setBroSplit(bSession.split || null);
-      setBroSessionChecked(bSession.checked || {});
-      setBroSessionSetsDone(bSession.setsDone || {});
-      setScreen(bSession.screen);
+      if (bSession.paused) {
+        // Was intentionally paused via Save & Exit — show resume banner
+        setPausedBroSession(bSession);
+      } else {
+        // App closed mid-workout (backgrounded/crashed) — silent restore
+        setBroWorkout(bSession.workout);
+        setBroSplit(bSession.split || null);
+        setBroSessionChecked(bSession.checked || {});
+        setBroSessionSetsDone(bSession.setsDone || {});
+        setScreen(bSession.screen);
+      }
     }
     const wSession = loadStorage("wy-session");
     if (wSession?.workout?.sections?.length && wSession?.screen) {
-      setWifeyWorkout(wSession.workout);
-      setWifeyMode(wSession.mode || null);
-      setWifeySessionChecked(wSession.checked || {});
-      setWifeySessionSetsDone(wSession.setsDone || {});
-      setScreen(wSession.screen);
+      if (wSession.paused) {
+        setPausedWifeySession(wSession);
+      } else {
+        setWifeyWorkout(wSession.workout);
+        setWifeyMode(wSession.mode || null);
+        setWifeySessionChecked(wSession.checked || {});
+        setWifeySessionSetsDone(wSession.setsDone || {});
+        setScreen(wSession.screen);
+      }
     }
   }, []);
 
@@ -2079,24 +2215,45 @@ export default function App() {
   function saveWifeyWorkout(w) { const n=[w,...wifeySaved].slice(0,20); setWifeySaved(n); saveStorage("wy-saved",n); }
   function deleteBroSaved(idx) { const n=broSaved.filter((_,i)=>i!==idx); setBroSaved(n); saveStorage("dg-saved",n); }
   function startBroSavedWorkout(w) {
-    // Reconstruct workout sections from exerciseDetails
-    const details = w.exerciseDetails || (w.exercises||[]).map(name => ({ name, sets:"4", reps:"8" }));
-    const sections = [{ displayGroup: w.split || "Workout", exercises: details.map(e => ({ name: e.name, sets: e.sets || "4", reps: e.reps || "8" })) }];
-    // Find a matching BRO_SPLIT or use a fallback stub
-    const matchedSplit = BRO_SPLITS.find(s => s.label === w.split) || { id:"saved", label: w.split || "Saved Workout", color: w.color || "#FF3D00", groups:[], sub:"SAVED WORKOUT" };
-    setBroSplit(matchedSplit);
-    setBroWorkout({ sections, startTime: Date.now() });
-    clearBroSession();
-    setScreen("bro-workout");
+    const launch = () => {
+      const details = w.exerciseDetails || (w.exercises||[]).map(name => ({ name, sets:"4", reps:"8" }));
+      const allBroExercises = { ...Object.values(BRO_EXERCISE_BANK).flat().reduce((acc, e) => ({ ...acc, [e.name]: e }), {}),
+        ...CORE_BANK.reduce((acc, e) => ({ ...acc, [e.name]: e }), {}) };
+      const sections = [{ displayGroup: w.split || "Workout", exercises: details.map(e => {
+        const fresh = allBroExercises[e.name];
+        return fresh ? { ...fresh, sets: e.sets || fresh.sets, reps: e.reps || fresh.reps } : { name: e.name, sets: e.sets || "4", reps: e.reps || "8" };
+      })}];
+      const matchedSplit = BRO_SPLITS.find(s => s.label === w.split) || { id:"saved", label: w.split || "Saved Workout", color: w.color || "#FF3D00", groups:[], sub:"SAVED WORKOUT" };
+      setBroSplit(matchedSplit);
+      setBroWorkout({ sections, startTime: Date.now() });
+      clearBroSession();
+      setPausedBroSession(null);
+      saveStorage("dg-session", null);
+      setScreen("bro-workout");
+    };
+    if (pausedBroSession) { setPendingWorkoutAction({ profile:"bro", action: launch }); }
+    else { launch(); }
   }
   function startWifeySavedWorkout(w) {
-    const details = w.exerciseDetails || (w.exercises||[]).map(name => ({ name, sets:"3", reps:"12" }));
-    const sections = [{ displayGroup: w.split || "Workout", exercises: details.map(e => ({ name: e.name, sets: e.sets || "3", reps: e.reps || "12" })) }];
-    const matchedMode = w.split === "All Cables" ? "cables" : w.split === "Core / Abs" ? "core" : w.split === "Leg Day" ? "legs" : "full";
-    setWifeyMode(matchedMode);
-    setWifeyWorkout({ sections, startTime: Date.now() });
-    clearWifeySession();
-    setScreen("wifey-workout");
+    const launch = () => {
+      const details = w.exerciseDetails || (w.exercises||[]).map(name => ({ name, sets:"3", reps:"12" }));
+      const allWifeyExercises = { ...Object.values(WIFEY_FULL_BODY_BANK).flat().reduce((acc, e) => ({ ...acc, [e.name]: e }), {}),
+        ...Object.values(WIFEY_CABLE_BANK).flat().reduce((acc, e) => ({ ...acc, [e.name]: e }), {}),
+        ...CORE_BANK.reduce((acc, e) => ({ ...acc, [e.name]: e }), {}) };
+      const sections = [{ displayGroup: w.split || "Workout", exercises: details.map(e => {
+        const fresh = allWifeyExercises[e.name];
+        return fresh ? { ...fresh, sets: e.sets || fresh.sets, reps: e.reps || fresh.reps } : { name: e.name, sets: e.sets || "3", reps: e.reps || "12" };
+      })}];
+      const matchedMode = w.split === "All Cables" ? "cables" : w.split === "Core / Abs" ? "core" : w.split === "Leg Day" ? "legs" : "full";
+      setWifeyMode(matchedMode);
+      setWifeyWorkout({ sections, startTime: Date.now() });
+      clearWifeySession();
+      setPausedWifeySession(null);
+      saveStorage("wy-session", null);
+      setScreen("wifey-workout");
+    };
+    if (pausedWifeySession) { setPendingWorkoutAction({ profile:"wifey", action: launch }); }
+    else { launch(); }
   }
   function deleteWifeySaved(idx) { const n=wifeySaved.filter((_,i)=>i!==idx); setWifeySaved(n); saveStorage("wy-saved",n); }
   function deleteBroHistory(entry) { const n=broHistory.filter(h=>h!==entry); setBroHistory(n); saveStorage("dg-history",n); }
@@ -2106,26 +2263,98 @@ export default function App() {
   function saveWifeySession(workout, mode, checked, setsDone, screen) { saveStorage("wy-session", { workout, mode, checked, setsDone, screen }); }
   function clearWifeySession() { saveStorage("wy-session", null); setWifeySessionChecked({}); setWifeySessionSetsDone({}); }
 
+  function saveBroAndExit(elapsed) {
+    const session = { workout: { ...broWorkout, startTime: Date.now() - elapsed }, split: broSplit, checked: broSessionChecked, setsDone: broSessionSetsDone, screen: "bro-workout", paused: true, elapsed };
+    saveStorage("dg-session", session);
+    setPausedBroSession(session);
+    setBroWorkout({ sections:[], startTime:null });
+    setBroSplit(null);
+    setBroSessionChecked({});
+    setBroSessionSetsDone({});
+    setScreen("bro-home");
+  }
+
+  function resumeBroSession() {
+    if (!pausedBroSession) return;
+    setBroWorkout(pausedBroSession.workout);
+    setBroSplit(pausedBroSession.split || null);
+    setBroSessionChecked(pausedBroSession.checked || {});
+    setBroSessionSetsDone(pausedBroSession.setsDone || {});
+    saveStorage("dg-session", { ...pausedBroSession, paused: false });
+    setPausedBroSession(null);
+    // If saved with warmup and no progress yet, route through warmup first
+    const hasProgress = Object.keys(pausedBroSession.setsDone || {}).some(k => (pausedBroSession.setsDone[k] || 0) > 0);
+    setScreen(pausedBroSession.warmup && !hasProgress ? "bro-warmup" : "bro-workout");
+  }
+
+  function discardBroSession() {
+    clearBroSession();
+    setPausedBroSession(null);
+  }
+
+  function saveWifeyAndExit(elapsed) {
+    const session = { workout: { ...wifeyWorkout, startTime: Date.now() - elapsed }, mode: wifeyMode, checked: wifeySessionChecked, setsDone: wifeySessionSetsDone, screen: "wifey-workout", paused: true, elapsed };
+    saveStorage("wy-session", session);
+    setPausedWifeySession(session);
+    setWifeyWorkout({ sections:[], startTime:null });
+    setWifeyMode(null);
+    setWifeySessionChecked({});
+    setWifeySessionSetsDone({});
+    setScreen("wifey-home");
+  }
+
+  function resumeWifeySession() {
+    if (!pausedWifeySession) return;
+    setWifeyWorkout(pausedWifeySession.workout);
+    setWifeyMode(pausedWifeySession.mode || null);
+    setWifeySessionChecked(pausedWifeySession.checked || {});
+    setWifeySessionSetsDone(pausedWifeySession.setsDone || {});
+    saveStorage("wy-session", { ...pausedWifeySession, paused: false });
+    setPausedWifeySession(null);
+    const hasProgress = Object.keys(pausedWifeySession.setsDone || {}).some(k => (pausedWifeySession.setsDone[k] || 0) > 0);
+    setScreen(pausedWifeySession.warmup && !hasProgress ? "wifey-warmup" : "wifey-workout");
+  }
+
+  function discardWifeySession() {
+    clearWifeySession();
+    setPausedWifeySession(null);
+  }
+
 
 
   // ── LANDING ──────────────────────────────────────────────────────────────
   const WhatsNewModal = () => (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", zIndex:999, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 24px" }}>
-      <div style={{ background:"#111", border:"1px solid #2a2a2a", borderRadius:6, width:"100%", maxWidth:400, padding:"32px 28px" }}>
+      <div style={{ background:"#111", border:"1px solid #2a2a2a", borderRadius:6, width:"100%", maxWidth:400, padding:"32px 28px", maxHeight:"85vh", overflowY:"auto" }}>
         <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:800, letterSpacing:3, color:"#FF3D00", marginBottom:8 }}>WHAT'S NEW</div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1, marginBottom:20 }}>v1.2 — MARCH 2026</div>
-        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:14, color:"#888", lineHeight:1.6, marginBottom:24, fontWeight:600 }}>
-          Thank you to everyone who has been using Daily Grind and sending feedback. It means everything and keeps us building.
-        </div>
+        <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1, marginBottom:20 }}>v1.5 — MARCH 2026</div>
         <div style={{ marginBottom:28 }}>
           {[
-            "Weight field added to logged workouts",
-            "Personal Records now visible on Stats screen",
-            "Save any workout from History and relaunch it",
-          ].map((item, i) => (
-            <div key={i} style={{ display:"flex", gap:10, marginBottom:10, alignItems:"flex-start" }}>
-              <div style={{ width:4, height:4, borderRadius:"50%", background:"#FF3D00", marginTop:6, flexShrink:0 }} />
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#fff", letterSpacing:0.5, lineHeight:1.4 }}>{item}</div>
+            { heading: "Resume & Save", items: [
+              "Exit any workout mid-session with SAVE & EXIT. Your progress and timer are frozen exactly where you left off",
+            ]},
+            { heading: "Preview", items: [
+              "GENERATE WORKOUT now takes you to a dedicated preview screen before starting",
+              "See your full exercise list, hit REGENERATE to swap it, START WORKOUT to begin, or SAVE FOR LATER to lock it in without starting the timer",
+            ]},
+            { heading: "Smarter Workouts", items: [
+              "Short workouts (4-5 exercises) now reliably pull from heavier, higher-intensity movements",
+              "Longer workouts ensure a smart mix of heavy and lighter work",
+            ]},
+            { heading: "Bug Fixes", items: [
+              "Fixed a display bug where both exercises in a superset appeared as separate line items. The pair now shows as a single entry",
+              "Manually logged workouts no longer show inaccurate duration",
+              "Saved workouts now relaunch with fresh exercise definitions from the current bank",
+            ]},
+          ].map(({ heading, items }) => (
+            <div key={heading} style={{ marginBottom:20 }}>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#FF3D00", fontWeight:800, marginBottom:10 }}>{heading.toUpperCase()}</div>
+              {items.map((item, i) => (
+                <div key={i} style={{ display:"flex", gap:10, marginBottom:8, alignItems:"flex-start" }}>
+                  <div style={{ width:4, height:4, borderRadius:"50%", background:"#FF3D00", marginTop:6, flexShrink:0 }} />
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#fff", letterSpacing:0.5, lineHeight:1.4 }}>{item}</div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -2133,6 +2362,38 @@ export default function App() {
       </div>
     </div>
   );
+
+  // ── PAUSED WORKOUT OVERWRITE MODAL ────────────────────────────────────────
+  if (pendingWorkoutAction) {
+    const isPaused = pendingWorkoutAction.profile === "bro" ? pausedBroSession : pausedWifeySession;
+    const pausedLabel = isPaused?.split?.label || isPaused?.mode || "WORKOUT";
+    const profileColor = pendingWorkoutAction.profile === "bro" ? "#FF3D00" : WIFEY_COLOR;
+    return (
+      <Wrap>
+        <div className="overlay">
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:"#ff3333", fontWeight:700, marginBottom:4 }}>PAUSED WORKOUT</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:24, fontWeight:900, lineHeight:1, marginBottom:8 }}>{typeof pausedLabel === "string" ? pausedLabel.toUpperCase() : "WORKOUT"}</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:12, color:"#444", letterSpacing:1.5, fontWeight:600, marginBottom:24 }}>
+              YOU HAVE A PAUSED WORKOUT. STARTING A NEW ONE WILL DISCARD IT.
+            </div>
+            <button className="mbtn" style={{ background:"#ff3333", color:"#000", marginBottom:10 }} onClick={() => {
+              if (pendingWorkoutAction.profile === "bro") { setPausedBroSession(null); saveStorage("dg-session", null); }
+              else { setPausedWifeySession(null); saveStorage("wy-session", null); }
+              pendingWorkoutAction.action();
+              setPendingWorkoutAction(null);
+            }}>DISCARD & START NEW</button>
+            <button className="mbtn" style={{ background:"transparent", color:profileColor, border:`1px solid ${profileColor}40`, marginBottom:10 }} onClick={() => {
+              setPendingWorkoutAction(null);
+              if (pendingWorkoutAction.profile === "bro") resumeBroSession();
+              else resumeWifeySession();
+            }}>RESUME PAUSED WORKOUT</button>
+            <button className="mbtn" style={{ background:"transparent", color:"#333", border:"1px solid #1e1e1e" }} onClick={() => setPendingWorkoutAction(null)}>CANCEL</button>
+          </div>
+        </div>
+      </Wrap>
+    );
+  }
 
   if (screen === "landing") return (
     <Wrap>{showWhatsNew && <WhatsNewModal />}
@@ -2171,15 +2432,66 @@ export default function App() {
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE BRO<br/><span style={{ color:"#FF3D00" }}>SPLIT</span></div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>SELECT YOUR SPLIT</div>
         </div>
+
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {BRO_SPLITS.map((s, idx) => (
-            <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.isCore ? 4 : s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setScreen("bro-configure"); }}
-              style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${s.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
-              <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${s.color}08, transparent)` }} />
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:s.color, marginTop:6, fontWeight:700 }}>{s.sub}</div>
-            </div>
-          ))}
+          {BRO_SPLITS.map((s, idx) => {
+            const isPaused = pausedBroSession && pausedBroSession.split?.id === s.id;
+            const confirmDiscard = isPaused && pausedBroSession.__confirmDiscard;
+            if (isPaused) {
+              const ps = pausedBroSession;
+              const checkedCount = Object.keys(ps.checked || {}).filter(k => ps.checked[k]).length;
+              const totalExercises = ps.workout?.sections?.flatMap(sec => sec.exercises)?.length || 0;
+              const elapsed = ps.elapsed || 0;
+              const mins = Math.floor(elapsed / 60000);
+              const secs = Math.floor((elapsed % 60000) / 1000);
+              return confirmDiscard ? (
+                <div key={s.id} style={{ background:"#1a0000", border:"1px solid #ff000030", borderLeft:"4px solid #ff3333", padding:"20px" }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:2, color:"#ff3333", fontWeight:700, marginBottom:6 }}>DISCARD {s.label.toUpperCase()}?</div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600, marginBottom:14 }}>YOUR PROGRESS WILL BE LOST.</div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={discardBroSession} style={{ flex:1, background:"#ff3333", color:"#000", border:"none", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:900, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>YES, DISCARD</button>
+                    <button onClick={() => setPausedBroSession(p => ({...p, __confirmDiscard: false}))} style={{ flex:1, background:"transparent", color:"#555", border:"1px solid #1e1e1e", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:800, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>KEEP IT</button>
+                  </div>
+                </div>
+              ) : (
+                <div key={s.id} style={{ background:"#0a0a0a", border:`1px solid ${s.color}40`, borderLeft:`4px solid ${s.color}`, padding:"20px", position:"relative", overflow:"hidden" }}>
+                  <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${s.color}08, transparent)`, pointerEvents:"none" }} />
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+                    <div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:s.color, fontWeight:700, marginBottom:3 }}>PAUSED WORKOUT</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:s.color, marginTop:4, fontWeight:700 }}>{s.sub}</div>
+                    </div>
+                    <div style={{ textAlign:"right" }}>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700, marginBottom:2 }}>TIME</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:22, fontWeight:900, color:s.color }}>{mins}:{secs.toString().padStart(2,"0")}</div>
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700 }}>{checkedCount} / {totalExercises} EXERCISES</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700 }}>{totalExercises > 0 ? Math.round((checkedCount/totalExercises)*100) : 0}%</div>
+                    </div>
+                    <div style={{ height:3, background:"#1a1a1a", borderRadius:2 }}>
+                      <div style={{ height:"100%", width:`${totalExercises > 0 ? (checkedCount/totalExercises)*100 : 0}%`, background:s.color, borderRadius:2 }} />
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={resumeBroSession} style={{ flex:1, background:s.color, color:"#000", border:"none", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:900, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>RESUME</button>
+                    <button onClick={() => setPausedBroSession(p => ({...p, __confirmDiscard: true}))} style={{ background:"transparent", color:"#888", border:"1px solid #333", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:800, letterSpacing:2, padding:"12px 16px", cursor:"pointer" }}>DISCARD</button>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <div key={s.id} className="tc" onClick={() => { setBroSplit(s); setBroTotal(s.isCore ? 4 : s.fullBody ? 7 : Math.max(DEFAULT_TOTAL, MIN_PER_GROUP * s.groups.length)); setBroPreviewWorkout(null); setScreen("bro-configure"); }}
+                style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${s.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
+                <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${s.color}08, transparent)`, pointerEvents:"none" }} />
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:s.color, marginTop:6, fontWeight:700 }}>{s.sub}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
       <TabBar active="train" color="#FF3D00" onTab={t => {
@@ -2197,7 +2509,7 @@ export default function App() {
     return (
       <Wrap>
         <div className="sc" style={{ padding:"56px 20px 40px" }}>
-          <button className="bk" onClick={() => setScreen("bro-home")}>BACK</button>
+          <button className="bk" onClick={() => { setBroPreviewWorkout(null); setScreen("bro-home"); }}>BACK</button>
           <div style={{ marginTop:28, marginBottom:36 }}>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700, marginBottom:4 }}>TODAY'S SPLIT</div>
             <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{broSplit.label.toUpperCase()}</div>
@@ -2213,7 +2525,12 @@ export default function App() {
               <button className="cntbtn" disabled={broTotal >= broMax} onClick={() => setBroTotal(t => t+1)}>+</button>
             </div>
           </div>
-          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); clearBroSession(); setScreen(broWarmup ? "bro-warmup" : "bro-workout"); }}>GENERATE WORKOUT</button>
+          <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => {
+            const w = generateBroWorkout(broSplit, broTotal);
+            if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); }
+            setBroPreviewWorkout(w);
+            setScreen("bro-preview");
+          }}>GENERATE WORKOUT</button>
           <div onClick={() => setBroWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${broWarmup ? color+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${broWarmup ? color : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
             <div>
               <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: broWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
@@ -2228,7 +2545,77 @@ export default function App() {
     );
   }
 
-  // ── BRO WARMUP ────────────────────────────────────────────────────────────
+  // ── BRO PREVIEW ───────────────────────────────────────────────────────────
+  if (screen === "bro-preview" && broSplit && broPreviewWorkout) {
+    const color = broSplit.color;
+    const pw = broPreviewWorkout;
+    const allExercises = pw.sections.flatMap(s => s.exercises);
+
+    function regenerate() {
+      const w = generateBroWorkout(broSplit, broTotal);
+      if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); }
+      setBroPreviewWorkout(w);
+      setPreviewKey(k => k + 1);
+    }
+
+    function commitAndStart() {
+      const launch = () => {
+        setBroWorkout(pw);
+        clearBroSession();
+        setPausedBroSession(null);
+        saveStorage("dg-session", null);
+        setBroPreviewWorkout(null);
+        setScreen(broWarmup ? "bro-warmup" : "bro-workout");
+      };
+      if (pausedBroSession) { setPendingWorkoutAction({ profile:"bro", action: launch }); }
+      else { launch(); }
+    }
+
+    function saveForLater() {
+      const session = { workout: { ...pw, startTime: Date.now() }, split: broSplit, checked: {}, setsDone: {}, screen: "bro-workout", paused: true, elapsed: 0, warmup: broWarmup };
+      saveStorage("dg-session", session);
+      setPausedBroSession(session);
+      setBroPreviewWorkout(null);
+      setScreen("bro-home");
+    }
+
+    return (
+      <Wrap>
+        <div className="sc" style={{ padding:"56px 20px 100px" }}>
+          <button className="bk" onClick={() => setScreen("bro-configure")}>BACK</button>
+          <div style={{ marginTop:28, marginBottom:8 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color, fontWeight:700, marginBottom:4 }}>TODAY'S SPLIT</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:48, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{broSplit.label.toUpperCase()}</div>
+          </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>{allExercises.length} EXERCISES · {broWarmup ? "WARMUP INCLUDED" : "NO WARMUP"}</div>
+          <div key={previewKey} style={{ display:"flex", flexDirection:"column", gap:6, marginBottom:24, animation:"fadeIn 0.25s ease" }}>
+            {allExercises.map((ex, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${color}25` }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:900, color:"#2a2a2a", minWidth:20 }}>{i+1}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color:"#fff", letterSpacing:0.3 }}>{ex.name}</div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#333", letterSpacing:1.5, fontWeight:700, marginTop:2 }}>{ex.sets} SETS · {ex.reps} REPS</div>
+                </div>
+                {ex.eq && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, fontWeight:800, color:"#2a2a2a", background:"#141414", padding:"3px 7px", borderRadius:2, letterSpacing:1 }}>{ex.eq.toUpperCase()}</div>}
+              </div>
+            ))}
+          </div>
+          <button className="mbtn" style={{ background:color, color:"#000", marginBottom:10 }} onClick={commitAndStart}>
+            {broWarmup ? "START WARMUP" : "START WORKOUT"}
+          </button>
+          <button className="mbtn" style={{ background:"transparent", color:color, border:`1px solid ${color}40`, marginBottom:10 }} onClick={regenerate}>
+            REGENERATE
+          </button>
+          <button className="mbtn" style={{ background:"transparent", color:"#444", border:"1px solid #1e1e1e" }} onClick={saveForLater}>
+            SAVE FOR LATER
+          </button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1.5, color:"#222", fontWeight:600, textAlign:"center", marginTop:10 }}>TIMER STARTS WHEN YOU HIT START</div>
+        </div>
+      </Wrap>
+    );
+  }
+
+  // ── BRO WARMUP ────────────────────────────────────────────────────────────  // ── BRO WARMUP ────────────────────────────────────────────────────────────
   if (screen === "bro-warmup" && broSplit) {
     const warmupKey = broSplit.fullBody ? "Full Body" : (broSplit.groups?.[0] || "Full Body");
     const exercises = WARMUP_BANK[warmupKey] || WARMUP_BANK["Full Body"];
@@ -2246,12 +2633,13 @@ export default function App() {
     <Wrap>
       <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={broSplit.isCore ? CORE_BANK : BRO_EXERCISE_BANK}
         onBack={() => { clearBroSession(); setScreen("bro-home"); }}
+        onSaveAndExit={saveBroAndExit}
         onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout(w); clearBroSession(); }}
         prs={broPrs} onSavePr={saveBroPr}
         onComplete={entry => { addBroHistory(entry); clearBroSession(); }}
         onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration}
         initialChecked={broSessionChecked} initialSetsDone={broSessionSetsDone}
-        onProgressSave={(c, s) => saveBroSession(broWorkout, broSplit, c, s, "bro-workout")} />
+        onProgressSave={(c, s) => { setBroSessionChecked(c); setBroSessionSetsDone(s); saveBroSession(broWorkout, broSplit, c, s, "bro-workout"); }} />
     </Wrap>
   );
 
@@ -2357,21 +2745,72 @@ export default function App() {
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:56, fontWeight:900, lineHeight:0.88, letterSpacing:-1 }}>THE WIFEY<br/><span style={{ color:WIFEY_COLOR }}>WORKOUT</span></div>
           <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:4, color:"#333", marginTop:10, fontWeight:700 }}>SELECT YOUR SPLIT</div>
         </div>
+
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {[
             { id:"fullbody", label:"Full Body",  sub:"DUMBBELLS . MACHINES . FREE WEIGHTS", color:WIFEY_COLOR },
             { id:"cables",   label:"All Cables", sub:"CABLE MACHINE ONLY",                  color:"#00E5FF"   },
             { id:"core",     label:"Core / Abs", sub:"ABS . CORE STRENGTH",                 color:"#EEFF41"   },
             { id:"legs",     label:"Leg Day",    sub:"LOWER BODY . GLUTES . STRENGTH",      color:"#D500F9"   },
-          ].map((opt, idx) => (
-            <div key={opt.id} className="tc"
-              onClick={() => { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?4:opt.id==="legs"?6:9); setScreen("wifey-configure"); }}
-              style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${opt.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
-              <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)` }} />
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{opt.label.toUpperCase()}</div>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:opt.color, marginTop:6, fontWeight:700 }}>{opt.sub}</div>
-            </div>
-          ))}
+          ].map((opt, idx) => {
+            const isPaused = pausedWifeySession && pausedWifeySession.mode === opt.id;
+            const confirmDiscard = isPaused && pausedWifeySession.__confirmDiscard;
+            if (isPaused) {
+              const ps = pausedWifeySession;
+              const checkedCount = Object.keys(ps.checked || {}).filter(k => ps.checked[k]).length;
+              const totalExercises = ps.workout?.sections?.flatMap(sec => sec.exercises)?.length || 0;
+              const elapsed = ps.elapsed || 0;
+              const mins = Math.floor(elapsed / 60000);
+              const secs = Math.floor((elapsed % 60000) / 1000);
+              return confirmDiscard ? (
+                <div key={opt.id} style={{ background:"#1a0000", border:"1px solid #ff000030", borderLeft:"4px solid #ff3333", padding:"20px" }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, letterSpacing:2, color:"#ff3333", fontWeight:700, marginBottom:6 }}>DISCARD {opt.label.toUpperCase()}?</div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, color:"#444", letterSpacing:1, fontWeight:600, marginBottom:14 }}>YOUR PROGRESS WILL BE LOST.</div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={discardWifeySession} style={{ flex:1, background:"#ff3333", color:"#000", border:"none", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:900, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>YES, DISCARD</button>
+                    <button onClick={() => setPausedWifeySession(p => ({...p, __confirmDiscard: false}))} style={{ flex:1, background:"transparent", color:"#555", border:"1px solid #1e1e1e", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:14, fontWeight:800, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>KEEP IT</button>
+                  </div>
+                </div>
+              ) : (
+                <div key={opt.id} style={{ background:"#0a0a0a", border:`1px solid ${opt.color}40`, borderLeft:`4px solid ${opt.color}`, padding:"20px", position:"relative", overflow:"hidden" }}>
+                  <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)`, pointerEvents:"none" }} />
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+                    <div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:3, color:opt.color, fontWeight:700, marginBottom:3 }}>PAUSED WORKOUT</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{opt.label.toUpperCase()}</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:opt.color, marginTop:4, fontWeight:700 }}>{opt.sub}</div>
+                    </div>
+                    <div style={{ textAlign:"right" }}>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700, marginBottom:2 }}>TIME</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:22, fontWeight:900, color:opt.color }}>{mins}:{secs.toString().padStart(2,"0")}</div>
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700 }}>{checkedCount} / {totalExercises} EXERCISES</div>
+                      <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:2, color:"#333", fontWeight:700 }}>{totalExercises > 0 ? Math.round((checkedCount/totalExercises)*100) : 0}%</div>
+                    </div>
+                    <div style={{ height:3, background:"#1a1a1a", borderRadius:2 }}>
+                      <div style={{ height:"100%", width:`${totalExercises > 0 ? (checkedCount/totalExercises)*100 : 0}%`, background:opt.color, borderRadius:2 }} />
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={resumeWifeySession} style={{ flex:1, background:opt.color, color:"#000", border:"none", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:900, letterSpacing:2, padding:"12px 0", cursor:"pointer" }}>RESUME</button>
+                    <button onClick={() => setPausedWifeySession(p => ({...p, __confirmDiscard: true}))} style={{ background:"transparent", color:"#888", border:"1px solid #333", borderRadius:4, fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:800, letterSpacing:2, padding:"12px 16px", cursor:"pointer" }}>DISCARD</button>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <div key={opt.id} className="tc"
+                onClick={() => { setWifeyMode(opt.id); setWifeyTotal(opt.id==="cables"?8:opt.id==="core"?4:opt.id==="legs"?6:9); setWifeyPreviewWorkout(null); setScreen("wifey-configure"); }}
+                style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${opt.color}`, padding:"24px 20px", position:"relative", overflow:"hidden", animation:`scIn 0.3s cubic-bezier(0.22,1,0.36,1) ${idx*0.05}s both` }}>
+                <div style={{ position:"absolute", top:0, right:0, width:80, height:"100%", background:`linear-gradient(to left, ${opt.color}08, transparent)`, pointerEvents:"none" }} />
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:28, fontWeight:900, letterSpacing:1 }}>{opt.label.toUpperCase()}</div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:opt.color, marginTop:6, fontWeight:700 }}>{opt.sub}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
       <TabBar active="train" color={WIFEY_COLOR} onTab={t => {
@@ -2384,40 +2823,120 @@ export default function App() {
   );
 
   // ── WIFEY CONFIGURE ───────────────────────────────────────────────────────
-  if (screen === "wifey-configure") return (
-    <Wrap>
-      <div className="sc" style={{ padding:"56px 20px 40px" }}>
-        <button className="bk" onClick={() => setScreen("wifey-home")}>BACK</button>
-        <div style={{ marginTop:28, marginBottom:36 }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:wColor, fontWeight:700, marginBottom:4 }}>TODAY'S WORKOUT</div>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{wifeyMode==="cables"?"ALL CABLES":wifeyMode==="core"?"CORE / ABS":wifeyMode==="legs"?"LEG DAY":"FULL BODY"}</div>
-        </div>
-        <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${wColor}`, padding:"28px 24px", marginBottom:28 }}>
-          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>TOTAL EXERCISES</div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-            <button className="cntbtn" disabled={wifeyTotal <= wifeyMin} onClick={() => setWifeyTotal(t => t-1)}>-</button>
-            <div style={{ textAlign:"center" }}>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:96, fontWeight:900, lineHeight:1, color:wColor }}>{wifeyTotal}</div>
-              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginTop:2 }}>EXERCISES</div>
+  if (screen === "wifey-configure") {
+    const splitLabel = wifeyMode==="cables"?"ALL CABLES":wifeyMode==="core"?"CORE / ABS":wifeyMode==="legs"?"LEG DAY":"FULL BODY";
+    return (
+      <Wrap>
+        <div className="sc" style={{ padding:"56px 20px 40px" }}>
+          <button className="bk" onClick={() => { setWifeyPreviewWorkout(null); setScreen("wifey-home"); }}>BACK</button>
+          <div style={{ marginTop:28, marginBottom:36 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:wColor, fontWeight:700, marginBottom:4 }}>TODAY'S WORKOUT</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:58, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{splitLabel}</div>
+          </div>
+          <div style={{ background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`4px solid ${wColor}`, padding:"28px 24px", marginBottom:28 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>TOTAL EXERCISES</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <button className="cntbtn" disabled={wifeyTotal <= wifeyMin} onClick={() => setWifeyTotal(t => t-1)}>-</button>
+              <div style={{ textAlign:"center" }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:96, fontWeight:900, lineHeight:1, color:wColor }}>{wifeyTotal}</div>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginTop:2 }}>EXERCISES</div>
+              </div>
+              <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
             </div>
-            <button className="cntbtn" disabled={wifeyTotal >= wifeyMax} onClick={() => setWifeyTotal(t => t+1)}>+</button>
+          </div>
+          <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => {
+            const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] };
+            const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode);
+            if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); }
+            setWifeyPreviewWorkout(w);
+            setScreen("wifey-preview");
+          }}>GENERATE WORKOUT</button>
+          <div onClick={() => setWifeyWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${wifeyWarmup ? wColor+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${wifeyWarmup ? wColor : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
+            <div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: wifeyWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
+              <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>DYNAMIC STRETCHES . 45 SEC EACH</div>
+            </div>
+            <div style={{ width:40, height:24, borderRadius:12, background: wifeyWarmup ? wColor : "#1a1a1a", border:`1px solid ${wifeyWarmup ? wColor : "#333"}`, position:"relative", flexShrink:0, transition:"background 0.2s" }}>
+              <div style={{ position:"absolute", top:3, left: wifeyWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
+            </div>
           </div>
         </div>
-        <button className="mbtn" style={{ background:wColor, color:"#000" }} onClick={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout"); }}>GENERATE WORKOUT</button>
-        <div onClick={() => setWifeyWarmup(w => !w)} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0f0f0f", border:`1px solid ${wifeyWarmup ? wColor+"40" : "#1a1a1a"}`, borderLeft:`3px solid ${wifeyWarmup ? wColor : "#1a1a1a"}`, borderRadius:4, padding:"14px 16px", marginTop:10, cursor:"pointer" }}>
-          <div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color: wifeyWarmup ? "#fff" : "#444", letterSpacing:0.5 }}>INCLUDE WARMUP</div>
-            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#2a2a2a", letterSpacing:1, fontWeight:600, marginTop:2 }}>DYNAMIC STRETCHES . 45 SEC EACH</div>
-          </div>
-          <div style={{ width:40, height:24, borderRadius:12, background: wifeyWarmup ? wColor : "#1a1a1a", border:`1px solid ${wifeyWarmup ? wColor : "#333"}`, position:"relative", flexShrink:0, transition:"background 0.2s" }}>
-            <div style={{ position:"absolute", top:3, left: wifeyWarmup ? 18 : 3, width:16, height:16, borderRadius:"50%", background:"#fff", transition:"left 0.2s" }} />
-          </div>
-        </div>
-      </div>
-    </Wrap>
-  );
+      </Wrap>
+    );
+  }
 
-  // ── WIFEY WARMUP ──────────────────────────────────────────────────────────
+  // ── WIFEY PREVIEW ─────────────────────────────────────────────────────────
+  if (screen === "wifey-preview" && wifeyMode && wifeyPreviewWorkout) {
+    const pw = wifeyPreviewWorkout;
+    const allExercises = pw.sections.flatMap(s => s.exercises);
+    const splitLabel = wifeyMode==="cables"?"ALL CABLES":wifeyMode==="core"?"CORE / ABS":wifeyMode==="legs"?"LEG DAY":"FULL BODY";
+
+    function regenerate() {
+      const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] };
+      const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode);
+      if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); }
+      setWifeyPreviewWorkout(w);
+      setPreviewKey(k => k + 1);
+    }
+
+    function commitAndStart() {
+      const launch = () => {
+        setWifeyWorkout(pw);
+        clearWifeySession();
+        setPausedWifeySession(null);
+        saveStorage("wy-session", null);
+        setWifeyPreviewWorkout(null);
+        setScreen(wifeyWarmup ? "wifey-warmup" : "wifey-workout");
+      };
+      if (pausedWifeySession) { setPendingWorkoutAction({ profile:"wifey", action: launch }); }
+      else { launch(); }
+    }
+
+    function saveForLater() {
+      const session = { workout: { ...pw, startTime: Date.now() }, mode: wifeyMode, checked: {}, setsDone: {}, screen: "wifey-workout", paused: true, elapsed: 0, warmup: wifeyWarmup };
+      saveStorage("wy-session", session);
+      setPausedWifeySession(session);
+      setWifeyPreviewWorkout(null);
+      setScreen("wifey-home");
+    }
+
+    return (
+      <Wrap>
+        <div className="sc" style={{ padding:"56px 20px 100px" }}>
+          <button className="bk" onClick={() => setScreen("wifey-configure")}>BACK</button>
+          <div style={{ marginTop:28, marginBottom:8 }}>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:4, color:wColor, fontWeight:700, marginBottom:4 }}>TODAY'S WORKOUT</div>
+            <div style={{ fontFamily:"'Barlow Condensed'", fontSize:48, fontWeight:900, lineHeight:0.9, letterSpacing:1 }}>{splitLabel}</div>
+          </div>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:11, letterSpacing:3, color:"#333", fontWeight:700, marginBottom:20 }}>{allExercises.length} EXERCISES · {wifeyWarmup ? "WARMUP INCLUDED" : "NO WARMUP"}</div>
+          <div key={previewKey} style={{ display:"flex", flexDirection:"column", gap:6, marginBottom:24, animation:"fadeIn 0.25s ease" }}>
+            {allExercises.map((ex, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"#0f0f0f", border:"1px solid #1a1a1a", borderLeft:`3px solid ${wColor}25` }}>
+                <div style={{ fontFamily:"'Barlow Condensed'", fontSize:13, fontWeight:900, color:"#2a2a2a", minWidth:20 }}>{i+1}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:16, fontWeight:800, color:"#fff", letterSpacing:0.3 }}>{ex.name}</div>
+                  <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, color:"#333", letterSpacing:1.5, fontWeight:700, marginTop:2 }}>{ex.sets} SETS · {ex.reps} REPS</div>
+                </div>
+                {ex.eq && <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, fontWeight:800, color:"#2a2a2a", background:"#141414", padding:"3px 7px", borderRadius:2, letterSpacing:1 }}>{ex.eq.toUpperCase()}</div>}
+              </div>
+            ))}
+          </div>
+          <button className="mbtn" style={{ background:wColor, color:"#000", marginBottom:10 }} onClick={commitAndStart}>
+            {wifeyWarmup ? "START WARMUP" : "START WORKOUT"}
+          </button>
+          <button className="mbtn" style={{ background:"transparent", color:wColor, border:`1px solid ${wColor}40`, marginBottom:10 }} onClick={regenerate}>
+            REGENERATE
+          </button>
+          <button className="mbtn" style={{ background:"transparent", color:"#444", border:"1px solid #1e1e1e" }} onClick={saveForLater}>
+            SAVE FOR LATER
+          </button>
+          <div style={{ fontFamily:"'Barlow Condensed'", fontSize:10, letterSpacing:1.5, color:"#222", fontWeight:600, textAlign:"center", marginTop:10 }}>TIMER STARTS WHEN YOU HIT START</div>
+        </div>
+      </Wrap>
+    );
+  }
+
+  // ── WIFEY WARMUP ──────────────────────────────────────────────────────────  // ── WIFEY WARMUP ──────────────────────────────────────────────────────────
   if (screen === "wifey-warmup") {
     const warmupKey = wifeyMode === "cables" ? "All Cables" : wifeyMode === "cardio" ? "Cardio" : wifeyMode === "core" ? "Full Body" : "Full Body";
     const exercises = WARMUP_BANK[warmupKey] || WARMUP_BANK["Full Body"];
@@ -2437,12 +2956,13 @@ export default function App() {
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
         splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":wifeyMode==="legs"?"Leg Day":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"] : wifeyBank}
         onBack={() => { clearWifeySession(); setScreen("wifey-home"); }}
+        onSaveAndExit={saveWifeyAndExit}
         onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout(w); clearWifeySession(); }}
         prs={wifeyPrs} onSavePr={saveWifeyPr}
         onComplete={entry => { addWifeyHistory(entry); clearWifeySession(); }}
         onSaveWorkout={saveWifeyWorkout} restDuration={settings.restDuration}
         initialChecked={wifeySessionChecked} initialSetsDone={wifeySessionSetsDone}
-        onProgressSave={(c, s) => saveWifeySession(wifeyWorkout, wifeyMode, c, s, "wifey-workout")} />
+        onProgressSave={(c, s) => { setWifeySessionChecked(c); setWifeySessionSetsDone(s); saveWifeySession(wifeyWorkout, wifeyMode, c, s, "wifey-workout"); }} />
     </Wrap>
   );
 
