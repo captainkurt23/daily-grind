@@ -28,94 +28,92 @@ const CORE_BANK = [
 
 const BRO_EXERCISE_BANK = {
   Back: [
-    { name: "Dumbbell Row",           sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
-    { name: "Chest Supported Row",    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "machine" },
-    { name: "Lat Pulldown",           sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Pull Up",                sets: "4", reps: "6-10",   note: "", intensity: 7, eq: "bw"      },
-    { name: "Straight Arm Pulldown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
-    { name: "Seated Cable Row",       sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Rack Pull",              sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
-    { name: "Seated Row Machine",     sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "machine" },
-    { name: "Barbell Row",            sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
-    { name: "Face Pull",              sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
-    { name: "Deadlift",                sets: "4", reps: "4-6",   note: "", intensity: 10, eq: "barbell" },
-    { name: "Wide Grip Seated Cable Row", sets: "4", reps: "8-10", note: "", intensity: 6, eq: "cable"   },
-    { name: "Seated High Row",            sets: "4", reps: "8-10", note: "", intensity: 6, eq: "machine" },
+    { name: "Dumbbell Row",               sets: "4", reps: "8-10",  note: "", intensity: 6,  eq: "db",      zone: "middle" },
+    { name: "Chest Supported Row",        sets: "4", reps: "8-10",  note: "", intensity: 6,  eq: "machine", zone: "middle" },
+    { name: "Lat Pulldown",               sets: "4", reps: "8-10",  note: "", intensity: 5,  eq: "cable",   zone: "lats"   },
+    { name: "Pull Up",                    sets: "4", reps: "6-10",  note: "", intensity: 7,  eq: "bw",      zone: "lats"   },
+    { name: "Straight Arm Pulldown",      sets: "4", reps: "8-10",  note: "", intensity: 4,  eq: "cable",   zone: "lats"   },
+    { name: "Seated Cable Row",           sets: "4", reps: "8-10",  note: "", intensity: 5,  eq: "cable",   zone: "middle" },
+    { name: "Rack Pull",                  sets: "4", reps: "6-8",   note: "", intensity: 9,  eq: "barbell", zone: "lower"  },
+    { name: "Seated Row Machine",         sets: "4", reps: "8-10",  note: "", intensity: 5,  eq: "machine", zone: "middle" },
+    { name: "Barbell Row",                sets: "4", reps: "6-8",   note: "", intensity: 8,  eq: "barbell", zone: "middle" },
+    { name: "Deadlift",                   sets: "4", reps: "4-6",   note: "", intensity: 10, eq: "barbell", zone: "lower"  },
+    { name: "Wide Grip Seated Cable Row", sets: "4", reps: "8-10",  note: "", intensity: 6,  eq: "cable",   zone: "lats"   },
+    { name: "Seated High Row",            sets: "4", reps: "8-10",  note: "", intensity: 6,  eq: "machine", zone: "middle" },
   ],
   Chest: [
-    { name: "Flat Bench Press",      sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
-    { name: "Incline Bench Press",   sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
-    { name: "Decline Bench Press",   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "barbell" },
-    { name: "Dumbbell Bench Press",  sets: "4", reps: "8-10",  note: "", intensity: 7, eq: "db"      },
-    { name: "Dumbbell Fly",          sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Cable Fly (Upper)",     sets: "4", reps: "10-12", note: "", intensity: 5, eq: "cable"   },
-    { name: "Cable Fly (Lower)",     sets: "4", reps: "10-12", note: "", intensity: 5, eq: "cable"   },
-    { name: "Incline Dumbbell Press",       sets: "4", reps: "8-10",  note: "", intensity: 7, eq: "db"      },
-    { name: "Pec Deck / Chest Fly Machine", sets: "4", reps: "10-12", note: "", intensity: 5, eq: "machine" },
-    { name: "Push Up",               sets: "4", reps: "15-20", note: "", intensity: 4, eq: "bw", supersetOnly: true },
+    { name: "Flat Bench Press",            sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell", zone: "mid"   },
+    { name: "Incline Bench Press",         sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell", zone: "upper" },
+    { name: "Decline Bench Press",         sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "barbell", zone: "lower" },
+    { name: "Dumbbell Bench Press",        sets: "4", reps: "8-10",  note: "", intensity: 7, eq: "db",      zone: "mid"   },
+    { name: "Dumbbell Fly",                sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db",      zone: "mid"   },
+    { name: "Cable Fly (Upper)",           sets: "4", reps: "10-12", note: "", intensity: 5, eq: "cable",   zone: "upper" },
+    { name: "Cable Fly (Lower)",           sets: "4", reps: "10-12", note: "", intensity: 5, eq: "cable",   zone: "lower" },
+    { name: "Incline Dumbbell Press",      sets: "4", reps: "8-10",  note: "", intensity: 7, eq: "db",      zone: "upper" },
+    { name: "Pec Deck / Chest Fly Machine",sets: "4", reps: "10-12", note: "", intensity: 5, eq: "machine", zone: "mid"   },
+    { name: "Push Up",                     sets: "4", reps: "15-20", note: "", intensity: 4, eq: "bw",      zone: "mid",  supersetOnly: true },
   ],
   Shoulders: [
-    { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "barbell" },
-    { name: "Shoulder Shrug",                          sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "db"      },
-    { name: "Lateral Raise",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Rear Delt Fly",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Standing Barbell Shoulder Press",         sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell" },
-    { name: "Dumbbell Shoulder Press",                 sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
-    { name: "Arnold Press",                   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db"      },
-    { name: "Front Raise",                    sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Side to Front Raise",            sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
-    { name: "Cable Single Arm Lateral Raise", sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "cable"   },
-    { name: "Smith Machine Shoulder Press",   sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "machine" },
-    { name: "Face Pull",                      sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable"   },
-    { name: "Cable Y Raise",                  sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable"   },
+    { name: "Upright Row",                    sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "barbell", zone: "front"      },
+    { name: "Shoulder Shrug",                 sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "db",      zone: "rear_upper" },
+    { name: "Lateral Raise",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db",      zone: "lateral"    },
+    { name: "Rear Delt Fly",                  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db",      zone: "rear_upper" },
+    { name: "Standing Barbell Shoulder Press",sets: "4", reps: "6-8",   note: "", intensity: 9, eq: "barbell", zone: "press"      },
+    { name: "Dumbbell Shoulder Press",        sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db",      zone: "press"      },
+    { name: "Arnold Press",                   sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "db",      zone: "press"      },
+    { name: "Front Raise",                    sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db",      zone: "front"      },
+    { name: "Side to Front Raise",            sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db",      zone: "lateral"    },
+    { name: "Cable Single Arm Lateral Raise", sets: "4", reps: "8-10",  note: "", intensity: 3, eq: "cable",   zone: "lateral"    },
+    { name: "Smith Machine Shoulder Press",   sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "machine", zone: "press"      },
+    { name: "Face Pull",                      sets: "4", reps: "10",    note: "", intensity: 3, eq: "cable",   zone: "rear_upper" },
+    { name: "Cable Y Raise",                  sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable",   zone: "rear_upper" },
   ],
   Triceps: [
-    { name: "Single Arm Tricep Pulldown", sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable"   },
-    { name: "Tricep Pushdown Machine",    sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "machine" },
-    { name: "Tricep V-Bar Pushdown",      sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Tricep Rope Pulldown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Tricep Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Tricep Reverse Grip Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable"   },
-    { name: "Skullcrusher",           sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
-    { name: "Tricep Overhead Rope Extension",     sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "cable"   },
-    { name: "Close Grip Bench Press", sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell" },
-    { name: "Dips",                   sets: "4", reps: "15-20",   note: "", intensity: 7, eq: "bw"      },
+    { name: "Single Arm Tricep Pulldown",    sets: "4", reps: "10-12", note: "", intensity: 4, eq: "cable",   zone: "pushdown" },
+    { name: "Tricep Pushdown Machine",       sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "machine", zone: "pushdown" },
+    { name: "Tricep V-Bar Pushdown",         sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable",   zone: "pushdown" },
+    { name: "Tricep Rope Pulldown",          sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable",   zone: "pushdown" },
+    { name: "Tricep Straight Bar Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable",   zone: "pushdown" },
+    { name: "Tricep Reverse Grip Pushdown",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "cable",   zone: "pushdown" },
+    { name: "Skullcrusher",                  sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez",      zone: "overhead" },
+    { name: "Tricep Overhead Rope Extension",sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "cable",   zone: "overhead" },
+    { name: "Close Grip Bench Press",        sets: "4", reps: "6-8",   note: "", intensity: 8, eq: "barbell", zone: "compound" },
+    { name: "Dips",                          sets: "4", reps: "15-20", note: "", intensity: 7, eq: "bw",      zone: "compound" },
   ],
   Biceps: [
-    { name: "Dumbbell Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
-    { name: "Preacher Curl",      sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "machine" },
-    { name: "Hammer Curl",        sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
-    { name: "Concentration Curl", sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "db"      },
-    { name: "Reverse Grip Curl",  sets: "4", reps: "8-10",  note: "", intensity: 4, eq: "db"      },
-    { name: "Barbell 21s (Bicep Curl)",                sets: "4", reps: "21",    note: "", intensity: 6, eq: "db"      },
-    { name: "EZ Bar Curl",        sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
-    { name: "Seated EZ Bar Curl", sets: "4", reps: "6-8",   note: "", intensity: 7, eq: "ez"      },
-    { name: "Cable Bicep Curl",   sets: "4", reps: "8-10",  note: "", intensity: 5, eq: "cable"   },
-    { name: "Incline Dumbbell Curl", sets: "4", reps: "8-10", note: "", intensity: 6, eq: "db"    },
-    { name: "Chin Up",             sets: "4", reps: "6-10",  note: "", intensity: 7, eq: "bw"      },
-    { name: "Spider Curls",          sets: "4", reps: "8-10",  note: "", intensity: 6, eq: "db"      },
+    { name: "Dumbbell Curl",            sets: "4", reps: "8-10", note: "", intensity: 6, eq: "db",      zone: "standard"  },
+    { name: "Preacher Curl",            sets: "4", reps: "8-10", note: "", intensity: 6, eq: "machine", zone: "isolation" },
+    { name: "Hammer Curl",              sets: "4", reps: "8-10", note: "", intensity: 5, eq: "db",      zone: "hammer"    },
+    { name: "Concentration Curl",       sets: "4", reps: "8-10", note: "", intensity: 5, eq: "db",      zone: "isolation" },
+    { name: "Reverse Grip Curl",        sets: "4", reps: "8-10", note: "", intensity: 4, eq: "db",      zone: "hammer"    },
+    { name: "Barbell 21s (Bicep Curl)", sets: "4", reps: "21",   note: "", intensity: 6, eq: "db",      zone: "standard"  },
+    { name: "EZ Bar Curl",              sets: "4", reps: "6-8",  note: "", intensity: 7, eq: "ez",      zone: "standard"  },
+    { name: "Seated EZ Bar Curl",       sets: "4", reps: "6-8",  note: "", intensity: 7, eq: "ez",      zone: "standard"  },
+    { name: "Cable Bicep Curl",         sets: "4", reps: "8-10", note: "", intensity: 5, eq: "cable",   zone: "standard"  },
+    { name: "Incline Dumbbell Curl",    sets: "4", reps: "8-10", note: "", intensity: 6, eq: "db",      zone: "isolation" },
+    { name: "Spider Curls",             sets: "4", reps: "8-10", note: "", intensity: 6, eq: "db",      zone: "isolation" },
   ],
   Legs: [
-    { name: "Barbell Squat",         sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true,  eq: "barbell" },
-    { name: "Pendulum Squat",        sets: "4", reps: "6-8",  note: "", intensity: 9, compound: true,  eq: "machine" },
-    { name: "Hack Squat",            sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true,  eq: "machine" },
-    { name: "Box Squat",             sets: "4", reps: "6-8",  note: "", intensity: 8, compound: true,  eq: "barbell" },
-    { name: "Leg Press",             sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "machine" },
-    { name: "Romanian Deadlift (RDL)",                   sets: "4", reps: "6-8",  note: "", intensity: 7, compound: true,  eq: "barbell" },
-    { name: "Bulgarian Split Squat", sets: "4", reps: "8-10", note: "", intensity: 7, compound: true,  eq: "db"      },
-    { name: "Walking Lunges",        sets: "4", reps: "8-10", note: "", intensity: 6, compound: true,  eq: "db"      },
-    { name: "Step Ups",              sets: "4", reps: "8-10", note: "", intensity: 5, compound: true,  eq: "db"      },
-    { name: "Static Lunges",         sets: "4", reps: "8-10", note: "", intensity: 5, compound: true,  eq: "bw"      },
-    { name: "Seated Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 5, compound: false, eq: "machine" },
-    { name: "Lying Leg Curl",        sets: "4", reps: "8-10", note: "", intensity: 5, compound: false, eq: "machine" },
-    { name: "Leg Extension",         sets: "4", reps: "8-10", note: "", intensity: 4, compound: false, eq: "machine" },
-    { name: "Single Leg Curl",       sets: "4", reps: "8-10", note: "", intensity: 4, compound: false, eq: "machine" },
-    { name: "Hip Adductor Machine",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
-    { name: "Hip Abductor Machine",              sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "machine" },
-    { name: "Calf Raises",           sets: "4", reps: "10",   note: "", intensity: 3, compound: false, eq: "db"      },
-    { name: "Deficit Reverse Lunge",        sets: "4", reps: "8-10", note: "", intensity: 7, compound: true,  eq: "db"      },
-    { name: "Reverse Lunge",          sets: "4", reps: "8-10", note: "", intensity: 6, compound: true,  eq: "db"      },
-    { name: "Farmer's Carry",         sets: "4", reps: "40 YDS", note: "", intensity: 6, compound: true,  eq: "db"      },
+    { name: "Barbell Squat",          sets: "4", reps: "6-8",    note: "", intensity: 9, compound: true,  eq: "barbell", zone: "free_unilateral" },
+    { name: "Pendulum Squat",         sets: "4", reps: "6-8",    note: "", intensity: 9, compound: true,  eq: "machine", zone: "machine_squat"   },
+    { name: "Hack Squat",             sets: "4", reps: "6-8",    note: "", intensity: 8, compound: true,  eq: "machine", zone: "machine_squat"   },
+    { name: "Box Squat",              sets: "4", reps: "6-8",    note: "", intensity: 8, compound: true,  eq: "barbell", zone: "free_unilateral" },
+    { name: "Leg Press",              sets: "4", reps: "6-8",    note: "", intensity: 7, compound: true,  eq: "machine", zone: "machine_squat"   },
+    { name: "Romanian Deadlift (RDL)",sets: "4", reps: "6-8",    note: "", intensity: 7, compound: true,  eq: "barbell", zone: "hinge"           },
+    { name: "Bulgarian Split Squat",  sets: "4", reps: "8-10",   note: "", intensity: 7, compound: true,  eq: "db",      zone: "free_unilateral" },
+    { name: "Walking Lunges",         sets: "4", reps: "8-10",   note: "", intensity: 6, compound: true,  eq: "db",      zone: "free_unilateral" },
+    { name: "Step Ups",               sets: "4", reps: "8-10",   note: "", intensity: 5, compound: true,  eq: "db",      zone: "free_unilateral" },
+    { name: "Static Lunges",          sets: "4", reps: "8-10",   note: "", intensity: 5, compound: true,  eq: "bw",      zone: "free_unilateral" },
+    { name: "Seated Leg Curl",        sets: "4", reps: "8-10",   note: "", intensity: 5, compound: false, eq: "machine", zone: "isolation"       },
+    { name: "Lying Leg Curl",         sets: "4", reps: "8-10",   note: "", intensity: 5, compound: false, eq: "machine", zone: "isolation"       },
+    { name: "Leg Extension",          sets: "4", reps: "8-10",   note: "", intensity: 4, compound: false, eq: "machine", zone: "isolation"       },
+    { name: "Single Leg Curl",        sets: "4", reps: "8-10",   note: "", intensity: 4, compound: false, eq: "machine", zone: "isolation"       },
+    { name: "Hip Adductor Machine",   sets: "4", reps: "10",     note: "", intensity: 3, compound: false, eq: "machine", zone: "isolation"       },
+    { name: "Hip Abductor Machine",   sets: "4", reps: "10",     note: "", intensity: 3, compound: false, eq: "machine", zone: "isolation"       },
+    { name: "Calf Raises",            sets: "4", reps: "10",     note: "", intensity: 3, compound: false, eq: "db",      zone: "isolation"       },
+    { name: "Deficit Reverse Lunge",  sets: "4", reps: "8-10",   note: "", intensity: 7, compound: true,  eq: "db",      zone: "free_unilateral" },
+    { name: "Reverse Lunge",          sets: "4", reps: "8-10",   note: "", intensity: 6, compound: true,  eq: "db",      zone: "free_unilateral" },
+    { name: "Farmer's Carry",         sets: "4", reps: "40 YDS", note: "", intensity: 6, compound: true,  eq: "db",      zone: "hinge"           },
   ],
 };
 
@@ -132,75 +130,75 @@ const WIFEY_COLOR = "#FF6B9D";
 
 const WIFEY_FULL_BODY_BANK = {
   Chest: [
-    { name: "Dumbbell Fly",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
-    { name: "Incline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 6, eq: "barbell" },
-    { name: "Push Up",             sets: "3", reps: "15-20", note: "", intensity: 4, eq: "bw", supersetOnly: true },
-    { name: "Flat Bench Press",    sets: "3", reps: "12-15", note: "", intensity: 7, eq: "barbell" },
-    { name: "Decline Bench Press", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "barbell" },
-    { name: "Cable Fly High to Low", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
-    { name: "Cable Fly Low to High", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable" },
-    { name: "Incline Dumbbell Press",       sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"      },
-    { name: "Pec Deck / Chest Fly Machine", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine" },
+    { name: "Dumbbell Fly",                sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",      zone: "mid"   },
+    { name: "Incline Bench Press",         sets: "3", reps: "12-15", note: "", intensity: 6, eq: "barbell", zone: "upper" },
+    { name: "Push Up",                     sets: "3", reps: "15-20", note: "", intensity: 4, eq: "bw",      zone: "mid",  supersetOnly: true },
+    { name: "Flat Bench Press",            sets: "3", reps: "12-15", note: "", intensity: 7, eq: "barbell", zone: "mid"   },
+    { name: "Decline Bench Press",         sets: "3", reps: "12-15", note: "", intensity: 5, eq: "barbell", zone: "lower" },
+    { name: "Cable Fly High to Low",       sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable",   zone: "upper" },
+    { name: "Cable Fly Low to High",       sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable",   zone: "lower" },
+    { name: "Incline Dumbbell Press",      sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db",      zone: "upper" },
+    { name: "Pec Deck / Chest Fly Machine",sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine", zone: "mid"   },
   ],
   Back: [
-    { name: "Lat Pulldown",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable"   },
-    { name: "Seated Cable Row",      sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable"   },
-    { name: "Dumbbell Row",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
-    { name: "Chest Supported Row",   sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine" },
-    { name: "Straight Arm Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
-    { name: "Face Pull",             sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable"   },
-    { name: "Single Arm Cable Row",  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable"   },
-    { name: "Seated High Row",       sets: "3", reps: "12-15", note: "", intensity: 6, eq: "machine" },
+    { name: "Lat Pulldown",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable",   zone: "lats"   },
+    { name: "Seated Cable Row",      sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable",   zone: "middle" },
+    { name: "Dumbbell Row",          sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db",      zone: "middle" },
+    { name: "Chest Supported Row",   sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine", zone: "middle" },
+    { name: "Straight Arm Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable",   zone: "lats"   },
+    { name: "Face Pull",             sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable",   zone: "upper"  },
+    { name: "Single Arm Cable Row",  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable",   zone: "middle" },
+    { name: "Seated High Row",       sets: "3", reps: "12-15", note: "", intensity: 6, eq: "machine", zone: "middle" },
   ],
   Shoulders: [
-    { name: "Lateral Raise",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
-    { name: "Front Raise",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
-    { name: "Rear Delt Fly",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
-    { name: "Dumbbell Shoulder Press",     sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"    },
-    { name: "Arnold Press",       sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db"    },
-    { name: "Upright Row",        sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"    },
-    { name: "Face Pull",          sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable" },
-    { name: "Cable Lateral Raise",sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
-    { name: "Cable Y Raise",        sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
+    { name: "Lateral Raise",          sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",    zone: "lateral"    },
+    { name: "Front Raise",            sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",    zone: "front"      },
+    { name: "Rear Delt Fly",          sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",    zone: "rear_upper" },
+    { name: "Dumbbell Shoulder Press",sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db",    zone: "press"      },
+    { name: "Arnold Press",           sets: "3", reps: "12-15", note: "", intensity: 6, eq: "db",    zone: "press"      },
+    { name: "Upright Row",            sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db",    zone: "front"      },
+    { name: "Face Pull",              sets: "3", reps: "15",    note: "", intensity: 3, eq: "cable", zone: "rear_upper" },
+    { name: "Cable Lateral Raise",    sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable", zone: "lateral"    },
+    { name: "Cable Y Raise",          sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable", zone: "rear_upper" },
   ],
   Legs: [
-    { name: "Barbell Squat",         sets: "3", reps: "10-12", note: "", intensity: 8, compound: true,  eq: "barbell" },
-    { name: "Goblet Squat",          sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
-    { name: "Leg Press",             sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "machine" },
-    { name: "Romanian Deadlift (RDL)",                   sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
-    { name: "Walking Lunges",        sets: "3", reps: "12-15", note: "", intensity: 5, compound: true,  eq: "db"      },
-    { name: "Bulgarian Split Squat", sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
-    { name: "Hip Thrust",            sets: "3", reps: "12-15", note: "", intensity: 8, compound: true,  eq: "barbell" },
-    { name: "Cable Glute Kickback",  sets: "3", reps: "15",    note: "", intensity: 6, compound: false, eq: "cable"   },
-    { name: "Leg Extension",         sets: "3", reps: "12-15", note: "", intensity: 4, compound: false, eq: "machine" },
-    { name: "Seated Leg Curl",       sets: "3", reps: "12-15", note: "", intensity: 4, compound: false, eq: "machine" },
-    { name: "Calf Raises",           sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "db"      },
-    { name: "Hip Abductor Machine",              sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "machine" },
-    { name: "Hip Adductor Machine",              sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "machine" },
-    { name: "Step Ups",              sets: "3", reps: "12-15", note: "", intensity: 4, compound: true,  eq: "db"      },
-    { name: "Cable Hip Abduction",   sets: "3", reps: "15",    note: "", intensity: 3, compound: false, eq: "cable"   },
-    { name: "Sumo Squat",            sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db"      },
-    { name: "Reverse Lunge",          sets: "3", reps: "12-15", note: "", intensity: 5, compound: true,  eq: "db"      },
-    { name: "Cable Pull Through",    sets: "3", reps: "12-15", note: "", intensity: 6, compound: false, eq: "cable"   },
-    { name: "Farmer's Carry",         sets: "3", reps: "40 YDS", note: "", intensity: 6, compound: true,  eq: "db"      },
+    { name: "Barbell Squat",         sets: "3", reps: "10-12",  note: "", intensity: 8, compound: true,  eq: "barbell", zone: "machine_compound" },
+    { name: "Goblet Squat",          sets: "3", reps: "12-15",  note: "", intensity: 6, compound: true,  eq: "db",      zone: "machine_compound" },
+    { name: "Leg Press",             sets: "3", reps: "12-15",  note: "", intensity: 6, compound: true,  eq: "machine", zone: "machine_compound" },
+    { name: "Sumo Squat",            sets: "3", reps: "12-15",  note: "", intensity: 6, compound: true,  eq: "db",      zone: "machine_compound" },
+    { name: "Romanian Deadlift (RDL)",sets: "3", reps: "12-15", note: "", intensity: 6, compound: true,  eq: "db",      zone: "hinge"            },
+    { name: "Cable Pull Through",    sets: "3", reps: "12-15",  note: "", intensity: 6, compound: false, eq: "cable",   zone: "hinge"            },
+    { name: "Walking Lunges",        sets: "3", reps: "12-15",  note: "", intensity: 5, compound: true,  eq: "db",      zone: "unilateral"       },
+    { name: "Bulgarian Split Squat", sets: "3", reps: "12-15",  note: "", intensity: 6, compound: true,  eq: "db",      zone: "unilateral"       },
+    { name: "Step Ups",              sets: "3", reps: "12-15",  note: "", intensity: 4, compound: true,  eq: "db",      zone: "unilateral"       },
+    { name: "Reverse Lunge",         sets: "3", reps: "12-15",  note: "", intensity: 5, compound: true,  eq: "db",      zone: "unilateral"       },
+    { name: "Hip Thrust",            sets: "3", reps: "12-15",  note: "", intensity: 8, compound: true,  eq: "barbell", zone: "glute"            },
+    { name: "Cable Glute Kickback",  sets: "3", reps: "15",     note: "", intensity: 6, compound: false, eq: "cable",   zone: "glute"            },
+    { name: "Cable Hip Abduction",   sets: "3", reps: "15",     note: "", intensity: 3, compound: false, eq: "cable",   zone: "glute"            },
+    { name: "Leg Extension",         sets: "3", reps: "12-15",  note: "", intensity: 4, compound: false, eq: "machine", zone: "isolation"        },
+    { name: "Seated Leg Curl",       sets: "3", reps: "12-15",  note: "", intensity: 4, compound: false, eq: "machine", zone: "isolation"        },
+    { name: "Calf Raises",           sets: "3", reps: "15",     note: "", intensity: 3, compound: false, eq: "db",      zone: "isolation"        },
+    { name: "Hip Abductor Machine",  sets: "3", reps: "15",     note: "", intensity: 3, compound: false, eq: "machine", zone: "isolation"        },
+    { name: "Hip Adductor Machine",  sets: "3", reps: "15",     note: "", intensity: 3, compound: false, eq: "machine", zone: "isolation"        },
+    { name: "Farmer's Carry",        sets: "3", reps: "40 YDS", note: "", intensity: 6, compound: true,  eq: "db",      zone: "isolation"        },
   ],
   Biceps: [
-    { name: "Dumbbell Curl",         sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
-    { name: "Hammer Curl",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"    },
-    { name: "Incline Dumbbell Curl", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"    },
-    { name: "Cable Bicep Curl",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
-    { name: "Cable Hammer Curl",     sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable" },
-    { name: "Preacher Curl",         sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine"},
+    { name: "Dumbbell Curl",         sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",      zone: "standard"  },
+    { name: "Hammer Curl",           sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",      zone: "hammer"    },
+    { name: "Incline Dumbbell Curl", sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db",      zone: "isolation" },
+    { name: "Cable Bicep Curl",      sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable",   zone: "standard"  },
+    { name: "Cable Hammer Curl",     sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable",   zone: "hammer"    },
+    { name: "Preacher Curl",         sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine", zone: "isolation" },
   ],
   Triceps: [
-    { name: "Tricep Pushdown Machine",    sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine" },
-    { name: "Single Arm Tricep Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
-    { name: "Tricep Pushdown",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable"   },
-    { name: "Overhead Tricep Extension",   sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db"      },
-    { name: "Tricep Kickback",             sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db"      },
-    { name: "Cable Overhead Tricep Ext",   sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable"   },
-    { name: "Skull Crushers",              sets: "3", reps: "12-15", note: "", intensity: 6, eq: "ez"      },
-    { name: "Dips",                        sets: "3", reps: "12-15", note: "", intensity: 6, eq: "bw"      },
+    { name: "Tricep Pushdown Machine",    sets: "3", reps: "12-15", note: "", intensity: 5, eq: "machine", zone: "pushdown" },
+    { name: "Single Arm Tricep Pulldown", sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable",   zone: "pushdown" },
+    { name: "Tricep Pushdown",            sets: "3", reps: "12-15", note: "", intensity: 4, eq: "cable",   zone: "pushdown" },
+    { name: "Overhead Tricep Extension",  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "db",      zone: "overhead" },
+    { name: "Tricep Kickback",            sets: "3", reps: "12-15", note: "", intensity: 4, eq: "db",      zone: "overhead" },
+    { name: "Cable Overhead Tricep Ext",  sets: "3", reps: "12-15", note: "", intensity: 5, eq: "cable",   zone: "pushdown" },
+    { name: "Skull Crushers",             sets: "3", reps: "12-15", note: "", intensity: 6, eq: "ez",      zone: "overhead" },
+    { name: "Dips",                       sets: "3", reps: "12-15", note: "", intensity: 6, eq: "bw",      zone: "compound" },
   ],
   Core: [
     { name: "Plank",            sets: "3", reps: "45 SEC", note: "", intensity: 4, eq: "bw" },
@@ -315,7 +313,7 @@ function tooSimilar(nameA, nameB) {
   const b = nameB.toLowerCase();
   return a === b || a.includes(b) || b.includes(a);
 }
-const BACK_CURL_OPTIONS = ["EZ Bar Curl", "Dumbbell Curl"];
+const BACK_CURL_OPTIONS = ["EZ Bar Curl", "Dumbbell Curl", "Cable Bicep Curl"];
 
 const FIXED_TRICEP_CHEST_PAIRS = [
   { a: { group: "Triceps", name: "Tricep Reverse Grip Pushdown" }, b: { group: "Triceps", name: "Tricep Straight Bar Pushdown" } },
@@ -507,9 +505,11 @@ function assignSets(exercises, defaultSets) {
   const total = exercises.length;
   return exercises.map((ex, i) => {
     const isCompound = COMPOUND_MOVEMENTS.has(ex.name) || (ex.compound === true);
-    const inSecondHalf = i >= Math.ceil(total * 0.6);
-    const randomFlip = Math.random() < 0.2;
-    const useFewer = !isCompound && (inSecondHalf || randomFlip);
+    const position = total > 1 ? i / (total - 1) : 0; // 0.0 (first) to 1.0 (last)
+    const dropChance = isCompound
+      ? 0.10                                      // compounds: flat 10% chance anywhere
+      : 0.20 + (0.30 * position);                 // isolations: 20% early → 50% late
+    const useFewer = Math.random() < dropChance;
     return { ...ex, sets: useFewer ? String(Math.max(3, parseInt(defaultSets) - 1)) : defaultSets };
   });
 }
@@ -520,7 +520,90 @@ function generateCoreWorkout(total) {
   return { sections: [{ group: "Core", displayGroup: "CORE / ABS", exercises: ordered }], startTime: null };
 }
 
-function generateBroWorkout(split, total) {
+// ── ZONE SLOT RULES ───────────────────────────────────────────────────────────
+// Defines guaranteed zone slots per muscle group.
+// Lower back and Triceps compound are optional (only filled if count >= threshold).
+const ZONE_SLOTS = {
+  Back:      { lats: 1, middle: 1 },                      // lower optional: fills if count >= 5
+  Chest:     { upper: 1, mid: 1, lower: 1 },
+  Shoulders: { press: 1, lateral: 1, rear_upper: 1 },     // front is free pool
+  Biceps:    { standard: 1, hammer: 1, isolation: 1 },
+  Triceps:   { pushdown: 1, overhead: 1 },                // compound optional: fills if count >= 5
+  Legs:      { machine_squat: 1, free_unilateral: 1, hinge: 1, isolation: 1 },
+};
+
+const WIFEY_ZONE_SLOTS = {
+  Chest:     { upper: 1, mid: 1, lower: 1 },
+  Back:      { lats: 1, middle: 1 },                      // upper (face pull) is free pool
+  Shoulders: { press: 1, lateral: 1, rear_upper: 1 },
+  Legs:      { glute: 1, hinge: 1, unilateral: 1, machine_compound: 1, isolation: 1 },
+  Biceps:    { standard: 1, hammer: 1, isolation: 1 },
+  Triceps:   { pushdown: 1, overhead: 1 },                // compound optional: fills if count >= 5
+};
+
+function selectByZone(bank, group, count, usedRecently, zoneSlots) {
+  const allEx = bank.filter(e => !e.supersetOnly);
+  const slots = zoneSlots[group] ? { ...zoneSlots[group] } : {};
+
+  // Optional lower back zone for Back — only if count >= 5
+  if (group === "Back" && count >= 5) slots.lower = 1;
+  // Optional compound zone for Triceps — only if count >= 5
+  if (group === "Triceps" && count >= 5) slots.compound = 1;
+
+  // Group exercises by zone, preferring fresh (not recently used)
+  const byZone = {};
+  allEx.forEach(e => {
+    if (!byZone[e.zone]) byZone[e.zone] = { fresh: [], stale: [] };
+    if (usedRecently.has(e.name)) byZone[e.zone].stale.push(e);
+    else byZone[e.zone].fresh.push(e);
+  });
+
+  const selected = [];
+  const usedNames = new Set();
+
+  // Fill guaranteed zone slots first
+  Object.entries(slots).forEach(([zone, guaranteed]) => {
+    if (!guaranteed) return;
+    const pool = byZone[zone];
+    if (!pool) return;
+    const candidates = shuffle([...pool.fresh, ...pool.stale]);
+    for (const ex of candidates) {
+      if (!usedNames.has(ex.name) && selected.length < count) {
+        selected.push(ex);
+        usedNames.add(ex.name);
+        break;
+      }
+    }
+  });
+
+  // Fill remaining slots from full fresh pool first, then stale
+  const freshRemaining = shuffle(allEx.filter(e => !usedRecently.has(e.name) && !usedNames.has(e.name)));
+  const staleRemaining = shuffle(allEx.filter(e => usedRecently.has(e.name) && !usedNames.has(e.name)));
+  const freePool = [...freshRemaining, ...staleRemaining];
+
+  for (const ex of freePool) {
+    if (selected.length >= count) break;
+    if (!usedNames.has(ex.name)) {
+      selected.push(ex);
+      usedNames.add(ex.name);
+    }
+  }
+
+  return selected.slice(0, count);
+}
+
+function getBroUsedExercisesLast2Weeks(history, splitId) {
+  const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const used = new Set();
+  history.forEach(h => {
+    if (h.type === "workout" && h.date >= cutoff && h.splitId === splitId) {
+      if (h.exercises) h.exercises.forEach(name => used.add(name));
+    }
+  });
+  return used;
+}
+
+function generateBroWorkout(split, total, history) {
   // Core split uses shared core generator
   if (split.isCore) return generateCoreWorkout(total);
   const minPer = split.fullBody ? 1 : MIN_PER_GROUP;
@@ -531,33 +614,23 @@ function generateBroWorkout(split, total) {
     counts["Shoulders"] += diff;
     counts["Legs"] -= diff;
   }
+  // Build recency set for this split
+  const usedRecently = getBroUsedExercisesLast2Weeks(history || [], split.id);
+
   const sections = split.groups.map(group => {
-    let pool;
-    if (group === "Legs" && split.legsMode === "compound") {
-      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly));
-      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly));
-      const cCount = Math.ceil(counts[group] * 0.7);
-      const iCount = counts[group] - cCount;
-      pool = [...compound.slice(0, cCount), ...isolated.slice(0, iCount)];
-    } else if (group === "Legs" && split.legsMode === "isolated") {
-      const compound = shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly));
-      const isolated = shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly));
-      const total = counts[group];
-      // Always 1 compound minimum, rest isolated. Compounds never exceed isolations.
-      const maxCompounds = Math.floor(total / 2); // e.g. 3->1, 4->2, 2->1
-      const cCount = Math.min(Math.max(1, maxCompounds), compound.length);
-      const iCount = Math.min(total - cCount, isolated.length);
-      pool = [...compound.slice(0, cCount), ...isolated.slice(0, iCount)];
-    } else if (split.fullBody && group === "Legs") {
-      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly))];
+    let selected;
+    if (split.fullBody && group === "Legs") {
+      // Full body legs: compound-first, no zone logic
+      const pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => e.compound && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !e.compound && !e.supersetOnly))];
+      selected = pool.slice(0, counts[group]);
     } else if (split.fullBody) {
-      pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name) && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name) && !e.supersetOnly))];
+      // Full body non-legs: compound-first, no zone logic
+      const pool = [...shuffle(BRO_EXERCISE_BANK[group].filter(e => COMPOUND_NAMES.includes(e.name) && !e.supersetOnly)), ...shuffle(BRO_EXERCISE_BANK[group].filter(e => !COMPOUND_NAMES.includes(e.name) && !e.supersetOnly))];
+      selected = pool.slice(0, counts[group]);
     } else {
-      pool = BRO_EXERCISE_BANK[group].filter(e => !e.supersetOnly);
+      // Zone-aware selection with recency filtering
+      selected = selectByZone(BRO_EXERCISE_BANK[group], group, counts[group], usedRecently, ZONE_SLOTS);
     }
-    // For legs paths, pool is already structured — just slice. For general paths, use intensity-aware selection.
-    const isLegsStructured = (group === "Legs" && (split.legsMode === "compound" || split.legsMode === "isolated")) || (split.fullBody && group === "Legs") || (split.fullBody && group !== "Legs");
-    const selected = isLegsStructured ? pool.slice(0, counts[group]) : selectByIntensity(pool, counts[group]);
     const ordered = orderByIntensity(selected, total);
     return { group, displayGroup: group, exercises: ordered };
   });
@@ -574,10 +647,17 @@ function getUsedExercisesLast2Weeks(history, workoutType) {
   const used = new Set();
   history.forEach(h => {
     if (h.type === "workout" && h.date >= cutoff) {
-      const isMatch = workoutType === "cables"
-        ? h.split === "All Cables"
-        : h.split === "Full Body";
-      if (isMatch && h.exercises) h.exercises.forEach(name => used.add(name));
+      // Match by splitId if present (new entries), fall back to split label for legacy entries
+      const matchesSplitId = h.splitId === workoutType;
+      const matchesLegacy = !h.splitId && (
+        workoutType === "cables" ? h.split === "All Cables" :
+        workoutType === "full-body" ? h.split === "Full Body" :
+        workoutType === "legs" ? h.split === "Leg Day" :
+        workoutType === "core" ? h.split === "Core / Abs" : false
+      );
+      if ((matchesSplitId || matchesLegacy) && h.exercises) {
+        h.exercises.forEach(name => used.add(name));
+      }
     }
   });
   return used;
@@ -587,36 +667,21 @@ function generateWifeyWorkout(bank, total, history, workoutType) {
   const usedRecently = getUsedExercisesLast2Weeks(history || [], workoutType);
   const groups = Object.keys(bank);
   const counts = distributeExercises(bank, groups, total, 1);
-  const GLUTE_NAMES = new Set(["Hip Thrust","Cable Glute Kickback","Cable Hip Abduction","Romanian Deadlift (RDL)","Bulgarian Split Squat","Walking Lunges","Step Ups","Goblet Squat"]);
   const sections = groups.map(group => {
     let pool;
-    if (group === "Legs") {
-      // Glute-biased leg day: compounds first, always try to include a glute exercise
-      const allLegs = bank[group].filter(e => !e.supersetOnly);
-      const glutes   = shuffle(allLegs.filter(e => GLUTE_NAMES.has(e.name)));
-      const compound = shuffle(allLegs.filter(e => e.compound && !GLUTE_NAMES.has(e.name)));
-      const isolated = shuffle(allLegs.filter(e => !e.compound && !GLUTE_NAMES.has(e.name)));
-      const n = counts[group];
-      const gluteCount = Math.max(1, Math.round(n * 0.4));
-      const compoundCount = Math.max(1, Math.round(n * 0.4));
-      const isolatedCount = Math.max(0, n - gluteCount - compoundCount);
-      pool = [
-        ...glutes.slice(0, gluteCount),
-        ...compound.slice(0, compoundCount),
-        ...isolated.slice(0, isolatedCount),
-      ].slice(0, n);
-      // Backfill if we didn't get enough
-      if (pool.length < n) {
-        const used = new Set(pool.map(e => e.name));
-        const remaining = shuffle(allLegs.filter(e => !used.has(e.name)));
-        pool = [...pool, ...remaining].slice(0, n);
-      }
-    } else {
+    if (group === "Core") {
+      // Core stays flat — no zone logic
       const fresh = bank[group].filter(e => !usedRecently.has(e.name) && !e.supersetOnly);
       const stale = bank[group].filter(e => usedRecently.has(e.name) && !e.supersetOnly);
-      const fullPool = [...fresh, ...stale];
-      // Use intensity-aware selection, but prefer fresh exercises within each tier
-      pool = selectByIntensity(fullPool, counts[group]);
+      pool = selectByIntensity([...fresh, ...stale], counts[group]);
+    } else if (WIFEY_ZONE_SLOTS[group]) {
+      // Zone-aware selection with recency
+      pool = selectByZone(bank[group], group, counts[group], usedRecently, WIFEY_ZONE_SLOTS);
+    } else {
+      // Fallback: fresh-first intensity selection
+      const fresh = bank[group].filter(e => !usedRecently.has(e.name) && !e.supersetOnly);
+      const stale = bank[group].filter(e => usedRecently.has(e.name) && !e.supersetOnly);
+      pool = selectByIntensity([...fresh, ...stale], counts[group]);
     }
     const ordered = orderByIntensity(pool.slice(0, counts[group]), total);
     return { group, displayGroup: group, exercises: ordered };
@@ -713,9 +778,11 @@ const WARMUP_DURATION = 45;
 // ── LOG WORKOUT FEATURE ───────────────────────────────────────────────────────
 // Self-contained component. To revert: remove this block and the two "LOG WORKOUT"
 // cards in bro-home / wifey-home, and the two screen handlers below (log-bro / log-wifey).
-function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onComplete, onBack, onSaveWorkout }) {
-  const [workoutLabel, setWorkoutLabel] = useState("");
-  const [exercises, setExercises] = useState([]);
+function LogWorkoutScreen({ color, profileName, allExercises, nameToGroup, prs, onSavePr, onComplete, onBack, onSaveWorkout }) {
+  const draftKey = profileName === "The Bro" ? "dg-log-draft" : "wy-log-draft";
+
+  const [workoutLabel, setWorkoutLabel] = useState(() => loadStorage(draftKey)?.workoutLabel || "");
+  const [exercises, setExercises] = useState(() => loadStorage(draftKey)?.exercises || []);
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [newPrNames, setNewPrNames] = useState(new Set());
@@ -725,9 +792,15 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
   const [submitted, setSubmitted] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
   const [isLogSaved, setIsLogSaved] = useState(false);
-  const [workoutDate, setWorkoutDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [workoutDate, setWorkoutDate] = useState(() => loadStorage(draftKey)?.workoutDate || new Date().toISOString().slice(0, 10));
   const summaryRef = useRef(null);
   const startTime = useRef(Date.now());
+
+  // Auto-save draft on every relevant state change
+  useEffect(() => {
+    if (submitted) return;
+    saveStorage(draftKey, { workoutLabel, exercises, workoutDate });
+  }, [workoutLabel, exercises, workoutDate, submitted]);
 
   const suggestions = query.length >= 1
     ? allExercises.filter(e => e.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
@@ -775,6 +848,7 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
     };
     onComplete(data);
     setSummaryData(data);
+    try { localStorage.removeItem(draftKey); } catch {}
     setSubmitted(true);
   }
 
@@ -875,8 +949,13 @@ function LogWorkoutScreen({ color, profileName, allExercises, prs, onSavePr, onC
             <div style={{ position:"absolute", top:"100%", left:0, right:0, background:"#111", border:`1px solid ${color}40`, borderRadius:2, zIndex:10, marginTop:2 }}>
               {suggestions.map(name => (
                 <div key={name} onMouseDown={() => addExercise(name)}
-                  style={{ padding:"12px 14px", fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#ccc", borderBottom:"1px solid #1a1a1a", cursor:"pointer" }}>
-                  {name.toUpperCase()}
+                  style={{ padding:"12px 14px", fontFamily:"'Barlow Condensed'", fontSize:15, fontWeight:700, color:"#ccc", borderBottom:"1px solid #1a1a1a", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span>{name.toUpperCase()}</span>
+                  {nameToGroup && nameToGroup[name] && (
+                    <span style={{ fontFamily:"'Barlow Condensed'", fontSize:11, fontWeight:700, letterSpacing:1, color:"#555", background:"#1a1a1a", borderRadius:2, padding:"2px 7px", flexShrink:0, marginLeft:8 }}>
+                      {nameToGroup[name].toUpperCase()}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -1231,7 +1310,7 @@ function TabBar({ active, onTab, color }) {
 
 
 // ── WORKOUT SCREEN ────────────────────────────────────────────────────────
-function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, onSaveAndExit, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, initialChecked, initialSetsDone, onProgressSave }) {
+function WorkoutScreen({ workout, setWorkout, splitLabel, splitId, color, bank, onBack, onSaveAndExit, onRegenerate, prs, onSavePr, onComplete, onSaveWorkout, restDuration: restDurationProp, initialChecked, initialSetsDone, onProgressSave }) {
   const REST_DUR = restDurationProp || REST_DURATION;
   const [checked, setChecked] = useState(initialChecked || {});
   const [setsDone, setSetsDone] = useState(initialSetsDone || {});
@@ -1344,7 +1423,7 @@ function WorkoutScreen({ workout, setWorkout, splitLabel, color, bank, onBack, o
       const duration = workout.startTime ? Date.now() - workout.startTime : 0;
       const finishMsg = FINISH_MESSAGES[Math.floor(Math.random() * FINISH_MESSAGES.length)];
       const liveSections = workout.sections;
-      const data = { split: splitLabel, color, date: Date.now(), duration, exercises: liveSections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: liveSections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: liveSections.flatMap(s => s.exercises).length, finishMsg, type: "workout", newPrs: [...newPrNames] };
+      const data = { split: splitLabel, splitId, color, date: Date.now(), duration, exercises: liveSections.flatMap(s => s.exercises.map(e => e.name)), exerciseDetails: liveSections.flatMap(s => s.exercises.map(e => ({ name: e.name, sets: e.sets, reps: e.reps }))), total: liveSections.flatMap(s => s.exercises).length, finishMsg, type: "workout", newPrs: [...newPrNames] };
       setSummaryData(data);
       onComplete(data);
       setTimeout(() => setShowSummary(true), 700);
@@ -2530,7 +2609,7 @@ export default function App() {
             </div>
           </div>
           <button className="mbtn" style={{ background:color, color:"#000" }} onClick={() => {
-            const w = generateBroWorkout(broSplit, broTotal);
+            const w = generateBroWorkout(broSplit, broTotal, broHistory);
             if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); }
             setBroPreviewWorkout(w);
             setScreen("bro-preview");
@@ -2556,7 +2635,7 @@ export default function App() {
     const allExercises = pw.sections.flatMap(s => s.exercises);
 
     function regenerate() {
-      const w = generateBroWorkout(broSplit, broTotal);
+      const w = generateBroWorkout(broSplit, broTotal, broHistory);
       if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); }
       setBroPreviewWorkout(w);
       setPreviewKey(k => k + 1);
@@ -2635,10 +2714,10 @@ export default function App() {
   // ── BRO WORKOUT ───────────────────────────────────────────────────────────
   if (screen === "bro-workout" && broSplit) return (
     <Wrap>
-      <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} color={broSplit.color} bank={broSplit.isCore ? CORE_BANK : BRO_EXERCISE_BANK}
+      <WorkoutScreen workout={broWorkout} setWorkout={setBroWorkout} splitLabel={broSplit.label} splitId={broSplit.id} color={broSplit.color} bank={broSplit.isCore ? CORE_BANK : BRO_EXERCISE_BANK}
         onBack={() => { clearBroSession(); setScreen("bro-home"); }}
         onSaveAndExit={saveBroAndExit}
-        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout({ ...w, startTime: Date.now() }); clearBroSession(); }}
+        onRegenerate={() => { const w = generateBroWorkout(broSplit, broTotal, broHistory); if (settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setBroWorkout({ ...w, startTime: Date.now() }); clearBroSession(); }}
         prs={broPrs} onSavePr={saveBroPr}
         onComplete={entry => { addBroHistory(entry); clearBroSession(); }}
         onSaveWorkout={saveBroWorkout} restDuration={settings.restDuration}
@@ -2650,6 +2729,15 @@ export default function App() {
   // ── LOG WORKOUT SCREENS — remove both blocks to revert ────────────────────
   const broAllExercises = [...new Set(Object.values(BRO_EXERCISE_BANK).flat().map(e => e.name).concat(CORE_BANK.map(e => e.name)).concat(LOG_ONLY_EXERCISES))].sort();
   const wifeyAllExercises = [...new Set([...Object.values(WIFEY_FULL_BODY_BANK).flat(), ...Object.values(WIFEY_CABLE_BANK).flat()].map(e => e.name).concat(CORE_BANK.map(e => e.name)).concat(LOG_ONLY_EXERCISES))].sort();
+
+  const broNameToGroup = {};
+  Object.entries(BRO_EXERCISE_BANK).forEach(([group, exes]) => exes.forEach(e => { if (!broNameToGroup[e.name]) broNameToGroup[e.name] = group; }));
+  CORE_BANK.forEach(e => { if (!broNameToGroup[e.name]) broNameToGroup[e.name] = "Core"; });
+
+  const wifeyNameToGroup = {};
+  Object.entries(WIFEY_FULL_BODY_BANK).forEach(([group, exes]) => exes.forEach(e => { if (!wifeyNameToGroup[e.name]) wifeyNameToGroup[e.name] = group; }));
+  Object.entries(WIFEY_CABLE_BANK).forEach(([group, exes]) => exes.forEach(e => { if (!wifeyNameToGroup[e.name]) wifeyNameToGroup[e.name] = group; }));
+  CORE_BANK.forEach(e => { if (!wifeyNameToGroup[e.name]) wifeyNameToGroup[e.name] = "Core"; });
 
   if (screen === "log-bro") return (
     <Wrap>
@@ -2682,7 +2770,7 @@ export default function App() {
     </Wrap>
   );
   if (screen === "log-bro-form") return (
-    <LogWorkoutScreen color="#FF3D00" profileName="The Bro" allExercises={broAllExercises}
+    <LogWorkoutScreen color="#FF3D00" profileName="The Bro" allExercises={broAllExercises} nameToGroup={broNameToGroup}
       prs={broPrs} onSavePr={saveBroPr} onComplete={entry => { addBroHistory(entry); }}
       onSaveWorkout={saveBroWorkout} onBack={() => setScreen("log-bro")} />
   );
@@ -2717,7 +2805,7 @@ export default function App() {
     </Wrap>
   );
   if (screen === "log-wifey-form") return (
-    <LogWorkoutScreen color={WIFEY_COLOR} profileName="The Wifey" allExercises={wifeyAllExercises}
+    <LogWorkoutScreen color={WIFEY_COLOR} profileName="The Wifey" allExercises={wifeyAllExercises} nameToGroup={wifeyNameToGroup}
       prs={wifeyPrs} onSavePr={saveWifeyPr} onComplete={entry => { addWifeyHistory(entry); }}
       onSaveWorkout={saveWifeyWorkout} onBack={() => setScreen("log-wifey")} />
   );
@@ -2958,7 +3046,7 @@ export default function App() {
   if (screen === "wifey-workout") return (
     <Wrap>
       <WorkoutScreen workout={wifeyWorkout} setWorkout={setWifeyWorkout}
-        splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":wifeyMode==="legs"?"Leg Day":"Full Body"} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"] : wifeyBank}
+        splitLabel={wifeyMode==="cables"?"All Cables":wifeyMode==="core"?"Core / Abs":wifeyMode==="legs"?"Leg Day":"Full Body"} splitId={wifeyMode} color={wColor} bank={wifeyIsCore ? CORE_BANK : wifeyIsLegs ? WIFEY_FULL_BODY_BANK["Legs"] : wifeyBank}
         onBack={() => { clearWifeySession(); setScreen("wifey-home"); }}
         onSaveAndExit={saveWifeyAndExit}
         onRegenerate={() => { const legsOnlyBank = { Legs: WIFEY_FULL_BODY_BANK["Legs"] }; const w = wifeyIsCore ? generateCoreWorkout(wifeyTotal) : generateWifeyWorkout(wifeyIsLegs ? legsOnlyBank : wifeyBank, wifeyTotal, wifeyHistory, wifeyMode); if (!wifeyIsCore && settings.supersets && Math.random() < 0.25) { w.sections = injectSupersets(w.sections); } setWifeyWorkout({ ...w, startTime: Date.now() }); clearWifeySession(); }}
